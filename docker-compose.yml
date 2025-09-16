@@ -1,0 +1,11 @@
+name: rss_reader
+services:
+    app:
+      build:
+        context: .
+      ports:
+        - '127.0.0.1:8000:8000'
+      volumes:
+        - ./data/:/data/
+      extra_hosts:
+        - "host.docker.internal:host-gateway"
