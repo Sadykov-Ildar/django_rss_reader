@@ -1,0 +1,5 @@
+{% for entry in entries %}
+    <a href="" hx-get="{% url "rss_reader:entry_content" entry.pk %}" hx-swap="innerHTML show:top"
+       hx-target=".content">{{ entry.title }}</a>
+    <br>
+{% endfor %}

@@ -70,6 +70,7 @@ if not TESTING:
         "172.18.0.1",
         "172.19.0.1",
         "172.20.0.1",
+        "172.21.0.1",
     ]
 
     DEBUG_TOOLBAR_CONFIG = {
@@ -142,6 +143,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = "static/"
+
+STATICFILES_DIRS = (BASE_DIR / "static",)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

@@ -1,0 +1,13 @@
+<form hx-post="{% url 'rss_reader:add_feed' %}" hx-swap="outerHTML">
+    {% csrf_token %}
+
+    New feed: <input type="text" name="url" placeholder="insert URL"
+        {% if url %} value="{{ url }}" {% endif %} />
+
+    {% if error_message %}
+        <div style="color: red;">{{ error_message }}</div>
+    {% endif %}
+
+    <button type="submit">Add new feed</button>
+
+</form>

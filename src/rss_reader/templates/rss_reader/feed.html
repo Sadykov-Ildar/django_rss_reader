@@ -1,0 +1,11 @@
+<a href=""
+   hx-get="{% url "rss_reader:entries" feed.pk %}"
+   hx-swap="innerHTML show:top"
+   hx-target="#entries_list"
+>
+    {{ feed.title }}
+</a>
+
+<a href="{{ feed.site_url }}">link</a>
+
+<a href="{% url "rss_reader:delete_feed" feed.pk %}">DELETE</a>
