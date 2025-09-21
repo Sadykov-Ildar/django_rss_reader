@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 
+{% load static %}
 {% block content %}
 
     <div class="sidenav">
@@ -10,6 +11,23 @@
                     {% include "rss_reader/add_feed_form.html" %}
                 </div>
                 <br>
+
+                <form enctype="multipart/form-data"
+                      hx-post="{% url "rss_reader:import_feeds" %}"
+                      hx-swap="outerHTML"
+                      hx-target="#feeds_list">
+                    {% csrf_token %}
+                    {{ file_import_form }}
+                    <input type="submit" value="Import feeds from OPML file">
+
+                    <div class="htmx-indicator">
+                        <img src="{% static 'images/bars.svg' %}" alt="loading" style="width: 1rem">
+                    </div>
+
+                </form>
+
+                <hr>
+
                 <div id="feeds_list">
                     {% include "rss_reader/feeds.html" %}
                 </div>

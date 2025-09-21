@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+    <link rel="shortcut icon" type="image/png" href="{% static 'images/favicon.ico' %}"/>
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 
     <script src="{% static 'js/htmx_2.0.7.min.js' %}"></script>
@@ -13,7 +13,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', (event) => {
-            document.body.addEventListener('htmx:beforeSwap', function(evt) {
+            document.body.addEventListener('htmx:beforeSwap', function (evt) {
                 if (evt.detail.xhr.status === 422) {
                     evt.detail.shouldSwap = true;
                     evt.detail.isError = false;

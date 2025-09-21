@@ -64,3 +64,20 @@ hr {
     margin: 1em 0;
     padding: 0;
 }
+
+
+/*HTMX*/
+.htmx-indicator {
+    opacity:0;
+    transition: opacity 500ms ease-in;
+}
+.htmx-request .htmx-indicator{
+    opacity:1
+}
+.htmx-request.htmx-indicator{
+    opacity:1
+}
+.feed.htmx-swapping{
+    opacity: 0;
+    transition: opacity 500ms ease-in;
+}

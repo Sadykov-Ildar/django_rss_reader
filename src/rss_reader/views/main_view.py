@@ -1,5 +1,6 @@
 from django.shortcuts import render
 
+from rss_reader.forms import UploadFileForm
 from rss_reader.models import Feed, Entry
 
 
@@ -13,6 +14,7 @@ def index_view(request):
         entries = []
 
     context = {
+        "file_import_form": UploadFileForm,
         "feeds": feeds,
         "entries": entries,
         "entry": entries[0] if entries else None,

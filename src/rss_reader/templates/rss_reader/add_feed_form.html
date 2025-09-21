@@ -1,3 +1,5 @@
+{% load static %}
+
 <form hx-post="{% url 'rss_reader:feed' %}" hx-swap="outerHTML">
     {% csrf_token %}
 
@@ -9,5 +11,9 @@
     {% endif %}
 
     <button type="submit">Add new feed</button>
+
+    <div class="htmx-indicator">
+        <img src="{% static 'images/bars.svg' %}" alt="loading" style="width: 1rem">
+    </div>
 
 </form>

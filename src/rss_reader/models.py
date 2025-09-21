@@ -18,7 +18,7 @@ class Entry(models.Model):
 
     link = models.CharField()
     title = models.CharField()
-    published = models.DateTimeField()
+    published = models.DateTimeField(null=True)
     author = models.CharField()
     content = models.TextField()
     summary = models.TextField()
