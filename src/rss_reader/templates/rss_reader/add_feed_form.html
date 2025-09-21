@@ -1,4 +1,4 @@
-<form hx-post="{% url 'rss_reader:add_feed' %}" hx-swap="outerHTML">
+<form hx-post="{% url 'rss_reader:feed' %}" hx-swap="outerHTML">
     {% csrf_token %}
 
     New feed: <input type="text" name="url" placeholder="insert URL"

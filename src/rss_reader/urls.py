@@ -8,8 +8,8 @@ app_name = "rss_reader"
 
 
 urlpatterns = [
-    path("add_feed", feed_views.AddFeedView.as_view(), name="add_feed"),
-    path("delete_feed/<int:feed_id>", feed_views.delete_feed_view, name="delete_feed"),
+    path("feed/<int:feed_id>", feed_views.FeedView.as_view(), name="feed"),
+    path("feed", feed_views.FeedView.as_view(), name="feed"),
     path(
         "entry_content/<int:entry_id>",
         entry_views.entry_content_view,

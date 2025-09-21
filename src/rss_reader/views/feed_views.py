@@ -12,7 +12,7 @@ from rss_reader.exceptions import URLValidationError
 from rss_reader.models import Feed
 
 
-class AddFeedView(View):
+class FeedView(View):
     def post(self, request, *args, **kwargs):
         rss_url = request.POST.get("url")
         try:
@@ -43,6 +43,11 @@ class AddFeedView(View):
 
         return HttpResponse(content)
 
+    def delete(self, request, feed_id, *args, **kwargs):
+        feed = get_object_or_404(Feed, pk=feed_id)
+        feed.delete()
+        return HttpResponse()
+
     @staticmethod
     def _validate_rss_url(rss_url):
         parsed_url = urlparse(rss_url)
@@ -69,10 +74,3 @@ def prepare_feed_error(request, error_message):
         context=context,
         status=422,
     )
-
-
-def delete_feed_view(request, feed_id):
-    feed = get_object_or_404(Feed, pk=feed_id)
-    feed.delete()
-
-    return HttpResponse("deleted successfully")
