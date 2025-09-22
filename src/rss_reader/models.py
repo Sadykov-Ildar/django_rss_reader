@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.db import models
 
 
@@ -12,6 +13,10 @@ class Feed(models.Model):
     etag = models.CharField()
     modified = models.DateTimeField(null=True)
 
+    class Meta:
+        verbose_name_plural = "Feeds"
+        db_table = "rss_reader_feeds"
+
 
 class Entry(models.Model):
     feed = models.ForeignKey(Feed, on_delete=models.CASCADE)
@@ -22,3 +27,42 @@ class Entry(models.Model):
     author = models.CharField()
     content = models.TextField()
     summary = models.TextField()
+
+    class Meta:
+        ordering = ["-published"]
+        verbose_name_plural = "Entries"
+        db_table = "rss_reader_entries"
+
+        unique_together = ("feed", "link")
+
+
+class UserFeed(models.Model):
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    feed = models.ForeignKey(Feed, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name_plural = "User feeds"
+        db_table = "rss_reader_user_feeds"
+
+        unique_together = ("user", "feed")
+
+
+class UserEntry(models.Model):
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    entry = models.ForeignKey(Entry, on_delete=models.CASCADE)
+
+    read = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name_plural = "User entries"
+        db_table = "rss_reader_user_entries"
+
+        unique_together = ("user", "entry")
+
+        indexes = [
+            models.Index(
+                fields=["user", "read"],
+                condition=models.Q(read=False),
+                name="user_entry_partial_unread",
+            ),
+        ]
