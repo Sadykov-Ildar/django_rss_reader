@@ -1,0 +1,26 @@
+{% extends "accounts/accounts_base.html" %}
+
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+    <div class="login_center">
+        <table>
+            <tr>
+                <th scope="row">
+                    <a href="{% url "accounts:change_profile" user.pk %}">Change personal information</a>
+                </th>
+            </tr>
+            <tr>
+                <th scope="row">
+                    <a href="{% url "accounts:change_password" %}">Change password</a>
+                </th>
+            </tr>
+            <tr>
+                <th scope="row">
+                    <a href="{% url "accounts:delete_account_confirm" %}">Delete account</a>
+                </th>
+            </tr>
+        </table>
+    </div>
+
+{% endblock content %}

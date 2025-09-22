@@ -1,0 +1,14 @@
+{% extends "accounts/accounts_base.html" %}
+
+{% block title %}Deleting account{% endblock %}
+
+{% block login_form %}
+
+    <p>Are you sure that yop want to delete account <b>{{ request.user.username }}</b>?</p>
+    <form action="{% url 'accounts:delete_account' %}" method="post">
+        {% csrf_token %}
+        <button>Yes, delete account</button>
+    </form>
+    <a href="{% url "index" %}">No, take me back to main page</a>
+
+{% endblock login_form %}

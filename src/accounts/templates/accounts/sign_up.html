@@ -1,0 +1,18 @@
+{% extends "accounts/accounts_base.html" %}
+
+{% block title %}Sign up{% endblock %}
+
+{% block login_form %}
+
+    <div class="form-container">
+        <h3>Creating new user</h3>
+
+        <form method="post" action="{% url 'accounts:sign_up' %}">
+            {% csrf_token %}
+            {{ form }}
+            <br>
+            <input type="submit" value="Sign up">
+            <input type="hidden" name="next" value="{{ next }}">
+        </form>
+    </div>
+{% endblock login_form %}

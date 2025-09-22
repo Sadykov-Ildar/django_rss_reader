@@ -5,7 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" type="image/png" href="{% static 'images/favicon.ico' %}"/>
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+
+    {% block styles %}
+        <link rel="stylesheet" href="{% static 'css/index_styles.css' %}">
+    {% endblock styles %}
 
     <script src="{% static 'js/htmx_2.0.7.min.js' %}"></script>
 

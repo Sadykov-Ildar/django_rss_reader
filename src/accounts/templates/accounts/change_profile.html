@@ -1,0 +1,13 @@
+{% extends "accounts/accounts_base.html" %}
+
+{% block title %}Changing profile{% endblock %}
+
+{% block login_form %}
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Save">
+    </form>
+
+{% endblock login_form %}

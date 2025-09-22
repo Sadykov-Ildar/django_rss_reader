@@ -2,7 +2,6 @@ from django.urls import path
 
 from .views import entry_views
 from .views import feed_views
-from .views import main_view
 
 app_name = "rss_reader"
 
@@ -17,5 +16,4 @@ urlpatterns = [
         name="entry_content",
     ),
     path("entries/<int:feed_id>", entry_views.entries_view, name="entries"),
-    path("", main_view.index_view, name="index"),
 ]

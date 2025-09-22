@@ -21,15 +21,18 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 
+from rss_reader.views.main_view import index_view
+
 urlpatterns = (
     [
+        path("accounts/", include("accounts.urls")),
         path("admin/", admin.site.urls),
         path("admin/doc/", include("django.contrib.admindocs.urls")),
-        path("", include("rss_reader.urls")),
+        path("rss_reader", include("rss_reader.urls")),
+        path("", index_view, name="index"),
     ]
     + debug_toolbar_urls()
     + static(
         settings.STATIC_URL,
-        # document_root=settings.STATIC_ROOT
     )
 )
