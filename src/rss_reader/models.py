@@ -3,8 +3,8 @@ from django.db import models
 
 
 class Feed(models.Model):
-    site_url = models.URLField(unique=True, verbose_name="Site URL")
-    rss_url = models.URLField(max_length=255, verbose_name="RSS url")
+    site_url = models.URLField(max_length=255, verbose_name="Site URL")
+    rss_url = models.URLField(unique=True, verbose_name="RSS url")
 
     title = models.CharField()
     subtitle = models.CharField()
@@ -39,6 +39,7 @@ class Entry(models.Model):
 class UserFeed(models.Model):
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
     feed = models.ForeignKey(Feed, on_delete=models.CASCADE)
+    # TODO: может добавить stale, чтобы сократить нагрузку на сервер?
 
     class Meta:
         verbose_name_plural = "User feeds"

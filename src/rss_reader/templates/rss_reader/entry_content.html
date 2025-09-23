@@ -1,4 +1,5 @@
 <div id="content">
+    {% if entry %}
     <h1>{{ entry.title }}</h1>
     {% if entry.summary and entry.summary != entry.content %}
         {# TODO: может проверять это во вьюшке?#}
@@ -12,4 +13,7 @@
     <hr>
     {{ entry.content | safe }}
     <br>
+    {%  else %}
+        <h2>Add some feeds to see content here</h2>
+    {% endif %}
 </div>

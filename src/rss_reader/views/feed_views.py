@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, render
 from django.template import loader
@@ -6,7 +7,7 @@ from django.views import View
 from rss_reader import opml_parser
 from rss_reader._feed_api import _import_from_rss_urls
 from rss_reader.forms import UploadFileForm
-from rss_reader.models import UserFeed
+from rss_reader.models import UserFeed, UserEntry
 
 
 class FeedView(View):
@@ -31,9 +32,16 @@ class FeedView(View):
         return HttpResponse(content)
 
     def delete(self, request, user_feed_id, *args, **kwargs):
-        user_feed = get_object_or_404(UserFeed, pk=user_feed_id)
-        user_feed.delete()
-        # TODO: удалять ли Feed, если на него больше не ссылается ни один UserFeed?
+        with transaction.atomic():
+            user_feed = get_object_or_404(UserFeed, pk=user_feed_id)
+            user_feed.delete()
+            # TODO: удалять ли Feed, если на него больше не ссылается ни один UserFeed?
+
+            UserEntry.objects.filter(
+                entry__feed_id=user_feed.feed_id, user=request.user
+            ).delete()
+
+        # TODO: возвращать список user_entry со следующего user_feed
         return HttpResponse()
 
 

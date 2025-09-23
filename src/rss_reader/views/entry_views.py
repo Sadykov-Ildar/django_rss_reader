@@ -2,6 +2,7 @@ from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.template import loader
 
+from rss_reader._entry_api import _get_and_create_user_entries
 from rss_reader.models import UserEntry, UserFeed
 
 
@@ -30,9 +31,7 @@ def entry_content_view(request, user_entry_id: int):
 
 def entries_view(request, user_feed_id: int):
     user_feed = get_object_or_404(UserFeed, id=user_feed_id)
-    user_entries = UserEntry.objects.filter(
-        entry__feed_id=user_feed.feed_id
-    ).select_related("entry")
+    user_entries = _get_and_create_user_entries(user_feed)
 
     context = {
         "user_entries": user_entries,
