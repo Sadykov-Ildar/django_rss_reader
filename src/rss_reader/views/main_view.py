@@ -1,22 +1,26 @@
 from django.shortcuts import render
 
 from rss_reader.forms import UploadFileForm
-from rss_reader.models import Feed, Entry
+from rss_reader.models import UserFeed, UserEntry
 
 
 def index_view(request):
     # TODO: pagination, select_related
-    feeds = Feed.objects.all().order_by("-pk")
+    user_feeds = UserFeed.objects.filter(
+        user=request.user,
+    ).order_by("-pk")
 
-    if feeds:
-        entries = Entry.objects.filter(feed=feeds[0])
+    if user_feeds:
+        user_entries = UserEntry.objects.filter(
+            entry__feed_id=user_feeds[0].feed_id,
+        ).select_related("entry")
     else:
-        entries = []
+        user_entries = []
 
     context = {
         "file_import_form": UploadFileForm,
-        "feeds": feeds,
-        "entries": entries,
-        "entry": entries[0] if entries else None,
+        "user_feeds": user_feeds,
+        "user_entries": user_entries,
+        "entry": user_entries[0].entry if user_entries else None,
     }
     return render(request, "rss_reader/index.html", context=context)

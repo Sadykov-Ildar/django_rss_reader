@@ -1,13 +1,15 @@
-<h1>{{ entry.title }}</h1>
-{% if entry.summary and entry.summary != entry.content %}
-    {# TODO: может проверять это во вьюшке?#}
-    <h3>{{ entry.summary | safe }}</h3>
-{% endif %}
+<div id="content">
+    <h1>{{ entry.title }}</h1>
+    {% if entry.summary and entry.summary != entry.content %}
+        {# TODO: может проверять это во вьюшке?#}
+        <h3>{{ entry.summary | safe }}</h3>
+    {% endif %}
 
-<hr>
-Link to article: <a href="{{ entry.link }}">{{ entry.link }}</a>
-<br>
-<em>Published at: {{ entry.published | date:"Y m d H:i" }}</em>
-<hr>
-{{ entry.content | safe }}
-<br>
+    <hr>
+    Link to article: <a href="{{ entry.link }}">{{ entry.link }}</a>
+    <br>
+    <em>Published at: {{ entry.published | date:"Y m d H:i" }}</em>
+    <hr>
+    {{ entry.content | safe }}
+    <br>
+</div>

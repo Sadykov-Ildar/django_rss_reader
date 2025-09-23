@@ -1,17 +1,17 @@
 {% load static %}
-<div class="feed" id="feed-{{ feed.pk }}">
+<div class="feed" id="user-feed-{{ user_feed.pk }}">
     <a href=""
-       hx-get="{% url "rss_reader:entries" feed.pk %}"
+       hx-get="{% url "rss_reader:entries" user_feed.pk %}"
        hx-swap="innerHTML show:top"
        hx-target="#entries_list"
-    >{{ feed.title }}</a>
+    >{{ user_feed.feed.title }}</a>
 
-    <a href="{{ feed.site_url }}">link</a>
+    <a href="{{ user_feed.feed.site_url }}">link</a>
 
     <a href=""
-       hx-delete="{% url "rss_reader:feed" feed.pk %}"
+       hx-delete="{% url "rss_reader:feed" user_feed.pk %}"
        hx-swap="outerHTML swap:500ms"
-       hx-target="#feed-{{ feed.pk }}"
+       hx-target="#user-feed-{{ user_feed.pk }}"
     >
         DELETE
         <div class="htmx-indicator">

@@ -1,21 +1,40 @@
+from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, render
+from django.template import loader
 
-from rss_reader.models import Entry
+from rss_reader.models import UserEntry, UserFeed
 
 
-def entry_content_view(request, entry_id: int):
-    entry = get_object_or_404(Entry, id=entry_id)
+def entry_content_view(request, user_entry_id: int):
+    try:
+        user_entry = (
+            UserEntry.objects.filter(pk=user_entry_id).select_related("entry").get()
+        )
+    except UserEntry.DoesNotExist:
+        raise Http404
+
+    user_entry.read = True
+    user_entry.save()
 
     context = {
-        "entry": entry,
+        "user_entry": user_entry,
+        "entry": user_entry.entry,
     }
-    return render(request, "rss_reader/entry_content.html", context=context)
+    content = loader.render_to_string("rss_reader/entry.html", context, request)
+    content += "\n\n"
+    content += loader.render_to_string(
+        "rss_reader/oob_entry_content.html", context, request
+    )
+    return HttpResponse(content)
 
 
-def entries_view(request, feed_id: int):
-    entries = Entry.objects.filter(feed_id=feed_id)
+def entries_view(request, user_feed_id: int):
+    user_feed = get_object_or_404(UserFeed, id=user_feed_id)
+    user_entries = UserEntry.objects.filter(
+        entry__feed_id=user_feed.feed_id
+    ).select_related("entry")
 
     context = {
-        "entries": entries,
+        "user_entries": user_entries,
     }
     return render(request, "rss_reader/entries.html", context=context)
