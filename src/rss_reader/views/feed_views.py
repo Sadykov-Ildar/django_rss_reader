@@ -5,7 +5,8 @@ from django.template import loader
 from django.views import View
 
 from rss_reader import opml_parser
-from rss_reader._feed_api import _import_from_rss_urls
+from rss_reader._feed_api import _import_from_rss_urls, _refresh_user_feed
+from rss_reader.exceptions import URLValidationError
 from rss_reader.forms import UploadFileForm
 from rss_reader.models import UserFeed, UserEntry
 
@@ -85,3 +86,23 @@ def import_feeds(request):
             return HttpResponse(content)
 
     return HttpResponseForbidden()
+
+
+def refresh_feeds(request):
+    error_messages = []
+    user = request.user
+
+    user_feeds = UserFeed.objects.filter(user=user).select_related("feed")
+    for user_feed in user_feeds:
+        try:
+            with transaction.atomic():
+                _refresh_user_feed(user_feed.feed)
+        except URLValidationError as e:
+            error_messages.append(f"{user_feed.feed.rss_url}: {e.message}")
+
+    context = {
+        "error_message": "\n\n".join(error_messages),
+    }
+    content = loader.render_to_string("rss_reader/feeds.html", context, request)
+
+    return HttpResponse(content)

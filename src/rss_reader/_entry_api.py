@@ -7,8 +7,9 @@ from rss_reader.models import UserEntry, Entry, UserFeed
 
 def _create_user_entries(feed_id: int, user_id: int):
     entries_with_user_entries = UserEntry.objects.filter(
-        user_id=user_id, entry__feed_id=feed_id,
-    ).values_list('entry_id', flat=True)
+        user_id=user_id,
+        entry__feed_id=feed_id,
+    ).values_list("entry_id", flat=True)
     entries = Entry.objects.filter(feed_id=feed_id).exclude(
         id__in=entries_with_user_entries,
     )
@@ -17,7 +18,10 @@ def _create_user_entries(feed_id: int, user_id: int):
 
 
 def _get_and_create_user_entries(user_feed: UserFeed) -> QuerySet[UserEntry]:
-    _create_user_entries(user_feed.feed_id, user_feed.user_id)
+    if user_feed.stale:
+        _create_user_entries(user_feed.feed_id, user_feed.user_id)
+        user_feed.stale = False
+        user_feed.save()
 
     user_entries = UserEntry.objects.filter(
         entry__feed_id=user_feed.feed_id,
@@ -46,3 +50,25 @@ def _create_entries(feed, response: FeedParserDict):
             )
         )
     Entry.objects.bulk_create(entry_bulk_create)
+
+
+def get_user_entries_in_context(user_feed, start: int = 0):
+    user_entries = _get_and_create_user_entries(user_feed)
+
+    batch_size = 25
+    more = False
+
+    user_entries = user_entries.filter(
+        id__gt=start,
+    )[:batch_size]
+    if len(user_entries) == batch_size:
+        more = True
+        start = list(user_entries)[-1].id
+
+    context = {
+        "user_feed": user_feed,
+        "user_entries": user_entries,
+        "more_entries": more,
+        "entries_start": start,
+    }
+    return context

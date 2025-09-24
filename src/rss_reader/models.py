@@ -39,7 +39,8 @@ class Entry(models.Model):
 class UserFeed(models.Model):
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
     feed = models.ForeignKey(Feed, on_delete=models.CASCADE)
-    # TODO: может добавить stale, чтобы сократить нагрузку на сервер?
+
+    stale = models.BooleanField(default=True)
 
     class Meta:
         verbose_name_plural = "User feeds"

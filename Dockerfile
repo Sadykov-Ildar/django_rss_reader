@@ -13,7 +13,10 @@ ENV UV_LINK_MODE=copy \
 COPY ./uv.lock uv.lock
 COPY ./pyproject.toml pyproject.toml
 
-RUN uv sync \
+RUN --mount=type=cache,target=/root/.cache \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync \
         --locked \
         --no-install-project \
         --dev
@@ -21,7 +24,8 @@ RUN uv sync \
 WORKDIR /app
 COPY ./src .
 
-RUN uv sync \
+RUN --mount=type=cache,target=/root/.cache \
+    uv sync \
         --locked \
         --no-editable \
         --dev

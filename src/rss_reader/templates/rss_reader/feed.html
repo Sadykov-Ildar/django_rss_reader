@@ -2,21 +2,22 @@
 <div class="feed" id="user-feed-{{ user_feed.pk }}">
     <a href=""
        hx-get="{% url "rss_reader:entries" user_feed.pk %}"
-       hx-swap="innerHTML show:top"
+       hx-swap="innerHTML scroll:.entries:top"
        hx-target="#entries_list"
     >{{ user_feed.feed.title }}</a>
 
     <a href="{{ user_feed.feed.site_url }}">link</a>
 
-    <a href=""
+    <div
        hx-delete="{% url "rss_reader:feed" user_feed.pk %}"
        hx-swap="outerHTML swap:500ms"
        hx-target="#user-feed-{{ user_feed.pk }}"
+       style="width: 1rem; cursor: pointer;"
     >
-        DELETE
+        <img src="{% static 'images/delete.png' %}" alt="loading" style="width: 1rem">
         <div class="htmx-indicator">
             <img src="{% static 'images/bars.svg' %}" alt="loading" style="width: 1rem">
         </div>
-    </a>
+    </div>
 
 </div>

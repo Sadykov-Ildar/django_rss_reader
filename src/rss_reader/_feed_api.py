@@ -45,11 +45,15 @@ def _create_feed_and_entries(user, rss_url: str) -> UserFeed:
 
 
 def _validate_rss_url(user, rss_url):
+    if not rss_url:
+        raise URLValidationError("Empty rss url")
+
     parsed_url = urlparse(rss_url)
 
-    scheme = parsed_url.scheme
     if not parsed_url.netloc:
         raise URLValidationError("Invalid URL")
+
+    scheme = parsed_url.scheme
     if scheme not in ("http", "https"):
         raise URLValidationError("Url must start with http or https.")
 
@@ -70,12 +74,34 @@ def _import_from_rss_urls(
             _validate_rss_url(user, rss_url)
         except URLValidationError as e:
             error_messages.append(f"{rss_url}: {e.message}")
-
-        with transaction.atomic():
-            try:
-                user_feed = _create_feed_and_entries(user, rss_url)
-                created_user_feeds.append(user_feed)
-            except URLValidationError as e:
-                error_messages.append(f"{rss_url}: {e.message}")
+        else:
+            with transaction.atomic():
+                try:
+                    user_feed = _create_feed_and_entries(user, rss_url)
+                    created_user_feeds.append(user_feed)
+                except URLValidationError as e:
+                    error_messages.append(f"{rss_url}: {e.message}")
 
     return error_messages, created_user_feeds
+
+
+def _refresh_user_feed(feed: Feed):
+    if not feed.etag or not feed.modified:
+        print("!")
+
+    response: feedparser.FeedParserDict = feedparser.parse(
+        feed.rss_url, etag=feed.etag, modified=feed.modified
+    )
+
+    if response["bozo"]:
+        raise URLValidationError(
+            "Some error occured: " + str(response["bozo_exception"])
+        )
+
+    feed.etag = response.get("etag", "")
+    feed.modified = _get_datetime(response.get("modified_parsed"))
+    feed.save()
+
+    UserFeed.objects.filter(feed=feed).update(stale=True)
+
+    _create_entries(feed, response)
