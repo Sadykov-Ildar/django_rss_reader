@@ -6,8 +6,6 @@
        hx-target="#entries_list"
     >{{ user_feed.feed.title }}</a>
 
-    <a href="{{ user_feed.feed.site_url }}">link</a>
-
     <div
        hx-delete="{% url "rss_reader:feed" user_feed.pk %}"
        hx-swap="outerHTML swap:500ms"
@@ -21,3 +19,4 @@
     </div>
 
 </div>
+    <hr>

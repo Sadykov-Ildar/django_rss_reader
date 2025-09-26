@@ -6,34 +6,28 @@
     {# TODO: logout, profile page#}
     <div class="sidenav">
         <div class="feeds">
-            <div style="padding: 20px;">
-                <h2>Blogs</h2>
-                <div id="add_feed_form">
-                    {% include "rss_reader/add_feed_form.html" %}
-                </div>
-                <a href=""
-                   hx-get="{% url "rss_reader:refresh_feeds" %}"
-                   hx-swap="none"
-                >Refresh feeds</a>
-                <br>
+            <div style="display: flex; justify-content:space-between; width: 93%; padding: 15px;">
 
-                <form enctype="multipart/form-data"
-                      hx-post="{% url "rss_reader:import_feeds" %}"
-                      hx-swap="outerHTML"
-                      hx-target="#feeds_list">
-                    {% csrf_token %}
-                    {{ file_import_form }}
-                    <input type="submit" value="Import feeds from OPML file">
+                <span>Your feeds</span>
 
-                    <div class="htmx-indicator">
-                        <img src="{% static 'images/bars.svg' %}" alt="loading" style="width: 1rem">
+                <div style="display: flex; gap: 0.7rem">
+                    <div hx-get="{% url "rss_reader:refresh_feeds" %}"
+                         hx-swap="none"
+                         hx-disabled-elt="this"
+                         style="width: 1rem; cursor: pointer">
+                        <img src="{% static 'images/refresh.png' %}" alt="refresh all feeds" style="width: 1rem">
                     </div>
 
-                </form>
-
-                <hr>
-
-                <div id="feeds_list">
+                    <div hx-get="{% url "rss_reader:add_feed_modal" %}"
+                         hx-target="body" hx-swap="beforeend"
+                         style="width: 1rem; cursor: pointer">
+                        <img src="{% static 'images/add.png' %}" alt="add new feed" style="width: 1rem">
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <div>
+                <div id="feeds_list" style="padding: 15px;">
                     {% include "rss_reader/feeds.html" %}
                 </div>
             </div>

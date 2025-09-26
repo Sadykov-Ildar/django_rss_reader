@@ -49,6 +49,7 @@ def _create_entries(feed, response: FeedParserDict):
                 summary=entry.get("summary", ""),
             )
         )
+    # TODO: create only unique entries
     Entry.objects.bulk_create(entry_bulk_create)
 
 

@@ -86,9 +86,6 @@ def _import_from_rss_urls(
 
 
 def _refresh_user_feed(feed: Feed):
-    if not feed.etag or not feed.modified:
-        print("!")
-
     response: feedparser.FeedParserDict = feedparser.parse(
         feed.rss_url, etag=feed.etag, modified=feed.modified
     )

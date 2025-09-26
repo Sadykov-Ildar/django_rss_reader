@@ -59,6 +59,13 @@ def prepare_feed_error(request, error_message):
     )
 
 
+def add_feed_modal(request):
+    context = {
+        "file_import_form": UploadFileForm,
+    }
+    return render(request, "rss_reader/add_new_feed_modal.html", context=context)
+
+
 def import_feeds(request):
     if request.method == "POST":
         form = UploadFileForm(request.POST, request.FILES)
@@ -100,7 +107,11 @@ def refresh_feeds(request):
         except URLValidationError as e:
             error_messages.append(f"{user_feed.feed.rss_url}: {e.message}")
 
+    user_feeds = UserFeed.objects.filter(
+        user=user,
+    ).order_by("-pk")
     context = {
+        "feeds": user_feeds,
         "error_message": "\n\n".join(error_messages),
     }
     content = loader.render_to_string("rss_reader/feeds.html", context, request)

@@ -1,13 +1,10 @@
-<div class="entry" id="user-entry-{{ user_entry.id }}">
+<div class="{% if not user_entry.read %}entry_unread{% else %}entry{% endif %}"
+     id="user-entry-{{ user_entry.id }}">
     <a href=""
        hx-get="{% url "rss_reader:entry_content" user_entry.id %}"
        hx-swap="outerHTML show:top"
        hx-target="#user-entry-{{ user_entry.pk }}"
     >{{ user_entry.entry.title }}</a>
+    <hr>
 
-    {% if not user_entry.read %}
-        Unread
-    {% endif %}
-    <br>
-    <br>
 </div>

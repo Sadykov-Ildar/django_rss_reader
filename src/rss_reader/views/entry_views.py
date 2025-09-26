@@ -34,3 +34,10 @@ def entries_view(request, user_feed_id: int, start: int = 0):
     context = get_user_entries_in_context(user_feed, start)
 
     return render(request, "rss_reader/entries.html", context=context)
+
+
+def search_entries_view(request):
+    search_query = request.POST.get("search")
+    if search_query:
+        pass
+    return HttpResponse("Search results: " + search_query)
