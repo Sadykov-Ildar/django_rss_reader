@@ -5,8 +5,11 @@ from django.template import loader
 from django.views import View
 
 from rss_reader import opml_parser
-from rss_reader._feed_api import _import_from_rss_urls, _refresh_user_feed
-from rss_reader.exceptions import URLValidationError
+from rss_reader.api.feed_api import (
+    import_from_rss_urls,
+    render_feeds_and_entries,
+    refresh_feeds,
+)
 from rss_reader.forms import UploadFileForm
 from rss_reader.models import UserFeed, UserEntry
 
@@ -15,11 +18,11 @@ class FeedView(View):
     def post(self, request, *args, **kwargs):
         rss_url = request.POST.get("url")
 
-        error_messages, created_user_feeds = _import_from_rss_urls(
+        error_message, created_user_feeds = import_from_rss_urls(
             request.user, [rss_url]
         )
-        if error_messages:
-            return prepare_feed_error(request, "\n\n".join(error_messages))
+        if error_message:
+            return prepare_feed_error(request, error_message)
 
         context = {
             "user_feed": created_user_feeds[0],
@@ -42,8 +45,7 @@ class FeedView(View):
                 entry__feed_id=user_feed.feed_id, user=request.user
             ).delete()
 
-        # TODO: возвращать список user_entry со следующего user_feed
-        return HttpResponse()
+        return render_feeds_and_entries(request)
 
 
 def prepare_feed_error(request, error_message):
@@ -79,41 +81,26 @@ def import_feeds(request):
             for outline in document:
                 rss_urls.append(outline.xmlUrl)
 
-            error_messages, created_feeds = _import_from_rss_urls(
-                request.user, rss_urls
-            )
+            error_message = import_from_rss_urls(request.user, rss_urls)
 
-            context = {
-                "feeds": sorted(created_feeds, key=lambda feed: feed.id, reverse=True),
-                # TODO: это нужно отобразить. Или прервать загрузку, если появилась ошибка
-                "error_message": "\n\n".join(error_messages),
-            }
-            content = loader.render_to_string("rss_reader/feeds.html", context, request)
-
-            return HttpResponse(content)
+            return render_feeds_and_entries(request, error_message)
 
     return HttpResponseForbidden()
 
 
-def refresh_feeds(request):
-    error_messages = []
+def refresh_user_feeds(request):
     user = request.user
 
-    user_feeds = UserFeed.objects.filter(user=user).select_related("feed")
-    for user_feed in user_feeds:
-        try:
-            with transaction.atomic():
-                _refresh_user_feed(user_feed.feed)
-        except URLValidationError as e:
-            error_messages.append(f"{user_feed.feed.rss_url}: {e.message}")
+    error_message = refresh_feeds(user)
 
-    user_feeds = UserFeed.objects.filter(
-        user=user,
-    ).order_by("-pk")
-    context = {
-        "feeds": user_feeds,
-        "error_message": "\n\n".join(error_messages),
-    }
-    content = loader.render_to_string("rss_reader/feeds.html", context, request)
+    return render_feeds_and_entries(request, error_message)
 
-    return HttpResponse(content)
+
+def mark_feeds_as_read_view(request):
+    UserEntry.objects.filter(
+        user_id=request.user,
+    ).update(
+        read=True,
+    )
+
+    return render_feeds_and_entries(request)

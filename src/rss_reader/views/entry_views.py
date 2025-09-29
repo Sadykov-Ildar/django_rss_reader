@@ -2,7 +2,7 @@ from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.template import loader
 
-from rss_reader._entry_api import get_user_entries_in_context
+from rss_reader.api.entry_api import get_user_entries_in_context
 from rss_reader.models import UserEntry, UserFeed
 
 

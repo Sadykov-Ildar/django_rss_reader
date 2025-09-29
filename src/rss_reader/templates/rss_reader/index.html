@@ -6,7 +6,7 @@
     {# TODO: logout, profile page#}
     <div class="sidenav">
         <div class="feeds">
-            <div style="display: flex; justify-content:space-between; width: 93%; padding: 15px;">
+            <div style="display: flex; justify-content:space-between; width: 90%; padding: 15px;">
 
                 <span>Your feeds</span>
 
@@ -17,6 +17,12 @@
                          style="width: 1rem; cursor: pointer">
                         <img src="{% static 'images/refresh.png' %}" alt="refresh all feeds" style="width: 1rem">
                     </div>
+                    <div hx-get="{% url "rss_reader:mark_feeds_as_read" %}"
+                         hx-swap="none"
+                         hx-disabled-elt="this"
+                         style="width: 1rem; cursor: pointer">
+                        <img src="{% static 'images/mark.png' %}" alt="mark all feeds as read" style="width: 1rem">
+                    </div>
 
                     <div hx-get="{% url "rss_reader:add_feed_modal" %}"
                          hx-target="body" hx-swap="beforeend"
@@ -26,8 +32,8 @@
                 </div>
             </div>
             <hr>
-            <div>
-                <div id="feeds_list" style="padding: 15px;">
+            <div style="padding: 15px;">
+                <div id="feeds_list">
                     {% include "rss_reader/feeds.html" %}
                 </div>
             </div>

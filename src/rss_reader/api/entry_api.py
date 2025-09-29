@@ -1,25 +1,23 @@
 from django.db.models import QuerySet
-from feedparser import FeedParserDict
 
 from rss_reader._date import _get_datetime
 from rss_reader.models import UserEntry, Entry, UserFeed
 
 
-def _create_user_entries(feed_id: int, user_id: int):
+def _create_user_entries(user_id: int):
     entries_with_user_entries = UserEntry.objects.filter(
         user_id=user_id,
-        entry__feed_id=feed_id,
     ).values_list("entry_id", flat=True)
-    entries = Entry.objects.filter(feed_id=feed_id).exclude(
+    entries = Entry.objects.exclude(
         id__in=entries_with_user_entries,
     )
     user_entries_bulk = [UserEntry(user_id=user_id, entry=entry) for entry in entries]
-    UserEntry.objects.bulk_create(user_entries_bulk)
+    UserEntry.objects.bulk_create(user_entries_bulk, ignore_conflicts=True)
 
 
 def _get_and_create_user_entries(user_feed: UserFeed) -> QuerySet[UserEntry]:
     if user_feed.stale:
-        _create_user_entries(user_feed.feed_id, user_feed.user_id)
+        _create_user_entries(user_feed.user_id)
         user_feed.stale = False
         user_feed.save()
 
@@ -30,7 +28,7 @@ def _get_and_create_user_entries(user_feed: UserFeed) -> QuerySet[UserEntry]:
     return user_entries
 
 
-def _create_entries(feed, response: FeedParserDict):
+def _create_entries(feed, response):
     entry_bulk_create = []
     for entry in response.get("entries", []):
         content = entry.get("content")
@@ -49,8 +47,7 @@ def _create_entries(feed, response: FeedParserDict):
                 summary=entry.get("summary", ""),
             )
         )
-    # TODO: create only unique entries
-    Entry.objects.bulk_create(entry_bulk_create)
+    Entry.objects.bulk_create(entry_bulk_create, ignore_conflicts=True)
 
 
 def get_user_entries_in_context(user_feed, start: int = 0):

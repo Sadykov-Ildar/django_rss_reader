@@ -2,18 +2,71 @@ from urllib.parse import urlparse
 
 import feedparser
 from django.db import IntegrityError, transaction
+from django.http import HttpResponse
+from django.template import loader
 
 from rss_reader._date import _get_datetime
-from rss_reader._entry_api import _create_entries
+from rss_reader.api.entry_api import _create_entries, get_user_entries_in_context
 from rss_reader.exceptions import URLValidationError
 from rss_reader.models import Feed, UserFeed
 
 
-def _create_feed_and_entries(user, rss_url: str) -> UserFeed:
+def import_from_rss_urls(user, rss_urls: list[str]) -> str:
+    error_messages = []
+
+    for rss_url in rss_urls:
+        try:
+            _validate_rss_url(user, rss_url)
+            with transaction.atomic():
+                _create_feed_and_entries(user, rss_url)
+        except URLValidationError as e:
+            error_messages.append(f"{rss_url}: {e.message}")
+
+    error_message = "\n\n".join(error_messages)
+
+    return error_message
+
+
+def render_feeds_and_entries(request, error_message=""):
+    user_feeds = UserFeed.objects.filter(
+        user=request.user,
+    ).order_by("-pk")
+
+    context = {
+        "user_feeds": user_feeds,
+        "error_message": error_message,
+    }
+
+    if user_feeds:
+        context.update(get_user_entries_in_context(user_feeds[0]))
+
+    content = loader.render_to_string("rss_reader/oob_entries.html", context, request)
+    content += "\n\n"
+    content += loader.render_to_string("rss_reader/oob_feeds.html", context, request)
+
+    return HttpResponse(content)
+
+
+def refresh_feeds(user) -> str:
+    error_messages = []
+    user_feeds = UserFeed.objects.filter(user=user).select_related("feed")
+    for user_feed in user_feeds:
+        try:
+            with transaction.atomic():
+                _refresh_user_feed(user_feed.feed)
+        except URLValidationError as e:
+            error_messages.append(f"{user_feed.feed.rss_url}: {e.message}")
+
+    error_message = "\n\n".join(error_messages)
+
+    return error_message
+
+
+def _create_feed_and_entries(user, rss_url: str):
     try:
         feed = Feed.objects.get(rss_url=rss_url)
     except Feed.DoesNotExist:
-        response: feedparser.FeedParserDict = feedparser.parse(rss_url)
+        response = __parse_feed(rss_url)
 
         if response["bozo"]:
             raise URLValidationError(
@@ -37,11 +90,9 @@ def _create_feed_and_entries(user, rss_url: str) -> UserFeed:
         _create_entries(feed, response)
 
     try:
-        user_feed = UserFeed.objects.create(user=user, feed=feed)
+        UserFeed.objects.create(user=user, feed=feed)
     except IntegrityError:
         raise URLValidationError("Feed with this url already exists.")
-
-    return user_feed
 
 
 def _validate_rss_url(user, rss_url):
@@ -62,33 +113,8 @@ def _validate_rss_url(user, rss_url):
         raise URLValidationError("Feed with this url already exists.")
 
 
-def _import_from_rss_urls(
-    user, rss_urls: list[str]
-) -> tuple[list[str], list[UserFeed]]:
-
-    error_messages = []
-    created_user_feeds = []
-
-    for rss_url in rss_urls:
-        try:
-            _validate_rss_url(user, rss_url)
-        except URLValidationError as e:
-            error_messages.append(f"{rss_url}: {e.message}")
-        else:
-            with transaction.atomic():
-                try:
-                    user_feed = _create_feed_and_entries(user, rss_url)
-                    created_user_feeds.append(user_feed)
-                except URLValidationError as e:
-                    error_messages.append(f"{rss_url}: {e.message}")
-
-    return error_messages, created_user_feeds
-
-
 def _refresh_user_feed(feed: Feed):
-    response: feedparser.FeedParserDict = feedparser.parse(
-        feed.rss_url, etag=feed.etag, modified=feed.modified
-    )
+    response = __parse_feed(feed.rss_url, etag=feed.etag, modified=feed.modified)
 
     if response["bozo"]:
         raise URLValidationError(
@@ -102,3 +128,7 @@ def _refresh_user_feed(feed: Feed):
     UserFeed.objects.filter(feed=feed).update(stale=True)
 
     _create_entries(feed, response)
+
+
+def __parse_feed(rss_url, etag=None, modified=None):
+    return feedparser.parse(rss_url, etag=etag, modified=modified)

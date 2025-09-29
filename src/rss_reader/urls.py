@@ -11,7 +11,12 @@ urlpatterns = [
     path("feed", feed_views.FeedView.as_view(), name="feed"),
     path("add_new_feed", feed_views.add_feed_modal, name="add_feed_modal"),
     path("import_feeds", feed_views.import_feeds, name="import_feeds"),
-    path("refresh_feeds", feed_views.refresh_feeds, name="refresh_feeds"),
+    path("refresh_feeds", feed_views.refresh_user_feeds, name="refresh_feeds"),
+    path(
+        "mark_feeds_as_read",
+        feed_views.mark_feeds_as_read_view,
+        name="mark_feeds_as_read",
+    ),
     path(
         "entry_content/<int:user_entry_id>",
         entry_views.entry_content_view,

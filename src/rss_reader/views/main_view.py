@@ -1,7 +1,6 @@
 from django.shortcuts import render
 
-from rss_reader._entry_api import get_user_entries_in_context
-from rss_reader.forms import UploadFileForm
+from rss_reader.api.entry_api import get_user_entries_in_context
 from rss_reader.models import UserFeed
 
 
@@ -13,7 +12,6 @@ def index_view(request):
     ).order_by("-pk")
 
     context = {
-        "file_import_form": UploadFileForm,
         "user_feeds": user_feeds,
     }
     if user_feeds:
