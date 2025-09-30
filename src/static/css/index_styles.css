@@ -89,6 +89,20 @@ a:active {
     background: #ffffff;
 }
 
+.circle-number {
+    border-radius: 50%; /* Makes the element perfectly round */
+    width: 2rem; /* Set a fixed width */
+    height: 2rem; /* Set a fixed height, equal to width for a perfect circle */
+    display: flex; /* Use flexbox for easy centering */
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    border: 2px solid #007bff; /* Add a border */
+    background-color: #f0f8ff; /* Optional background color */
+    color: #007bff; /* Text color */
+    font-family: Arial, sans-serif;
+    font-size: 20px;
+    font-weight: bold;
+  }
 hr {
     display: block;
     height: 1px;

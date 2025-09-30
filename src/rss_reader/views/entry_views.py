@@ -1,8 +1,8 @@
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, render
-from django.template import loader
 
 from rss_reader.api.entry_api import get_user_entries_in_context
+from rss_reader.api.render_api import render_all
 from rss_reader.models import UserEntry, UserFeed
 
 
@@ -17,16 +17,11 @@ def entry_content_view(request, user_entry_id: int):
     user_entry.read = True
     user_entry.save()
 
-    context = {
-        "user_entry": user_entry,
-        "entry": user_entry.entry,
-    }
-    content = loader.render_to_string("rss_reader/entry.html", context, request)
-    content += "\n\n"
-    content += loader.render_to_string(
-        "rss_reader/oob_entry_content.html", context, request
-    )
-    return HttpResponse(content)
+    user_feed = UserFeed.objects.get(feed=user_entry.entry.feed_id)
+    user_feed.update_read_count()
+    user_feed.save()
+
+    return render_all(request, user_entry)
 
 
 def entries_view(request, user_feed_id: int, start: int = 0):

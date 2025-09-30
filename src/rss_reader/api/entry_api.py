@@ -49,6 +49,9 @@ def _create_entries(feed, response):
         )
     Entry.objects.bulk_create(entry_bulk_create, ignore_conflicts=True)
 
+    feed.update_entry_count()
+    feed.save()
+
 
 def get_user_entries_in_context(user_feed, start: int = 0):
     user_entries = _get_and_create_user_entries(user_feed)

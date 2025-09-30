@@ -13,9 +13,16 @@ class Feed(models.Model):
     etag = models.CharField()
     modified = models.DateTimeField(null=True)
 
+    entry_count = models.PositiveIntegerField(default=0)
+
     class Meta:
         verbose_name_plural = "Feeds"
         db_table = "rss_reader_feeds"
+
+    def update_entry_count(self):
+        self.entry_count = Entry.objects.filter(
+            feed=self.pk,
+        ).count()
 
 
 class Entry(models.Model):
@@ -42,11 +49,24 @@ class UserFeed(models.Model):
 
     stale = models.BooleanField(default=True)
 
+    read_count = models.PositiveIntegerField(default=0)
+
     class Meta:
         verbose_name_plural = "User feeds"
         db_table = "rss_reader_user_feeds"
 
         unique_together = ("user", "feed")
+
+    def update_read_count(self):
+        self.read_count = UserEntry.objects.filter(
+            user=self.user_id,
+            entry__feed=self.feed_id,
+            read=True,
+        ).count()
+
+    @property
+    def unread_count(self):
+        return self.feed.entry_count - self.read_count
 
 
 class UserEntry(models.Model):
@@ -64,7 +84,7 @@ class UserEntry(models.Model):
         indexes = [
             models.Index(
                 fields=["user", "read"],
-                condition=models.Q(read=False),
-                name="user_entry_partial_unread",
+                condition=models.Q(read=True),
+                name="user_entry_partial_read",
             ),
         ]

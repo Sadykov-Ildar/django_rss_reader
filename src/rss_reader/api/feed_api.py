@@ -2,11 +2,9 @@ from urllib.parse import urlparse
 
 import feedparser
 from django.db import IntegrityError, transaction
-from django.http import HttpResponse
-from django.template import loader
 
 from rss_reader._date import _get_datetime
-from rss_reader.api.entry_api import _create_entries, get_user_entries_in_context
+from rss_reader.api.entry_api import _create_entries
 from rss_reader.exceptions import URLValidationError
 from rss_reader.models import Feed, UserFeed
 
@@ -25,26 +23,6 @@ def import_from_rss_urls(user, rss_urls: list[str]) -> str:
     error_message = "\n\n".join(error_messages)
 
     return error_message
-
-
-def render_feeds_and_entries(request, error_message=""):
-    user_feeds = UserFeed.objects.filter(
-        user=request.user,
-    ).order_by("-pk")
-
-    context = {
-        "user_feeds": user_feeds,
-        "error_message": error_message,
-    }
-
-    if user_feeds:
-        context.update(get_user_entries_in_context(user_feeds[0]))
-
-    content = loader.render_to_string("rss_reader/oob_entries.html", context, request)
-    content += "\n\n"
-    content += loader.render_to_string("rss_reader/oob_feeds.html", context, request)
-
-    return HttpResponse(content)
 
 
 def refresh_feeds(user) -> str:

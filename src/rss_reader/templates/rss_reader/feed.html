@@ -4,7 +4,7 @@
        hx-get="{% url "rss_reader:entries" user_feed.pk %}"
        hx-swap="innerHTML scroll:.entries:top"
        hx-target="#entries_list"
-    >{{ user_feed.feed.title }}</a>
+    >{{ user_feed.feed.title }}<div class="circle-number">{{ user_feed.unread_count }}</div></a>
 
     <div
        hx-delete="{% url "rss_reader:feed" user_feed.pk %}"
