@@ -1,5 +1,5 @@
 {% load static %}
-<div class="feed" id="user-feed-{{ user_feed.pk }}">
+<div class="feed {% if is_active %}feed_active{% endif %}" id="user-feed-{{ user_feed.pk }}" >
     <a href=""
        hx-get="{% url "rss_reader:entries" user_feed.pk %}"
        hx-swap="innerHTML scroll:.entries:top"
@@ -19,4 +19,3 @@
     </div>
 
 </div>
-    <hr>

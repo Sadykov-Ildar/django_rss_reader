@@ -50,6 +50,10 @@ a:active {
     display: flex;
     gap: 0.3rem;
 }
+.feed_active {
+    background: #007bff;
+
+}
 
 .entries {
     flex: 60%;

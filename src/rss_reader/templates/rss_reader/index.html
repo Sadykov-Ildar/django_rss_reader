@@ -12,9 +12,9 @@
 
                 <span>Your feeds</span>
 
-{#                TODO: избавиться от inline css#}
+                {#                TODO: избавиться от inline css#}
                 <div style="display: flex; gap: 0.7rem">
-{#                    TODO: нужна обратная связь, и блокировка кнопки на время запроса #}
+                    {#                    TODO: нужна обратная связь, и блокировка кнопки на время запроса #}
                     <div hx-get="{% url "rss_reader:refresh_feeds" %}"
                          hx-swap="none"
                          hx-disabled-elt="this"
@@ -37,12 +37,16 @@
             </div>
             <hr>
             <div style="padding: 15px;">
-                <div id="feeds_list">
+                <div id="feeds_list" hx-on:htmx:after-on-load="
+                    let currentFeed = document.querySelector('.feed_active');
+                    if (currentFeed != null) {
+                        currentFeed.classList.remove('feed_active');
+                    }">
                     {% include "rss_reader/feeds.html" %}
                 </div>
             </div>
         </div>
-{#        TODO: следующая непрочитанная статья#}
+        {#        TODO: следующая непрочитанная статья#}
         <div class="entries" id="entries_div">
             <div style="padding: 20px;">
                 <h2>Entries</h2>
