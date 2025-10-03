@@ -12,6 +12,8 @@ from rss_reader.models import Feed, UserFeed
 def import_from_rss_urls(user, rss_urls: list[str]) -> str:
     error_messages = []
 
+    # TODO: проверить на sql-иньекции, вставку путей к файлам, и всячески обезопасить,
+    #  а также ограничить размер файла
     for rss_url in rss_urls:
         try:
             _validate_rss_url(user, rss_url)
@@ -21,6 +23,8 @@ def import_from_rss_urls(user, rss_urls: list[str]) -> str:
             error_messages.append(f"{rss_url}: {e.message}")
 
     error_message = "\n\n".join(error_messages)
+
+    # TODO: экспорт подписок в opml
 
     return error_message
 
@@ -41,6 +45,7 @@ def refresh_feeds(user) -> str:
 
 
 def _create_feed_and_entries(user, rss_url: str):
+    # TODO: было бы неплохо вынести это в фоновую задачу, а то оно долго работает
     try:
         feed = Feed.objects.get(rss_url=rss_url)
     except Feed.DoesNotExist:
@@ -109,4 +114,6 @@ def _refresh_user_feed(feed: Feed):
 
 
 def __parse_feed(rss_url, etag=None, modified=None):
+    # TODO: заморочиться с flameprof и flamegraph
+    #  и ускорить это дело, оно слишком медленное
     return feedparser.parse(rss_url, etag=etag, modified=modified)

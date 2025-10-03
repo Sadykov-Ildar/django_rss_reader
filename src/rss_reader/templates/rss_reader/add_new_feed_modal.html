@@ -1,6 +1,6 @@
 {% load static %}
 
-<dialog open>
+<dialog open class="center" id="new_feed_dialog">
     <div>
 
         <div id="add_feed_form">
@@ -24,5 +24,16 @@
         <form method="dialog">
             <button class="btn danger">Close</button>
         </form>
+
+        <script>
+            var dialog = document.getElementById('new_feed_dialog');
+
+            // Event listener for the Escape key
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && dialog.open) {
+                    dialog.close();
+                }
+            });
+        </script>
     </div>
 </dialog>

@@ -4,11 +4,11 @@
     {% csrf_token %}
 
     <label for="rss_url">New feed: </label>
-    <input id="rss_url" type="text" name="url" placeholder="insert URL"
+    <input id="rss_url" type="text" name="url" placeholder="insert URL" autofocus
         {% if url %} value="{{ url }}" {% endif %} />
 
     {% if error_message %}
-        <div style="color: red;">{{ error_message }}</div>
+        <div style="color: red; max-width: 400px">{{ error_message }}</div>
     {% endif %}
 
     <button type="submit">Add new feed</button>

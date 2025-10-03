@@ -85,6 +85,8 @@ def refresh_user_feeds(request):
 
 
 def mark_feeds_as_read_view(request):
+    # TODO: добавить возможность отмечать только один блог прочитанным?
+    # TODO: только одну статью?
     UserEntry.objects.filter(
         user_id=request.user,
     ).update(

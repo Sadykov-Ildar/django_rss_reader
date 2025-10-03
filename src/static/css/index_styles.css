@@ -43,6 +43,7 @@ a:active {
     margin: auto;
     text-align: left;
     background-color: #222;
+    overscroll-behavior: contain;
 }
 
 .feed {
@@ -58,11 +59,13 @@ a:active {
     margin: auto;
     text-align: left;
     background-color: #444;
+    overscroll-behavior: contain;
 }
 
 .entry {
     color: gray;
 }
+
 .entry a {
     color: gray;
 }
@@ -89,6 +92,7 @@ a:active {
     background: #ffffff;
 }
 
+/* оно выглядит не очень */
 .circle-number {
     border-radius: 50%; /* Makes the element perfectly round */
     width: 2rem; /* Set a fixed width */
@@ -102,7 +106,20 @@ a:active {
     font-family: Arial, sans-serif;
     font-size: 20px;
     font-weight: bold;
-  }
+}
+
+.center {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #f3f1ef;
+    padding: 20px;
+    border: 1px solid black;
+    box-shadow: 10px 10px 5px #888888;
+}
+
+
 hr {
     display: block;
     height: 1px;

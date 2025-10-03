@@ -12,6 +12,7 @@ def render_feeds_and_entries(request, error_message="", add_form=False):
 
     context = {
         "user_feeds": user_feeds,
+        # TODO: ошибки часто никак не отображаются, может вынести их в модальное окно?
         "error_message": error_message,
     }
 
@@ -30,6 +31,7 @@ def render_feeds_and_entries(request, error_message="", add_form=False):
     return HttpResponse(content)
 
 
+# TODO: как-то сделать более простой интерфейс? может builder как-то соорудить
 def render_all(request, user_entry):
 
     user_feeds = UserFeed.objects.filter(

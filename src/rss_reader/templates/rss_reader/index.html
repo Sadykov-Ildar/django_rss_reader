@@ -3,6 +3,8 @@
 {% load static %}
 {% block content %}
 
+    {# TODO: темная тема? #}
+
     {# TODO: logout, profile page#}
     <div class="sidenav">
         <div class="feeds">
@@ -10,7 +12,9 @@
 
                 <span>Your feeds</span>
 
+{#                TODO: избавиться от inline css#}
                 <div style="display: flex; gap: 0.7rem">
+{#                    TODO: нужна обратная связь, и блокировка кнопки на время запроса #}
                     <div hx-get="{% url "rss_reader:refresh_feeds" %}"
                          hx-swap="none"
                          hx-disabled-elt="this"
@@ -38,6 +42,7 @@
                 </div>
             </div>
         </div>
+{#        TODO: следующая непрочитанная статья#}
         <div class="entries" id="entries_div">
             <div style="padding: 20px;">
                 <h2>Entries</h2>

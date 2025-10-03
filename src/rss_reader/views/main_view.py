@@ -7,6 +7,9 @@ from rss_reader.models import UserFeed
 def index_view(request):
     user = request.user
 
+    # TODO: папка с непрочитанными статьями
+
+    # TODO: группировка по папкам?
     user_feeds = UserFeed.objects.filter(
         user=user,
     ).order_by("-pk")
