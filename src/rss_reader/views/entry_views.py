@@ -1,7 +1,8 @@
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404
 
-from rss_reader.api.render_api import render_all, render_entries
+from rss_reader.api.entry_api import mark_entry_as_read
+from rss_reader.api.render_api import render_entry_content, render_entries
 from rss_reader.models import UserEntry, UserFeed
 
 
@@ -13,14 +14,9 @@ def entry_content_view(request, user_entry_id: int):
     except UserEntry.DoesNotExist:
         raise Http404
 
-    user_entry.read = True
-    user_entry.save()
+    mark_entry_as_read(user_entry)
 
-    user_feed = UserFeed.objects.get(feed=user_entry.entry.feed_id)
-    user_feed.update_read_count()
-    user_feed.save()
-
-    content = render_all(request, user_entry)
+    content = render_entry_content(request, user_entry)
 
     return HttpResponse(content)
 

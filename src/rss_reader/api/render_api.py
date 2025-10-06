@@ -1,7 +1,8 @@
+from django.http import Http404
 from django.template import loader
 
-from rss_reader.api.entry_api import get_user_entries_in_context
-from rss_reader.models import UserFeed
+from rss_reader.api.entry_api import _get_and_create_user_entries
+from rss_reader.models import UserFeed, UserEntry
 
 
 class FeedsRenderer:
@@ -16,30 +17,23 @@ class FeedsRenderer:
 
     def include_feed(self):
         self._render_template("rss_reader/oob_feed.html")
-        return self
 
     def include_feeds(self):
         self._render_template("rss_reader/oob_feeds.html")
-        return self
 
     def include_entries(self):
         self._render_template("rss_reader/oob_entries.html")
-        return self
 
     def include_entry_content(self):
-        # TODO: тут что-то не так
         self._render_template("rss_reader/entry.html")
         self._render_template("rss_reader/oob_entry_content.html")
-        return self
 
     def include_add_feed_form(self):
         self._render_template("rss_reader/add_feed_form.html")
-        return self
 
     def include_error_message(self):
         # TODO: ошибки часто никак не отображаются, может вынести их в модальное окно?
         self._render_template("rss_reader/error_message.html")
-        return self
 
     def _render_template(self, template_name):
         self._content += self.separator
@@ -71,36 +65,54 @@ def render_feeds_and_entries(request, error_message="", add_form=False):
     return renderer.get_result()
 
 
-def render_all(request, user_entry):
-
-    user_feeds = UserFeed.objects.filter(
-        user=request.user,
-    ).order_by("-pk")
+def render_entry_content(request, user_entry: UserEntry):
+    try:
+        user_feed = UserFeed.objects.get(feed=user_entry.entry.feed_id)
+    except UserFeed.DoesNotExist:
+        raise Http404
 
     context = {
-        "user_feeds": user_feeds,
         "user_entry": user_entry,
         "entry": user_entry.entry,
+        "active_feed": user_feed,
+        "user_feed": user_feed,
     }
 
     renderer = FeedsRenderer(request, context)
-    renderer.include_feeds()
+    renderer.include_feed()
     renderer.include_entry_content()
 
     return renderer.get_result()
 
 
-def render_entries(request, user_feed, start):
-    # TODO: как-то выделять выбранный feed
+def render_entries(request, user_feed: UserFeed, start: int):
     context = get_user_entries_in_context(user_feed, start)
-    context.update(
-        {
-            "is_active": True,
-        }
-    )
 
     renderer = FeedsRenderer(request, context)
     renderer.include_entries()
     renderer.include_feed()
 
     return renderer.get_result()
+
+
+def get_user_entries_in_context(user_feed, start: int = 0):
+    user_entries = _get_and_create_user_entries(user_feed)
+
+    batch_size = 25
+    more = False
+
+    user_entries = user_entries.filter(
+        id__gt=start,
+    )[:batch_size]
+    if len(user_entries) == batch_size:
+        more = True
+        start = list(user_entries)[-1].id
+
+    context = {
+        "user_feed": user_feed,
+        "active_feed": user_feed,
+        "user_entries": user_entries,
+        "more_entries": more,
+        "entries_start": start,
+    }
+    return context

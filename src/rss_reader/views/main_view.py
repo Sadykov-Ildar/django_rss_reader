@@ -1,6 +1,6 @@
 from django.shortcuts import render
 
-from rss_reader.api.entry_api import get_user_entries_in_context
+from rss_reader.api.render_api import get_user_entries_in_context
 from rss_reader.models import UserFeed
 
 

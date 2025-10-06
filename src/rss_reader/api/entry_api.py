@@ -53,23 +53,10 @@ def _create_entries(feed, response):
     feed.save()
 
 
-def get_user_entries_in_context(user_feed, start: int = 0):
-    user_entries = _get_and_create_user_entries(user_feed)
+def mark_entry_as_read(user_entry: UserEntry):
+    user_entry.read = True
+    user_entry.save()
 
-    batch_size = 25
-    more = False
-
-    user_entries = user_entries.filter(
-        id__gt=start,
-    )[:batch_size]
-    if len(user_entries) == batch_size:
-        more = True
-        start = list(user_entries)[-1].id
-
-    context = {
-        "user_feed": user_feed,
-        "user_entries": user_entries,
-        "more_entries": more,
-        "entries_start": start,
-    }
-    return context
+    user_feed = UserFeed.objects.get(feed=user_entry.entry.feed_id)
+    user_feed.update_read_count()
+    user_feed.save()
