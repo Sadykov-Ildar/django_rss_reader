@@ -1,5 +1,5 @@
 from django.db import transaction
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.views import View
 
@@ -21,7 +21,9 @@ class FeedView(View):
         if error_message:
             return prepare_feed_error(request, error_message)
 
-        return render_feeds_and_entries(request, add_form=True)
+        content = render_feeds_and_entries(request, add_form=True)
+
+        return HttpResponse(content)
 
     def delete(self, request, user_feed_id, *args, **kwargs):
         with transaction.atomic():
@@ -33,7 +35,9 @@ class FeedView(View):
                 entry__feed_id=user_feed.feed_id, user=request.user
             ).delete()
 
-        return render_feeds_and_entries(request)
+        content = render_feeds_and_entries(request)
+
+        return HttpResponse(content)
 
 
 def prepare_feed_error(request, error_message):
@@ -71,7 +75,9 @@ def import_feeds(request):
 
             error_message = import_from_rss_urls(request.user, rss_urls)
 
-            return render_feeds_and_entries(request, error_message)
+            content = render_feeds_and_entries(request, error_message)
+
+            return HttpResponse(content)
 
     return HttpResponseForbidden()
 
@@ -81,7 +87,9 @@ def refresh_user_feeds(request):
 
     error_message = refresh_feeds(user)
 
-    return render_feeds_and_entries(request, error_message)
+    content = render_feeds_and_entries(request, error_message)
+
+    return HttpResponse(content)
 
 
 def mark_feeds_as_read_view(request):
@@ -97,4 +105,6 @@ def mark_feeds_as_read_view(request):
         user_feed.update_read_count()
         user_feed.save()
 
-    return render_feeds_and_entries(request)
+    content = render_feeds_and_entries(request)
+
+    return HttpResponse(content)

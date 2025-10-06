@@ -1,11 +1,4 @@
 {% for user_feed in user_feeds %}
-    {% if forloop.first %}
-        {% with is_active=True %}
-            {% include "rss_reader/feed.html" %}
-        {% endwith %}
-    {% else %}
-        {% include "rss_reader/feed.html" %}
-
-    {% endif %}
+    {% include "rss_reader/feed.html" %}
     <hr>
 {% endfor %}

@@ -1,9 +1,7 @@
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404
-from django.template import loader
 
-from rss_reader.api.entry_api import get_user_entries_in_context
-from rss_reader.api.render_api import render_all
+from rss_reader.api.render_api import render_all, render_entries
 from rss_reader.models import UserEntry, UserFeed
 
 
@@ -22,22 +20,14 @@ def entry_content_view(request, user_entry_id: int):
     user_feed.update_read_count()
     user_feed.save()
 
-    return render_all(request, user_entry)
+    content = render_all(request, user_entry)
+
+    return HttpResponse(content)
 
 
 def entries_view(request, user_feed_id: int, start: int = 0):
-    # TODO: как-то выделять выбранный feed
     user_feed = get_object_or_404(UserFeed, id=user_feed_id)
-    context = get_user_entries_in_context(user_feed, start)
-    context.update(
-        {
-            "is_active": True,
-        }
-    )
-
-    content = loader.render_to_string("rss_reader/entries.html", context, request)
-    content += "\n\n"
-    content += loader.render_to_string("rss_reader/oob_feed.html", context, request)
+    content = render_entries(request, user_feed, start)
 
     return HttpResponse(content)
 

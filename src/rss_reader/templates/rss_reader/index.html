@@ -36,12 +36,14 @@
                 </div>
             </div>
             <hr>
-            <div style="padding: 15px;">
-                <div id="feeds_list" hx-on:htmx:after-on-load="
-                    let currentFeed = document.querySelector('.feed_active');
-                    if (currentFeed != null) {
-                        currentFeed.classList.remove('feed_active');
-                    }">
+            <div style="padding: 15px;" hx-on:htmx:after-on-load="
+                    let feeds = document.querySelectorAll('.feed_active');
+                    feeds.forEach(feed => {
+                        if (feed != null) {
+                            feed.classList.remove('feed_active');
+                        }
+                    });">
+                <div id="feeds_list">
                     {% include "rss_reader/feeds.html" %}
                 </div>
             </div>
