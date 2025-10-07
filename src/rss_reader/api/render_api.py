@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.http import Http404
 from django.template import loader
 
@@ -22,6 +24,9 @@ class FeedsRenderer:
         self._render_template("rss_reader/oob_feeds.html")
 
     def include_entries(self):
+        self._render_template("rss_reader/entries.html")
+
+    def include_oob_entries(self):
         self._render_template("rss_reader/oob_entries.html")
 
     def include_entry_content(self):
@@ -58,7 +63,7 @@ def render_feeds_and_entries(request, error_message="", add_form=False):
 
     renderer = FeedsRenderer(request, context)
     renderer.include_feeds()
-    renderer.include_entries()
+    renderer.include_oob_entries()
     if add_form:
         renderer.include_add_feed_form()
 
@@ -71,9 +76,17 @@ def render_entry_content(request, user_entry: UserEntry):
     except UserFeed.DoesNotExist:
         raise Http404
 
+    entry_summary = user_entry.entry.summary
+    entry_content = user_entry.entry.content
+    need_summary = bool(entry_summary)
+    if entry_content.startswith(entry_summary):
+        need_summary = False
+
     context = {
         "user_entry": user_entry,
         "entry": user_entry.entry,
+        "need_summary": need_summary,
+        "active_entry": user_entry,
         "active_feed": user_feed,
         "user_feed": user_feed,
     }
@@ -85,7 +98,7 @@ def render_entry_content(request, user_entry: UserEntry):
     return renderer.get_result()
 
 
-def render_entries(request, user_feed: UserFeed, start: int):
+def render_entries(request, user_feed: UserFeed, start: datetime):
     context = get_user_entries_in_context(user_feed, start)
 
     renderer = FeedsRenderer(request, context)
@@ -95,18 +108,21 @@ def render_entries(request, user_feed: UserFeed, start: int):
     return renderer.get_result()
 
 
-def get_user_entries_in_context(user_feed, start: int = 0):
+def get_user_entries_in_context(user_feed, start: datetime = None):
     user_entries = _get_and_create_user_entries(user_feed)
 
     batch_size = 25
     more = False
 
-    user_entries = user_entries.filter(
-        id__gt=start,
-    )[:batch_size]
+    if start:
+        user_entries = user_entries.filter(
+            entry__published__lt=start,
+        )
+
+    user_entries = user_entries.order_by("-entry__published")[:batch_size]
     if len(user_entries) == batch_size:
         more = True
-        start = list(user_entries)[-1].id
+        start = list(user_entries)[-1].entry.published
 
     context = {
         "user_feed": user_feed,

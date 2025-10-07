@@ -1,4 +1,5 @@
 from django.db.models import QuerySet
+from django.utils import timezone
 
 from rss_reader._date import _get_datetime
 from rss_reader.models import UserEntry, Entry, UserFeed
@@ -30,18 +31,21 @@ def _get_and_create_user_entries(user_feed: UserFeed) -> QuerySet[UserEntry]:
 
 def _create_entries(feed, response):
     entry_bulk_create = []
-    for entry in response.get("entries", []):
+    for entry in reversed(response.get("entries", [])):
         content = entry.get("content")
         if content:
             # TODO: what to do if several contents exist?
             content = content[0]["value"]
+        published = _get_datetime(entry.get("published_parsed"))
+        if published is None:
+            published = timezone.now()
         entry_bulk_create.append(
             Entry(
                 feed=feed,
                 # TODO: parsing?
                 link=entry.get("link", ""),
                 title=entry.get("title", ""),
-                published=_get_datetime(entry.get("published_parsed")),
+                published=published,
                 author=entry.get("author", ""),
                 content=content or "",
                 summary=entry.get("summary", ""),

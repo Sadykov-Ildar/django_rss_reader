@@ -1,9 +1,12 @@
-from django.urls import path
+from django.urls import path, register_converter
 
+from . import url_converters
 from .views import entry_views
 from .views import feed_views
 
 app_name = "rss_reader"
+
+register_converter(url_converters.DateTimeConverter, "datetime")
 
 
 urlpatterns = [
@@ -23,7 +26,7 @@ urlpatterns = [
         name="entry_content",
     ),
     path(
-        "entries/<int:user_feed_id>/<int:start>",
+        "entries/<int:user_feed_id>/<datetime:start>",
         entry_views.entries_view,
         name="entries_pagination",
     ),

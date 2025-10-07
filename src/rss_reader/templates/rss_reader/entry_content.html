@@ -13,7 +13,7 @@
                 {% if entry.published %}
                     <em>Published at: {{ entry.published | date:"Y m d H:i" }}</em>
                 {% endif %}
-                {% if entry.summary and entry.summary != entry.content %}
+                {% if need_summary %}
                     <hr>
                     {# TODO: может проверять это во вьюшке?#}
                     <span>{{ entry.summary | safe }}</span>

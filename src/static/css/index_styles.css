@@ -52,7 +52,6 @@ a:active {
 }
 .feed_active {
     background: #007bff;
-
 }
 
 .entries {
@@ -66,8 +65,12 @@ a:active {
     overscroll-behavior: contain;
 }
 
+/*todo: unreadable*/
 .entry {
     color: gray;
+}
+.entry_active {
+    background: #007bff;
 }
 
 .entry a {

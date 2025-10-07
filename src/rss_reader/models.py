@@ -30,7 +30,7 @@ class Entry(models.Model):
 
     link = models.CharField()
     title = models.CharField()
-    published = models.DateTimeField(null=True)
+    published = models.DateTimeField(db_index=True)
     author = models.CharField()
     content = models.TextField()
     summary = models.TextField()
