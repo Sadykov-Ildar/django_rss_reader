@@ -16,9 +16,14 @@ def entry_content_view(request, user_entry_id: int):
     except UserEntry.DoesNotExist:
         raise Http404
 
-    mark_entry_as_read(user_entry)
+    try:
+        user_feed = UserFeed.objects.get(feed=user_entry.entry.feed_id)
+    except UserFeed.DoesNotExist:
+        raise Http404
 
-    content = render_entry_content(request, user_entry)
+    mark_entry_as_read(user_entry, user_feed)
+
+    content = render_entry_content(request, user_entry, user_feed)
 
     return HttpResponse(content)
 

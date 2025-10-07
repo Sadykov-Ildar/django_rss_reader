@@ -57,10 +57,9 @@ def _create_entries(feed, response):
     feed.save()
 
 
-def mark_entry_as_read(user_entry: UserEntry):
+def mark_entry_as_read(user_entry: UserEntry, user_feed):
     user_entry.read = True
     user_entry.save()
 
-    user_feed = UserFeed.objects.get(feed=user_entry.entry.feed_id)
     user_feed.update_read_count()
     user_feed.save()

@@ -1,6 +1,5 @@
 from datetime import datetime
 
-from django.http import Http404
 from django.template import loader
 
 from rss_reader.api.entry_api import _get_and_create_user_entries
@@ -17,10 +16,10 @@ class FeedsRenderer:
     def get_result(self):
         return self._content
 
-    def include_feed(self):
+    def include_oob_feed(self):
         self._render_template("rss_reader/oob_feed.html")
 
-    def include_feeds(self):
+    def include_oob_feeds(self):
         self._render_template("rss_reader/oob_feeds.html")
 
     def include_entries(self):
@@ -29,8 +28,10 @@ class FeedsRenderer:
     def include_oob_entries(self):
         self._render_template("rss_reader/oob_entries.html")
 
-    def include_entry_content(self):
+    def include_entry(self):
         self._render_template("rss_reader/entry.html")
+
+    def include_oob_entry_content(self):
         self._render_template("rss_reader/oob_entry_content.html")
 
     def include_add_feed_form(self):
@@ -62,7 +63,7 @@ def render_feeds_and_entries(request, error_message="", add_form=False):
         context.update(get_user_entries_in_context(user_feeds[0]))
 
     renderer = FeedsRenderer(request, context)
-    renderer.include_feeds()
+    renderer.include_oob_feeds()
     renderer.include_oob_entries()
     if add_form:
         renderer.include_add_feed_form()
@@ -70,12 +71,7 @@ def render_feeds_and_entries(request, error_message="", add_form=False):
     return renderer.get_result()
 
 
-def render_entry_content(request, user_entry: UserEntry):
-    try:
-        user_feed = UserFeed.objects.get(feed=user_entry.entry.feed_id)
-    except UserFeed.DoesNotExist:
-        raise Http404
-
+def render_entry_content(request, user_entry: UserEntry, user_feed: UserFeed):
     entry_summary = user_entry.entry.summary
     entry_content = user_entry.entry.content
     need_summary = bool(entry_summary)
@@ -92,8 +88,9 @@ def render_entry_content(request, user_entry: UserEntry):
     }
 
     renderer = FeedsRenderer(request, context)
-    renderer.include_feed()
-    renderer.include_entry_content()
+    renderer.include_oob_feed()
+    renderer.include_entry()
+    renderer.include_oob_entry_content()
 
     return renderer.get_result()
 
@@ -103,7 +100,7 @@ def render_entries(request, user_feed: UserFeed, start: datetime):
 
     renderer = FeedsRenderer(request, context)
     renderer.include_entries()
-    renderer.include_feed()
+    renderer.include_oob_feed()
 
     return renderer.get_result()
 
