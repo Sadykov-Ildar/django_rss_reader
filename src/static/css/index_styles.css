@@ -18,6 +18,26 @@ a:active {
     text-decoration: none;
 }
 
+.sidenav_top_part {
+    height: 55px;
+}
+
+.sidenav_header {
+    display: flex;
+    justify-content: space-between;
+    width: 90%;
+    padding: 15px;
+}
+
+.sidenav_buttons {
+    display: flex;
+    gap: 0.7rem;
+}
+
+.image_button {
+    width: 1rem;
+    cursor: pointer;
+}
 .sidenav {
     height: 100%; /* Full-height: remove this if you want "auto" height */
     width: 36%; /* Set the width of the sidebar */
@@ -32,87 +52,6 @@ a:active {
 
 .sidenav a {
     color: #ffffff;
-}
-
-.feeds {
-    overflow-x: hidden; /* Disable horizontal scroll */
-    flex: 40%;
-    color: white;
-    overflow-y: scroll;
-    height: 100%;
-    margin: auto;
-    text-align: left;
-    background-color: #222;
-    overscroll-behavior: contain;
-}
-
-.feed {
-    display: flex;
-    gap: 0.3rem;
-}
-.feed_active {
-    background: #007bff;
-}
-
-.entries {
-    flex: 60%;
-    color: white;
-    overflow-y: scroll;
-    height: 100%;
-    margin: auto;
-    text-align: left;
-    background-color: #444;
-    overscroll-behavior: contain;
-}
-
-/*todo: unreadable*/
-.entry {
-    color: gray;
-}
-.entry_active {
-    background: #007bff;
-}
-
-.entry a {
-    color: gray;
-}
-
-.entry_unread {
-    color: white;
-    font-weight: bold;
-}
-
-/* Style page content */
-.main {
-    margin-left: 36%;
-    padding: 20px;
-}
-
-.content {
-    max-width: 800px;
-    text-wrap: balance;
-    margin-left: auto;
-    margin-right: auto;
-    padding: 20px;
-    width: 80%;
-    font-family: verdana, arial, helvetica, sans-serif;
-    background: #ffffff;
-}
-
-/* оно выглядит не очень */
-.circle-number {
-    border-radius: 50%; /* Makes the element perfectly round */
-    width: 2rem; /* Set a fixed width */
-    height: 2rem; /* Set a fixed height, equal to width for a perfect circle */
-    display: flex; /* Use flexbox for easy centering */
-    justify-content: center; /* Center horizontally */
-    align-items: center; /* Center vertically */
-    border: 2px solid #007bff; /* Add a border */
-    background-color: #f0f8ff; /* Optional background color */
-    color: #007bff; /* Text color */
-    font-family: Arial, sans-serif;
-    font-size: 20px;
-    font-weight: bold;
 }
 
 .center {

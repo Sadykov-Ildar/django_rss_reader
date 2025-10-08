@@ -1,0 +1,50 @@
+.entries_main {
+    padding: 20px;
+}
+
+.entries {
+    flex: 60%;
+    overflow-y: scroll;
+    height: 100%;
+    margin: auto;
+    text-align: left;
+    color: white;
+    background-color: #404040;
+    overscroll-behavior: contain;
+}
+
+/*todo: unreadable*/
+.entry {
+    color: gray;
+}
+
+.entry_active {
+    background: #007bff;
+}
+
+.entry a {
+    color: #aaaaaa;
+    font-weight: normal;
+}
+
+.entry_unread {
+    color: white;
+    font-weight: bold;
+}
+
+/* Style page content */
+.main {
+    margin-left: 36%;
+    padding: 20px;
+}
+
+.content {
+    max-width: 800px;
+    text-wrap: balance;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 20px;
+    width: 80%;
+    font-family: verdana, arial, helvetica, sans-serif;
+    background: #ffffff;
+}

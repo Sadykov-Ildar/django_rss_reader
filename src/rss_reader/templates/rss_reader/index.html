@@ -7,62 +7,8 @@
 
     {# TODO: logout, profile page#}
     <div class="sidenav">
-        <div class="feeds">
-            <div style="display: flex; justify-content:space-between; width: 90%; padding: 15px;">
-
-                <span>Your feeds</span>
-
-                {#                TODO: избавиться от inline css#}
-                <div style="display: flex; gap: 0.7rem">
-                    {#                    TODO: нужна обратная связь, и блокировка кнопки на время запроса #}
-                    <div hx-get="{% url "rss_reader:refresh_feeds" %}"
-                         hx-swap="none"
-                         hx-disabled-elt="this"
-                         style="width: 1rem; cursor: pointer">
-                        <img src="{% static 'images/refresh.png' %}" alt="refresh all feeds" style="width: 1rem">
-                    </div>
-                    <div hx-get="{% url "rss_reader:mark_feeds_as_read" %}"
-                         hx-swap="none"
-                         hx-disabled-elt="this"
-                         style="width: 1rem; cursor: pointer">
-                        <img src="{% static 'images/mark.png' %}" alt="mark all feeds as read" style="width: 1rem">
-                    </div>
-
-                    <div hx-get="{% url "rss_reader:add_feed_modal" %}"
-                         hx-target="body" hx-swap="beforeend"
-                         style="width: 1rem; cursor: pointer">
-                        <img src="{% static 'images/add.png' %}" alt="add new feed" style="width: 1rem">
-                    </div>
-                </div>
-            </div>
-            <hr>
-            <div style="padding: 15px;" hx-on:htmx:after-on-load="
-                    let feeds = document.querySelectorAll('.feed_active');
-                    feeds.forEach(feed => {
-                        if (feed != null) {
-                            feed.classList.remove('feed_active');
-                        }
-                    });">
-                <div id="feeds_list">
-                    {% include "rss_reader/feeds.html" %}
-                </div>
-            </div>
-        </div>
-        {#        TODO: следующая непрочитанная статья#}
-        <div class="entries" id="entries_div"  hx-on:htmx:after-on-load="
-                    let entries = document.querySelectorAll('.entry_active');
-                    entries.forEach(entry => {
-                        if (entry != null) {
-                            entry.classList.remove('entry_active');
-                        }
-                    });">
-            <div style="padding: 20px;">
-                <h2>Entries</h2>
-                <div id="entries_list">
-                    {% include "rss_reader/entries.html" %}
-                </div>
-            </div>
-        </div>
+        {% include "rss_reader/feeds_sidebar.html" %}
+        {% include "rss_reader/entries_sidebar.html" %}
     </div>
 
     {% include "rss_reader/entry_content.html" %}

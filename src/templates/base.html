@@ -8,30 +8,20 @@
 
     {% block styles %}
         <link rel="stylesheet" href="{% static 'css/index_styles.css' %}">
+        <link rel="stylesheet" href="{% static 'css/feeds_styles.css' %}">
+        <link rel="stylesheet" href="{% static 'css/entries_styles.css' %}">
     {% endblock styles %}
 
     <script src="{% static 'js/htmx_2.0.7.min.js' %}"></script>
+    <script src="{% static 'js/main.js' %}"></script>
 
     <title>{% block title %}Django rss reader{% endblock %}</title>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', (event) => {
-            document.body.addEventListener('htmx:beforeSwap', function (evt) {
-                if (evt.detail.xhr.status === 422) {
-                    evt.detail.shouldSwap = true;
-                    evt.detail.isError = false;
-                }
-            });
-        })
-    </script>
 </head>
 <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
 
-<div>
-    {% block content %}
+{% block content %}
 
-    {% endblock content %}
-</div>
+{% endblock content %}
 
 </body>
 </html>

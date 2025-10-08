@@ -1,0 +1,27 @@
+
+.feeds_main {
+    padding: 15px;
+}
+
+.feeds {
+    overflow-x: hidden; /* Disable horizontal scroll */
+    flex: 40%;
+    overflow-y: scroll;
+    height: 100%;
+    margin: auto;
+    text-align: left;
+    color: white;
+    background-color: #404040;
+    overscroll-behavior: contain;
+    font-size: 16px;
+    border-right: 1px #ffffff solid;
+}
+
+.feed {
+    display: flex;
+    gap: 0.3rem;
+}
+
+.feed_active {
+    background: #007bff;
+}

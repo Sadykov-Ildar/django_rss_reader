@@ -1,0 +1,18 @@
+{% load static %}
+
+{#  TODO: следующая непрочитанная статья #}
+<div class="entries" id="entries_div">
+    <div class="sidenav_top_part">
+        <div class="sidenav_header">
+            <span>Your entries</span>
+            <div class="sidenav_buttons">
+            </div>
+        </div>
+    </div>
+    <hr>
+    <div class="entries_main" hx-on:htmx:after-on-load="deselect_active_elements('entry_active')">
+        <div id="entries_list">
+            {% include "rss_reader/entries.html" %}
+        </div>
+    </div>
+</div>
