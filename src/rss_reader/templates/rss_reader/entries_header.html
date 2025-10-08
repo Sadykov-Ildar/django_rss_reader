@@ -1,6 +1,6 @@
 {% load static %}
 
-<div class="sidenav_header" id="entries_header">
+<div class="sidenav_header">
     <span>Your entries</span>
     <div class="sidenav_buttons">
         <div hx-get="{% url "rss_reader:mark_entries_as_read" user_feed_id=active_feed.id %}"
