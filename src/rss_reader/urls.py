@@ -21,6 +21,11 @@ urlpatterns = [
         name="mark_feeds_as_read",
     ),
     path(
+        "mark_entries_as_read/<int:user_feed_id>",
+        entry_views.mark_entries_as_read_view,
+        name="mark_entries_as_read",
+    ),
+    path(
         "entry_content/<int:user_entry_id>",
         entry_views.entry_content_view,
         name="entry_content",

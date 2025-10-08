@@ -4,10 +4,8 @@ from django.shortcuts import get_object_or_404, render
 from django.views import View
 
 from rss_reader import opml_parser
-from rss_reader.api.feed_api import (
-    import_from_rss_urls,
-    refresh_feeds,
-)
+from rss_reader.api.feed_api import import_from_rss_urls, refresh_feeds
+from rss_reader.api.entry_api import mark_all_feeds_as_read
 from rss_reader.api.render_api import render_feeds_and_entries
 from rss_reader.forms import UploadFileForm
 from rss_reader.models import UserFeed, UserEntry
@@ -93,17 +91,7 @@ def refresh_user_feeds(request):
 
 
 def mark_feeds_as_read_view(request):
-    # TODO: добавить возможность отмечать только один блог прочитанным?
-    # TODO: только одну статью?
-    UserEntry.objects.filter(
-        user_id=request.user,
-    ).update(
-        read=True,
-    )
-    # TODO: не оптимально - попробовать одним запросом
-    for user_feed in UserFeed.objects.filter(user_id=request.user):
-        user_feed.update_read_count()
-        user_feed.save()
+    mark_all_feeds_as_read(request.user)
 
     content = render_feeds_and_entries(request)
 
