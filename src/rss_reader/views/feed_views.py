@@ -27,7 +27,6 @@ class FeedView(View):
         with transaction.atomic():
             user_feed = get_object_or_404(UserFeed, pk=user_feed_id)
             user_feed.delete()
-            # TODO: удалять ли Feed, если на него больше не ссылается ни один UserFeed?
 
             UserEntry.objects.filter(
                 entry__feed_id=user_feed.feed_id, user=request.user

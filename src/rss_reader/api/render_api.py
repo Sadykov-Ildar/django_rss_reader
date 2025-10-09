@@ -79,7 +79,7 @@ def render_entry_content(request, user_entry: UserEntry, user_feed: UserFeed):
     entry_summary = user_entry.entry.summary
     entry_content = user_entry.entry.content
     need_summary = bool(entry_summary)
-    if entry_content.startswith(entry_summary):
+    if entry_content.startswith(entry_summary[:100]):
         need_summary = False
 
     context = {

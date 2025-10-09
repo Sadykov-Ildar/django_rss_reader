@@ -4,12 +4,16 @@
             {% if entry %}
                 <h1>{{ entry.title }}</h1>
 
-{#                TODO: автор? название канала? #}
+                {% if entry.author %}
+                <br>
+                Author: {{ entry.author }} at {{ entry.feed.title }}
+                {% endif %}
+                <br>
+                RSS link: <a href="{{ entry.feed.rss_url }}">{{ entry.feed.rss_url }}</a>
+                <br>
                 <br>
                 Link to article: <a href="{{ entry.link }}" target="_blank" rel="noopener noreferrer">{{ entry.link }}</a>
                 <br>
-{#                # TODO: опубликовано столько-то часов назад? #}
-{#                # TODO: как долго читать статью? #}
                 {% if entry.published %}
                     <em>Published at: {{ entry.published | date:"Y m d H:i" }}</em>
                 {% endif %}
@@ -19,8 +23,6 @@
                 {% endif %}
                 <hr>
 
-{#                # TODO: как работает кэширование в браузере?#}
-{#                TODO: текст как будто может вылезти за пределы своей зоны, нужно проверить #}
                 {{ entry.content | safe }}
                 <br>
             {% else %}
