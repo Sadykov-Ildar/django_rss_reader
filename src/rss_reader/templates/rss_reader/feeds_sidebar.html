@@ -1,36 +1,4 @@
-{% load static %}
-
 <div class="feeds">
-    <div class="sidenav_top_part">
-        <div class="sidenav_header">
-
-            <span>Your feeds</span>
-
-            <div class="sidenav_buttons">
-                {# TODO: нужна обратная связь, и блокировка кнопки на время запроса #}
-                <div hx-get="{% url "rss_reader:refresh_feeds" %}"
-                     hx-swap="none"
-                     hx-disabled-elt="this"
-                     class="image_button">
-                    <img src="{% static 'images/refresh.png' %}" alt="refresh all feeds" style="width: 1rem">
-                </div>
-                <div hx-get="{% url "rss_reader:mark_feeds_as_read" %}"
-                     hx-swap="none"
-                     hx-disabled-elt="this"
-                     class="image_button">
-                    <img src="{% static 'images/mark_green.png' %}" alt="mark all feeds as read" style="width: 1rem">
-                </div>
-
-                <div hx-get="{% url "rss_reader:add_feed_modal" %}"
-                     hx-target="body" hx-swap="beforeend"
-                     class="image_button">
-                    <img src="{% static 'images/add.png' %}" alt="add new feed" style="width: 1rem">
-                </div>
-            </div>
-        </div>
-
-    </div>
-    <hr>
     <div class="feeds_main" hx-on:htmx:after-on-load="deselect_active_elements('feed_active')">
         <div id="feeds_list">
             {% include "rss_reader/feeds.html" %}

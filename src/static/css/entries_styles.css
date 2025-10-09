@@ -31,20 +31,3 @@
     color: white;
     font-weight: bold;
 }
-
-/* Style page content */
-.main {
-    margin-left: 36%;
-    padding: 20px;
-}
-
-.content {
-    max-width: 800px;
-    text-wrap: balance;
-    margin-left: auto;
-    margin-right: auto;
-    padding: 20px;
-    width: 80%;
-    font-family: verdana, arial, helvetica, sans-serif;
-    background: #ffffff;
-}

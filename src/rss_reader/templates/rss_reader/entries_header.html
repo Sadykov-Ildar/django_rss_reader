@@ -1,14 +1,16 @@
 {% load static %}
 
-<div class="sidenav_header">
+<div class="sidebar_header">
     <span>Your entries</span>
-    <div class="sidenav_buttons">
-        <div hx-get="{% url "rss_reader:mark_entries_as_read" user_feed_id=active_feed.id %}"
-             hx-swap="innerHTML"
-             hx-target="#entries_list"
-             hx-disabled-elt="this"
-             class="image_button">
-            <img src="{% static 'images/mark_green.png' %}" alt="mark all entries as read" style="width: 1rem">
-        </div>
+    <div class="sidebar_buttons">
+        {% if active_feed %}
+            <div hx-get="{% url "rss_reader:mark_entries_as_read" user_feed_id=active_feed.id %}"
+                 hx-swap="innerHTML"
+                 hx-target="#entries_list"
+                 hx-disabled-elt="this"
+                 class="image_button">
+                <img src="{% static 'images/mark_green.png' %}" alt="mark all entries as read" style="width: 1rem">
+            </div>
+        {% endif %}
     </div>
 </div>

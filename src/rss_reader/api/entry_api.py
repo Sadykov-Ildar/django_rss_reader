@@ -24,6 +24,7 @@ def _get_and_create_user_entries(user_feed: UserFeed) -> QuerySet[UserEntry]:
 
     user_entries = UserEntry.objects.filter(
         entry__feed_id=user_feed.feed_id,
+        user_id=user_feed.user_id,
     ).select_related("entry")
 
     return user_entries

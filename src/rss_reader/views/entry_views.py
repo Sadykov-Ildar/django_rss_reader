@@ -27,7 +27,10 @@ def entry_content_view(request, user_entry_id: int):
         raise Http404
 
     try:
-        user_feed = UserFeed.objects.get(feed=user_entry.entry.feed_id)
+        user_feed = UserFeed.objects.get(
+            user=request.user,
+            feed=user_entry.entry.feed_id,
+        )
     except UserFeed.DoesNotExist:
         raise Http404
 

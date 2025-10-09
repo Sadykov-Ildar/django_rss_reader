@@ -5,12 +5,31 @@
 
     {# TODO: темная тема? #}
 
-    {# TODO: logout, profile page#}
-    <div class="sidenav">
-        {% include "rss_reader/feeds_sidebar.html" %}
-        {% include "rss_reader/entries_sidebar.html" %}
+    <div class="header">
+        <div style="width: 36%; display: flex;">
+            <div style="flex: 40%; border-right: 1px #ffffff solid;">
+                {% include "rss_reader/feeds_header.html" %}
+            </div>
+            <div style="flex: 60%;">
+                <div id="entries_header">
+                    {% include "rss_reader/entries_header.html" %}
+                </div>
+            </div>
+        </div>
+
+        <div style="border-left: 1px #ffffff solid;">
+            {% include "rss_reader/entry_content_header.html" %}
+        </div>
     </div>
 
-    {% include "rss_reader/entry_content.html" %}
+    <div class="container">
+        <div class="sidebar">
+            {% include "rss_reader/feeds_sidebar.html" %}
+            {% include "rss_reader/entries_sidebar.html" %}
+        </div>
+        <div class="main-content">
+            {% include "rss_reader/entry_content.html" %}
+        </div>
+    </div>
 
 {% endblock content %}

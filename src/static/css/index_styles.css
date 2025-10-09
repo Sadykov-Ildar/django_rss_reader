@@ -1,35 +1,4 @@
-body {
-    background-color: #eeeeee;
-}
-
-a:link {
-    text-decoration: none;
-}
-
-a:visited {
-    text-decoration: none;
-}
-
-a:hover {
-    text-decoration: none;
-}
-
-a:active {
-    text-decoration: none;
-}
-
-.sidenav_top_part {
-    height: 55px;
-}
-
-.sidenav_header {
-    display: flex;
-    justify-content: space-between;
-    width: 90%;
-    padding: 15px;
-}
-
-.sidenav_buttons {
+.sidebar_buttons {
     display: flex;
     gap: 0.7rem;
 }
@@ -37,21 +6,6 @@ a:active {
 .image_button {
     width: 1rem;
     cursor: pointer;
-}
-.sidenav {
-    height: 100%; /* Full-height: remove this if you want "auto" height */
-    width: 36%; /* Set the width of the sidebar */
-    position: fixed; /* Fixed Sidebar (stay in place on scroll) */
-    z-index: 1; /* Stay on top */
-    top: 0; /* Stay at the top */
-    left: 0;
-    overflow-x: hidden; /* Disable horizontal scroll */
-    color: #ffffff;
-    display: flex;
-}
-
-.sidenav a {
-    color: #ffffff;
 }
 
 .center {
@@ -65,36 +19,52 @@ a:active {
     box-shadow: 10px 10px 5px #888888;
 }
 
-
-hr {
-    display: block;
-    height: 1px;
-    border: 0;
-    border-top: 1px solid #ccc;
-    margin: 0.3em 0;
-    padding: 0;
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    background-color: #333;
+    color: white;
+    z-index: 1000; /* Ensure it stays on top of other elements */
+    display: flex;
+}
+.header a {
+    color: #ffffff;
 }
 
-img {
-    max-width: 100%;
-    height: auto;
+.sidebar_header {
+    display: flex;
+    justify-content: space-between;
+    width: 90%;
+    padding: 15px;
 }
 
-/*HTMX*/
-.htmx-indicator {
-    opacity: 0;
-    transition: opacity 500ms ease-in;
+.sidebar {
+    height: calc(100% - 40px); /* Adjust based on header height */
+    width: 36%; /* Set the width of the sidebar */
+    position: fixed;
+    z-index: 999;
+    top: 40px; /* Adjust based on header height */
+    left: 0;
+    overflow-x: hidden; /* Disable horizontal scroll */
+    color: #ffffff;
+    display: flex;
+    background-color: #f4f4f4;
+    padding-top: 20px;
 }
 
-.htmx-request .htmx-indicator {
-    opacity: 1
+.sidebar a {
+    color: #ffffff;
 }
 
-.htmx-request.htmx-indicator {
-    opacity: 1
+.container {
+    display: flex;
+    margin-top: 40px; /* Adjust based on header height */
 }
 
-.feed.htmx-swapping {
-    opacity: 0;
-    transition: opacity 500ms ease-in;
+.main-content {
+    padding: 20px;
+    flex-grow: 1; /* Allows main content to take up remaining space */
 }
