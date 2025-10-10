@@ -37,7 +37,7 @@ def _create_entries(feed, response):
         if content:
             # TODO: what to do if several contents exist?
             content = content[0]["value"]
-        published = _get_datetime(entry.get("published_parsed"))
+        published = _get_datetime(entry.get("published"))
         if published is None:
             published = timezone.now()
         entry_bulk_create.append(
@@ -49,7 +49,7 @@ def _create_entries(feed, response):
                 published=published,
                 author=entry.get("author", ""),
                 content=content or "",
-                summary=entry.get("summary", ""),
+                summary=entry.get("description", ""),
             )
         )
     Entry.objects.bulk_create(entry_bulk_create, ignore_conflicts=True)

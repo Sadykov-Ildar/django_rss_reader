@@ -1,9 +1,9 @@
+from urllib.error import HTTPError
 from urllib.parse import urlparse
 
-import feedparser
+from vendoring import fastfeedparser
 from django.db import IntegrityError, transaction
 
-from rss_reader._date import _get_datetime
 from rss_reader.api.entry_api import _create_entries
 from rss_reader.exceptions import URLValidationError
 from rss_reader.models import Feed, UserFeed
@@ -49,12 +49,8 @@ def _create_feed_and_entries(user, rss_url: str):
     try:
         feed = Feed.objects.get(rss_url=rss_url)
     except Feed.DoesNotExist:
-        response = __parse_feed(rss_url)
+        response, _ = __parse_feed(rss_url)
 
-        if response["bozo"]:
-            raise URLValidationError(
-                "Some error occured: " + str(response["bozo_exception"])
-            )
         feed_data: dict = response["feed"]
 
         try:
@@ -65,8 +61,8 @@ def _create_feed_and_entries(user, rss_url: str):
                 title=feed_data.get("title", ""),
                 subtitle=feed_data.get("subtitle", ""),
                 author=feed_data.get("author", ""),
-                etag=response.get("etag", ""),
-                modified=_get_datetime(response.get("modified_parsed")),
+                etag=response.get("etag") or "",
+                modified=response.get("modified") or "",
             )
         except IntegrityError:
             raise URLValidationError("Feed with this url already exists.")
@@ -97,23 +93,31 @@ def _validate_rss_url(user, rss_url):
 
 
 def _refresh_user_feed(feed: Feed):
-    response = __parse_feed(feed.rss_url, etag=feed.etag, modified=feed.modified)
+    response, new_entries_added = __parse_feed(
+        feed.rss_url, etag=feed.etag, modified=feed.modified
+    )
 
-    if response["bozo"]:
-        raise URLValidationError(
-            "Some error occured: " + str(response["bozo_exception"])
-        )
-
-    feed.etag = response.get("etag", "")
-    feed.modified = _get_datetime(response.get("modified_parsed"))
+    feed.etag = response.get("etag", "") or ""
+    feed.modified = response.get("modified", "") or ""
     feed.save()
 
-    UserFeed.objects.filter(feed=feed).update(stale=True)
+    if new_entries_added:
+        UserFeed.objects.filter(feed=feed).update(stale=True)
 
-    _create_entries(feed, response)
+        _create_entries(feed, response)
 
 
 def __parse_feed(rss_url, etag=None, modified=None):
-    # TODO: заморочиться с flameprof и flamegraph
-    #  и ускорить это дело, оно слишком медленное
-    return feedparser.parse(rss_url, etag=etag, modified=modified)
+    new_entries_added = False
+    try:
+        response = fastfeedparser.parse(rss_url, etag=etag, modified=modified)
+        new_entries_added = True
+    except (ValueError, HTTPError) as e:
+        if e.code == 304:
+            response = {
+                "etag": e.headers.get("Etag") or "",
+                "modified": e.headers.get("Last-modified") or "",
+            }
+        else:
+            raise URLValidationError("Some error occured: " + str(e))
+    return response, new_entries_added

@@ -11,7 +11,7 @@ class Feed(models.Model):
     author = models.CharField()
 
     etag = models.CharField()
-    modified = models.DateTimeField(null=True)
+    modified = models.CharField()
 
     entry_count = models.PositiveIntegerField(default=0)
 
