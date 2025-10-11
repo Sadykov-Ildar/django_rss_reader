@@ -1,12 +1,18 @@
 {% load static %}
-<div class="feed {% if user_feed == active_feed %}feed_active{% endif %}" id="user-feed-{{ user_feed.pk }}">
-    <a href=""
-       hx-get="{% url "rss_reader:entries" user_feed.pk %}"
-       hx-swap="innerHTML scroll:.entries:top"
-       hx-target="#entries_list"
-    >{{ user_feed.feed.title }}</a>
+<div class="feed {% if user_feed == active_feed %}feed_active{% endif %}"
+     id="user-feed-{{ user_feed.pk }}"
+     hx-get="{% url "rss_reader:entries" user_feed.pk %}"
+     hx-swap="innerHTML scroll:.entries:top"
+     hx-target="#entries_list"
+
+>
+    <div class="feed_title">
+        {{ user_feed.feed.title }}
+    </div>
     {% if user_feed.unread_count %}
-        <b>{{ user_feed.unread_count }}</b>
+        <div class="feed_unread_count">
+            <b>{{ user_feed.unread_count }}</b>
+        </div>
     {% endif %}
 
 </div>

@@ -3,6 +3,7 @@ from datetime import datetime
 from django.template import loader
 
 from rss_reader.api.entry_api import _get_and_create_user_entries
+from rss_reader.helpers.html_cleaner import clean_html
 from rss_reader.models import UserFeed, UserEntry
 
 
@@ -81,6 +82,8 @@ def render_entry_content(request, user_entry: UserEntry, user_feed: UserFeed):
     need_summary = bool(entry_summary)
     if entry_content.startswith(entry_summary[:100]):
         need_summary = False
+
+    user_entry.entry.content = clean_html(user_entry.entry.content)
 
     context = {
         "user_entry": user_entry,

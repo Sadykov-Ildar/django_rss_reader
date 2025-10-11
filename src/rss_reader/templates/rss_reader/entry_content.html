@@ -6,16 +6,17 @@
 
                 {% if entry.author %}
                 <br>
-                Author: {{ entry.author }} at {{ entry.feed.title }}
+                Author: {{ entry.author }} at
                 {% endif %}
+                <a href="{{ entry.feed.site_url }}" target="_blank" rel="noopener noreferrer">{{ entry.feed.title }}</a>
                 <br>
-                RSS link: <a href="{{ entry.feed.rss_url }}">{{ entry.feed.rss_url }}</a>
+                RSS link: <a href="{{ entry.feed.rss_url }}" target="_blank" rel="noopener noreferrer">{{ entry.feed.rss_url }}</a>
                 <br>
                 <br>
                 Link to article: <a href="{{ entry.link }}" target="_blank" rel="noopener noreferrer">{{ entry.link }}</a>
                 <br>
                 {% if entry.published %}
-                    <em>Published at: {{ entry.published | date:"Y m d H:i" }}</em>
+                    <em>Published at: {{ entry.published | date:"Y-m-d H:i" }}</em>
                 {% endif %}
                 {% if need_summary %}
                     <hr>

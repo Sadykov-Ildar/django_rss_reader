@@ -14,19 +14,22 @@
 }
 
 .entry {
-    color: gray;
+    color: #cccccc;
+    cursor: pointer;
 }
 
 .entry_active {
+    color: white;
     background: #007bff;
-}
-
-.entry a {
-    color: #aaaaaa;
-    font-weight: normal;
 }
 
 .entry_unread {
     color: white;
     font-weight: bold;
+    cursor: pointer;
+}
+
+.entry_published {
+    text-align: right;
+    font-size: small;
 }

@@ -1,10 +1,15 @@
-<div class="{% if not user_entry.read %}entry_unread{% else %}entry{% endif %} {% if user_entry == active_entry %}entry_active{% endif %}"
-     id="user-entry-{{ user_entry.id }}">
-    <a href=""
-       hx-get="{% url "rss_reader:entry_content" user_entry.id %}"
-       hx-swap="outerHTML show:.main-content:top"
-       hx-target="#user-entry-{{ user_entry.pk }}"
-    >{{ user_entry.entry.title }}</a>
+<div class="{% if not user_entry.read %}entry_unread{% else %}entry{% endif %}
+            {% if user_entry == active_entry %}entry_active{% endif %}"
+     id="user-entry-{{ user_entry.id }}"
+     hx-get="{% url "rss_reader:entry_content" user_entry.id %}"
+     hx-swap="outerHTML show:.main-content:top"
+     hx-target="#user-entry-{{ user_entry.pk }}"
+>
+    <div>
+        {{ user_entry.entry.title }}
+    </div>
+    <div class="entry_published">
+        {{ user_entry.entry.published }}
+    </div>
     <hr>
-
 </div>

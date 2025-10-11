@@ -20,8 +20,18 @@
 .feed {
     display: flex;
     gap: 0.3rem;
+    cursor: pointer;
 }
 
 .feed_active {
     background: #007bff;
+}
+
+.feed_title {
+    text-wrap: stable;
+    flex: 90%;
+}
+.feed_unread_count {
+    text-align: right;
+    flex: 10%;
 }
