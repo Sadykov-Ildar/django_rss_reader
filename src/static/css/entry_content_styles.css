@@ -14,3 +14,10 @@
     font-family: verdana, arial, helvetica, sans-serif;
     background: #ffffff;
 }
+
+.entry_content_header {
+    width: 95%;
+    display: flex;
+    justify-content: right;
+    padding: 15px;
+}

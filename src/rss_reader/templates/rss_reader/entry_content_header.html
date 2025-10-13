@@ -1,15 +1,19 @@
 {% load static %}
 
 {#  TODO: следующая непрочитанная статья #}
-<div class="sidebar_header">
+<div class="entry_content_header">
     <div class="sidebar_buttons">
+
         <form action="{% url 'accounts:log_out' %}" method="post">
             {% csrf_token %}
-            <input type="image" src="{% static 'images/logout.png' %}" alt="mark all entries as read" value="Log out" style="width: 1rem">
+            <input type="image" src="{% static 'images/logout.png' %}" alt="mark all entries as read" value="Log out"
+                   style="width: 1.5rem">
         </form>
 
         {% if request.user.is_authenticated %}
-            <a href="{% url "accounts:profile" %}">View profile</a>
+            <a href="{% url "accounts:profile" %}">
+                <img src="{% static 'images/profile.png' %}" alt="View profile" style="width: 1.5rem">
+            </a>
         {% endif %}
     </div>
 </div>
