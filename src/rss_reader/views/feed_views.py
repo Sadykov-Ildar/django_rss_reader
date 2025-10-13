@@ -29,7 +29,8 @@ class FeedView(View):
             user_feed.delete()
 
             UserEntry.objects.filter(
-                entry__feed_id=user_feed.feed_id, user=request.user
+                entry__feed_id=user_feed.feed_id,
+                user=request.user,
             ).delete()
 
         content = render_feeds_and_entries(request)

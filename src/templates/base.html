@@ -20,7 +20,7 @@
 
     <title>{% block title %}Django rss reader{% endblock %}</title>
 </head>
-<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' id="body">
 
 {% block content %}
 

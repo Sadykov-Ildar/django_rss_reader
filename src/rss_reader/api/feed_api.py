@@ -22,7 +22,7 @@ def import_from_rss_urls(user, rss_urls: list[str]) -> str:
         except URLValidationError as e:
             error_messages.append(f"{rss_url}: {e.message}")
 
-    error_message = "\n\n".join(error_messages)
+    error_message = "<br>".join(error_messages)
 
     # TODO: экспорт подписок в opml
 

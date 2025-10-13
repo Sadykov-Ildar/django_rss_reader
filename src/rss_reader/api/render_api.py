@@ -42,7 +42,6 @@ class FeedsRenderer:
         self._render_template("rss_reader/oob_entries_header.html")
 
     def include_error_message(self):
-        # TODO: ошибки часто никак не отображаются, может вынести их в модальное окно?
         self._render_template("rss_reader/error_message.html")
 
     def _render_template(self, template_name):
@@ -59,7 +58,6 @@ def render_feeds_and_entries(request, error_message="", add_form=False):
 
     context = {
         "user_feeds": user_feeds,
-        # TODO: ошибки часто никак не отображаются, может вынести их в модальное окно?
         "error_message": error_message,
     }
 
@@ -72,6 +70,8 @@ def render_feeds_and_entries(request, error_message="", add_form=False):
     renderer.include_oob_entries()
     if add_form:
         renderer.include_add_feed_form()
+    if error_message:
+        renderer.include_error_message()
 
     return renderer.get_result()
 
