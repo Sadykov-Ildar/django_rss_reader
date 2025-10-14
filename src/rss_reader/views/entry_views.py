@@ -2,6 +2,7 @@ from datetime import datetime
 
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404
+from django.views.decorators.http import require_POST
 
 from rss_reader.api.entry_api import mark_entry_as_read, mark_user_feed_as_read
 from rss_reader.api.render_api import render_entry_content, render_entries
@@ -48,6 +49,7 @@ def entries_view(request, user_feed_id: int, start: datetime = None):
     return HttpResponse(content)
 
 
+@require_POST
 def search_entries_view(request):
     # TODO: сделать поиск по статьям (по имени? по тексту?)
     search_query = request.POST.get("search")

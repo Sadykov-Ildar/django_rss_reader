@@ -2,6 +2,7 @@ from django.db import transaction
 from django.http import HttpResponseForbidden, HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.views import View
+from django.views.decorators.http import require_POST
 
 from rss_reader import opml_parser
 from rss_reader.api.feed_api import import_from_rss_urls, refresh_feeds
@@ -58,24 +59,24 @@ def add_feed_modal(request):
     return render(request, "rss_reader/add_new_feed_modal.html", context=context)
 
 
+@require_POST
 def import_feeds(request):
-    if request.method == "POST":
-        form = UploadFileForm(request.POST, request.FILES)
+    form = UploadFileForm(request.POST, request.FILES)
 
-        if form.is_valid():
-            file = request.FILES["file"]
+    if form.is_valid():
+        file = request.FILES["file"]
 
-            document = opml_parser.from_string(file.read())
+        document = opml_parser.from_string(file.read())
 
-            rss_urls = []
-            for outline in document:
-                rss_urls.append(outline.xmlUrl)
+        rss_urls = []
+        for outline in document:
+            rss_urls.append(outline.xmlUrl)
 
-            error_message = import_from_rss_urls(request.user, rss_urls)
+        error_message = import_from_rss_urls(request.user, rss_urls)
 
-            content = render_feeds_and_entries(request, error_message)
+        content = render_feeds_and_entries(request, error_message)
 
-            return HttpResponse(content)
+        return HttpResponse(content)
 
     return HttpResponseForbidden()
 

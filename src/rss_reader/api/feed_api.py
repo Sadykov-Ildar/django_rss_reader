@@ -120,4 +120,9 @@ def __parse_feed(rss_url, etag=None, modified=None):
             }
         else:
             raise URLValidationError("Some error occured: " + str(e))
+    except TimeoutError as e:
+        raise URLValidationError(
+            f"Time out while trying to access {rss_url}: : " + str(e)
+        )
+
     return response, new_entries_added

@@ -127,6 +127,19 @@ wheels = [
 ]
 
 [[package]]
+name = "django-htmx"
+version = "1.26.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "asgiref" },
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/e8/ea/3d0fb10e6ebbceab57b5e228c8ae5e4ebed3b6d6767d07468923ca000fa3/django_htmx-1.26.0.tar.gz", hash = "sha256:88ecc2f8a3f13ad5a50e6b16be127f04fba369124cc40a09b21ce33babb04aa6", size = 65345, upload-time = "2025-09-22T09:23:41.582Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/dd/fc/dbbc54af504427f5f248a73cf9a2d40bfd22631bbf042d313563acc4d223/django_htmx-1.26.0-py3-none-any.whl", hash = "sha256:3a80ffaa6df5a07e833752cd8ada7cee0fa711787841ab17a805075b1aecacc7", size = 62122, upload-time = "2025-09-22T09:23:40.18Z" },
+]
+
+[[package]]
 name = "django-rss-reader"
 version = "0.1.0"
 source = { virtual = "." }
@@ -134,6 +147,7 @@ dependencies = [
     { name = "brotli" },
     { name = "dateparser" },
     { name = "django" },
+    { name = "django-htmx" },
     { name = "django-stubs" },
     { name = "docutils" },
     { name = "lxml" },
@@ -154,6 +168,7 @@ requires-dist = [
     { name = "brotli", specifier = ">=1.1.0" },
     { name = "dateparser", specifier = ">=1.2.2" },
     { name = "django", specifier = ">=5.2.6" },
+    { name = "django-htmx", specifier = ">=1.26.0" },
     { name = "django-stubs", specifier = ">=5.2.5" },
     { name = "docutils", specifier = ">=0.22" },
     { name = "lxml", specifier = ">=6.0.1" },
