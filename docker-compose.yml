@@ -1,11 +1,50 @@
 name: rss_reader
 services:
-    app:
-      build:
-        context: .
-      ports:
-        - '127.0.0.1:8000:8000'
-      volumes:
-        - ./data/:/data/
-      extra_hosts:
-        - "host.docker.internal:host-gateway"
+  app:
+    build:
+      context: .
+    ports:
+      - '127.0.0.1:8000:8000'
+    volumes:
+      - ./data/:/data/
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  rabbitmq:
+    image: rabbitmq:4-management
+    container_name: rabbitmq
+    ports:
+      - '127.0.0.1:5672:5672'
+      - '127.0.0.1:15672:15672'
+    expose:
+      - "15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - ./data/:/data/
+    environment:
+      RABBITMQ_DEFAULT_VHOST: "/"
+      RABBITMQ_DEFAULT_USER: "guest"
+      RABBITMQ_DEFAULT_PASS: "guest"
+
+  celery_worker:
+    build:
+      context: .
+    command: python -m celery -A django_rss_reader worker --loglevel=INFO
+    volumes:
+      - ./data/:/data/
+    depends_on:
+      rabbitmq:
+        condition: service_started
+
+  celery_beat:
+    build:
+      context: .
+    command: python -m celery -A django_rss_reader beat
+    volumes:
+      - ./data/:/data/
+    depends_on:
+      rabbitmq:
+        condition: service_started
+
+volumes:
+  rabbitmq_data:

@@ -35,7 +35,7 @@ def refresh_feeds(user) -> str:
     for user_feed in user_feeds:
         try:
             with transaction.atomic():
-                _refresh_user_feed(user_feed.feed)
+                refresh_feed(user_feed.feed)
         except URLValidationError as e:
             error_messages.append(f"{user_feed.feed.rss_url}: {e.message}")
 
@@ -92,7 +92,7 @@ def _validate_rss_url(user, rss_url):
         raise URLValidationError("Feed with this url already exists.")
 
 
-def _refresh_user_feed(feed: Feed):
+def refresh_feed(feed: Feed):
     response, new_entries_added = __parse_feed(
         feed.rss_url, etag=feed.etag, modified=feed.modified
     )

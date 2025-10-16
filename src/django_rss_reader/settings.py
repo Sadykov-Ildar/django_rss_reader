@@ -14,6 +14,8 @@ import os
 import sys
 from pathlib import Path
 
+from celery.schedules import crontab
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -42,6 +44,7 @@ INSTALLED_APPS = [
     "rss_reader.apps.RssReaderConfig",
     "accounts.apps.AccountsConfig",
     "django_htmx",
+    "django_celery_results",
 ]
 
 MIDDLEWARE = [
@@ -114,6 +117,27 @@ DATABASES = {
     }
 }
 
+
+# Celery settings
+CELERY_BROKER_URL = "amqp://rabbitmq"
+CELERY_RESULT_BACKEND = "django-db"
+
+CELERY_TIMEZONE = "Europe/Moscow"
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60
+CELERY_ACCEPT_CONTENT = ["application/json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+
+
+CELERY_BEAT_SCHEDULE = {
+    "rss_reader.refresh_feeds_task": {
+        "task": "rss_reader.tasks.refresh_feeds_task", # put the name here.
+        "schedule": crontab(
+            hour="*/2",
+        ),
+    },
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
