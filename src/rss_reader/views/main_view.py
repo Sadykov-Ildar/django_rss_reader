@@ -10,9 +10,17 @@ def index_view(request):
     # TODO: папка с непрочитанными статьями
 
     # TODO: группировка по папкам?
-    user_feeds = UserFeed.objects.filter(
-        user=user,
-    ).order_by("-pk")
+    user_feeds = (
+        UserFeed.objects.filter(
+            user=user,
+        )
+        .select_related(
+            "feed",
+        )
+        .order_by(
+            "-pk",
+        )
+    )
 
     context = {
         "user_feeds": user_feeds,

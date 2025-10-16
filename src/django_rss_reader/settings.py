@@ -134,7 +134,7 @@ CELERY_RESULT_SERIALIZER = "json"
 
 CELERY_BEAT_SCHEDULE = {
     "rss_reader.refresh_feeds_task": {
-        "task": "rss_reader.tasks.refresh_feeds_task", # put the name here.
+        "task": "rss_reader.tasks.refresh_feeds_task",  # put the name here.
         "schedule": crontab(
             minute=0,
             hour="*/2",
