@@ -85,6 +85,7 @@ if not TESTING:
 
     DEBUG_TOOLBAR_CONFIG = {
         "SHOW_TOOLBAR_CALLBACK": "debug_toolbar.middleware.show_toolbar_with_docker",
+        "ROOT_TAG_EXTRA_ATTRS": "hx-preserve",
     }
 
 ROOT_URLCONF = "django_rss_reader.urls"
@@ -99,6 +100,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "django.template.context_processors.debug",
             ],
         },
     },
@@ -134,6 +136,7 @@ CELERY_BEAT_SCHEDULE = {
     "rss_reader.refresh_feeds_task": {
         "task": "rss_reader.tasks.refresh_feeds_task", # put the name here.
         "schedule": crontab(
+            minute=0,
             hour="*/2",
         ),
     },

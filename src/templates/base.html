@@ -19,6 +19,19 @@
     {% htmx_script %}
     <script src="{% static 'js/main.js' %}"></script>
 
+    <script>
+        {% if debug %}
+            document.addEventListener('htmx:afterSettle', function(event) {
+                if (
+                    typeof window.djdt !== "undefined"
+                    && event.target instanceof HTMLBodyElement
+                ) {
+                    djdt.show_toolbar();
+                }
+            });
+        {% endif %}
+    </script>
+
     <title>{% block title %}Django rss reader{% endblock %}</title>
 </head>
 <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' id="body">
