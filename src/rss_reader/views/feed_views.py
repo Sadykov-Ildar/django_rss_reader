@@ -1,3 +1,5 @@
+import datetime
+
 from django.db import transaction
 from django.http import HttpResponseForbidden, HttpResponse
 from django.shortcuts import get_object_or_404, render
@@ -5,8 +7,12 @@ from django.views import View
 from django.views.decorators.http import require_POST
 
 from rss_reader import opml_parser
-from rss_reader.api.feed_api import import_from_rss_urls
 from rss_reader.api.entry_api import mark_all_feeds_as_read
+from rss_reader.api.feed_api import (
+    import_from_rss_urls,
+    get_user_feeds,
+    get_feeds_in_opml,
+)
 from rss_reader.api.render_api import render_feeds_and_entries, render_info_message
 from rss_reader.forms import UploadFileForm
 from rss_reader.models import UserFeed, UserEntry
@@ -81,6 +87,17 @@ def import_feeds(request):
         return HttpResponse(content)
 
     return HttpResponseForbidden()
+
+
+def export_user_feeds_view(request):
+    feeds = get_user_feeds(request.user)
+    file_content = get_feeds_in_opml(feeds)
+    filename = "rss_feeds-{}.opml".format(datetime.date.today().isoformat())
+
+    response = HttpResponse(file_content, content_type="text/x-opml")
+    response["Content-Disposition"] = "inline; filename=" + filename
+
+    return response
 
 
 def refresh_user_feeds(request):

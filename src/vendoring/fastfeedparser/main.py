@@ -304,6 +304,7 @@ def parse(source: str | bytes, etag=None, modified=None) -> FastFeedParserDict:
 
     feed["etag"] = headers.get("etag") or ""
     feed["modified"] = headers.get("Last-modified") or ""
+    feed["feed_type"] = feed_type
 
     for item in items:
         entry = _parse_feed_entry(item, feed_type, atom_namespace)

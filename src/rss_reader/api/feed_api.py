@@ -1,12 +1,15 @@
 from urllib.error import HTTPError
 from urllib.parse import urlparse
 
-from vendoring import fastfeedparser
 from django.db import IntegrityError, transaction
+from django.db.models import QuerySet
+from django.utils import timezone
+from opml import OpmlDocument
 
 from rss_reader.api.entry_api import _create_entries
 from rss_reader.exceptions import URLValidationError
 from rss_reader.models import Feed, UserFeed
+from vendoring import fastfeedparser
 
 
 def import_from_rss_urls(user, rss_urls: list[str]) -> str:
@@ -23,8 +26,6 @@ def import_from_rss_urls(user, rss_urls: list[str]) -> str:
             error_messages.append(f"{rss_url}: {e.message}")
 
     error_message = "<br>".join(error_messages)
-
-    # TODO: экспорт подписок в opml
 
     return error_message
 
@@ -47,6 +48,7 @@ def _create_feed_and_entries(user, rss_url: str):
                 author=feed_data.get("author", ""),
                 etag=response.get("etag") or "",
                 modified=response.get("modified") or "",
+                feed_type=response.get("feed_type", "rss"),
             )
         except IntegrityError:
             raise URLValidationError("Feed with this url already exists.")
@@ -125,3 +127,23 @@ def get_user_feeds(user):
         )
     )
     return user_feeds
+
+
+def get_feeds_in_opml(user_feeds: QuerySet[UserFeed]) -> str:
+    document = OpmlDocument(
+        title="Django RSS Reader Subscriptions",
+        date_created=timezone.now(),
+    )
+    for user_feed in user_feeds:
+        feed = user_feed.feed
+        document.add_outline(
+            title=feed.title,
+            text=feed.title,
+            description=feed.subtitle,
+            type=feed.feed_type,
+            xml_url=feed.rss_url,
+            html_url=feed.site_url,
+        )
+    file_content = str(document)
+
+    return str(file_content)

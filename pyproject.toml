@@ -14,6 +14,7 @@ dependencies = [
     "django-stubs>=5.2.5",
     "docutils>=0.22",
     "lxml>=6.0.1",
+    "pyopml>=1.0.0",
     "python-dateutil>=2.9.0.post0",
 ]
 [dependency-groups]

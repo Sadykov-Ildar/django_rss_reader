@@ -5,6 +5,8 @@ from django.db import models
 class Feed(models.Model):
     site_url = models.URLField(max_length=255, verbose_name="Site URL")
     rss_url = models.URLField(unique=True, verbose_name="RSS url")
+    # rss, atom, rdf
+    feed_type = models.CharField(default="rss", max_length=10, verbose_name="Feed type")
 
     title = models.CharField()
     subtitle = models.CharField()

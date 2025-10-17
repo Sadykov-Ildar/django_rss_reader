@@ -38,4 +38,7 @@ urlpatterns = [
     ),
     path("entries/<int:user_feed_id>", entry_views.entries_view, name="entries"),
     path("settings", main_view.settings_view, name="settings"),
+    path(
+        "export_user_feeds", feed_views.export_user_feeds_view, name="export_user_feeds"
+    ),
 ]

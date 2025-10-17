@@ -6,6 +6,12 @@
     <h3><a href="/" style="margin-left:80px;">Back to main page</a></h3>
     <div style="margin-left:130px;width: 800px; padding:1px 16px;">
         <h1>Feed settings</h1>
+        <div>
+            <a href="{% url 'rss_reader:export_user_feeds' %}" download>
+                <button>Export feeds into OPML</button>
+            </a>
+        </div>
+        <br>
         <br>
         <div id="feeds_list">
             {% for user_feed in user_feeds %}
