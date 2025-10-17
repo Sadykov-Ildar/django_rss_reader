@@ -29,23 +29,7 @@ def import_from_rss_urls(user, rss_urls: list[str]) -> str:
     return error_message
 
 
-def refresh_feeds(user) -> str:
-    error_messages = []
-    user_feeds = UserFeed.objects.filter(user=user).select_related("feed")
-    for user_feed in user_feeds:
-        try:
-            with transaction.atomic():
-                refresh_feed(user_feed.feed)
-        except URLValidationError as e:
-            error_messages.append(f"{user_feed.feed.rss_url}: {e.message}")
-
-    error_message = "\n\n".join(error_messages)
-
-    return error_message
-
-
 def _create_feed_and_entries(user, rss_url: str):
-    # TODO: было бы неплохо вынести это в фоновую задачу, а то оно долго работает
     try:
         feed = Feed.objects.get(rss_url=rss_url)
     except Feed.DoesNotExist:

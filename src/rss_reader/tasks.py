@@ -1,7 +1,8 @@
 from celery import shared_task
+from django.contrib.auth import get_user_model
 from django.db import transaction
 
-from rss_reader.api.feed_api import refresh_feed
+from rss_reader.api.feed_api import refresh_feed, import_from_rss_urls
 from rss_reader.exceptions import URLValidationError
 from rss_reader.models import Feed
 
@@ -21,3 +22,10 @@ def refresh_feeds_task(self):
     error_message = "\n\n".join(error_messages)
 
     return error_message
+
+
+@shared_task(bind=True)
+def import_from_rss_urls_task(self, user_id, rss_urls: list[str]) -> str:
+    user = get_user_model().objects.get(id=user_id)
+    # TODO: настроить вывод сообщений из фоновых задач в приложении
+    return import_from_rss_urls(user, rss_urls)

@@ -1,0 +1,25 @@
+{% load static %}
+
+<div id="body" hx-swap-oob="beforeend">
+<dialog open class="center" id="info_message_dialog">
+    <div>
+
+        <div style="max-width: 400px">{{ info_message | safe}}</div>
+
+        <form method="dialog">
+            <button class="btn danger">Close</button>
+        </form>
+
+        <script>
+            var dialog = document.getElementById('info_message_dialog');
+
+            // Event listener for the Escape key
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && dialog.open) {
+                    dialog.close();
+                }
+            });
+        </script>
+    </div>
+</dialog>
+</div>

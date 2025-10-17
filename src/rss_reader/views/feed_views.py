@@ -5,11 +5,12 @@ from django.views import View
 from django.views.decorators.http import require_POST
 
 from rss_reader import opml_parser
-from rss_reader.api.feed_api import import_from_rss_urls, refresh_feeds
+from rss_reader.api.feed_api import import_from_rss_urls
 from rss_reader.api.entry_api import mark_all_feeds_as_read
-from rss_reader.api.render_api import render_feeds_and_entries
+from rss_reader.api.render_api import render_feeds_and_entries, render_info_message
 from rss_reader.forms import UploadFileForm
 from rss_reader.models import UserFeed, UserEntry
+from rss_reader.tasks import refresh_feeds_task, import_from_rss_urls_task
 
 
 class FeedView(View):
@@ -72,9 +73,12 @@ def import_feeds(request):
         for outline in document:
             rss_urls.append(outline.xmlUrl)
 
-        error_message = import_from_rss_urls(request.user, rss_urls)
+        import_from_rss_urls_task.delay(request.user, rss_urls)
 
-        content = render_feeds_and_entries(request, error_message)
+        content = render_info_message(
+            request,
+            info_message="Started background task to import feeds from file, refresh page later to see updates",
+        )
 
         return HttpResponse(content)
 
@@ -82,12 +86,12 @@ def import_feeds(request):
 
 
 def refresh_user_feeds(request):
-    user = request.user
+    refresh_feeds_task.delay()
 
-    error_message = refresh_feeds(user)
-
-    content = render_feeds_and_entries(request, error_message)
-
+    content = render_info_message(
+        request,
+        info_message="Started background task to refresh user feeds, refresh page later to see updates",
+    )
     return HttpResponse(content)
 
 

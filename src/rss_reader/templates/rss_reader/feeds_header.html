@@ -2,10 +2,7 @@
 <div class="sidebar_header">
     <span>Your feeds</span>
     <div class="sidebar_buttons">
-        {# TODO: нужна обратная связь, и блокировка кнопки на время запроса #}
         <div hx-get="{% url "rss_reader:refresh_feeds" %}"
-             hx-swap="none"
-             hx-disabled-elt="this"
              class="image_button">
             <img src="{% static 'images/refresh.png' %}" alt="refresh all feeds" style="width: 1rem">
         </div>

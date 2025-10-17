@@ -44,11 +44,24 @@ class FeedsRenderer:
     def include_error_message(self):
         self._render_template("rss_reader/error_message.html")
 
+    def include_info_message(self):
+        self._render_template("rss_reader/info_message.html")
+
     def _render_template(self, template_name):
         self._content += self.separator
         self._content += loader.render_to_string(
             template_name, self.context, self.request
         )
+
+
+def render_info_message(request, info_message):
+    context = {
+        "info_message": info_message,
+    }
+    renderer = FeedsRenderer(request, context)
+    renderer.include_info_message()
+
+    return renderer.get_result()
 
 
 def render_feeds_and_entries(request, error_message="", add_form=False):
