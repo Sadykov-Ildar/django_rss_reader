@@ -2,6 +2,9 @@
 <div class="sidebar_header">
     <span>Your feeds</span>
     <div class="sidebar_buttons">
+        <a href="{% url "rss_reader:settings" %}">
+            <img src="{% static 'images/settings.png' %}" alt="Feed settings" style="width: 1.5rem">
+        </a>
         <div hx-get="{% url "rss_reader:refresh_feeds" %}"
              class="image_button">
             <img src="{% static 'images/refresh.png' %}" alt="refresh all feeds" style="width: 1rem">

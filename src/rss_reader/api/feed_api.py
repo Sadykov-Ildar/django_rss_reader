@@ -110,3 +110,18 @@ def __parse_feed(rss_url, etag=None, modified=None):
         )
 
     return response, new_entries_added
+
+
+def get_user_feeds(user):
+    user_feeds = (
+        UserFeed.objects.filter(
+            user=user,
+        )
+        .select_related(
+            "feed",
+        )
+        .order_by(
+            "-pk",
+        )
+    )
+    return user_feeds

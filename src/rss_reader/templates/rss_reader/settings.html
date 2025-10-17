@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% block content %}
+
+    <h3><a href="/" style="margin-left:80px;">Back to main page</a></h3>
+    <div style="margin-left:130px;width: 800px; padding:1px 16px;">
+        <h1>Feed settings</h1>
+        <br>
+        <div id="feeds_list">
+            {% for user_feed in user_feeds %}
+                <div style="display: flex;"
+                     id="user-feed-{{ user_feed.pk }}"
+                >
+                    <div style="flex: 80%;">
+                        {{ user_feed.feed.title }}
+                    </div>
+                    <div
+                            hx-delete="{% url "rss_reader:feed" user_feed.pk %}"
+                            hx-swap="outerHTML swap:500ms"
+                            hx-target="#user-feed-{{ user_feed.pk }}"
+                            style="width: 50px; cursor: pointer; flex: 20%; color: red"
+                    >
+                        <div>Delete feed</div>
+                        <div class="htmx-indicator">
+                            <img src="{% static 'images/bars.svg' %}" alt="loading" style="width: 1rem">
+                        </div>
+                    </div>
+                </div>
+                <hr>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock content %}

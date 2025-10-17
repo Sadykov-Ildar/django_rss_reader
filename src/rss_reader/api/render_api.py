@@ -3,6 +3,7 @@ from datetime import datetime
 from django.template import loader
 
 from rss_reader.api.entry_api import _get_and_create_user_entries
+from rss_reader.api.feed_api import get_user_feeds
 from rss_reader.helpers.html_cleaner import clean_html
 from rss_reader.models import UserFeed, UserEntry
 
@@ -65,9 +66,7 @@ def render_info_message(request, info_message):
 
 
 def render_feeds_and_entries(request, error_message="", add_form=False):
-    user_feeds = UserFeed.objects.filter(
-        user=request.user,
-    ).order_by("-pk")
+    user_feeds = get_user_feeds(request.user)
 
     context = {
         "user_feeds": user_feeds,

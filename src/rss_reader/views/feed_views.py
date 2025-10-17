@@ -35,9 +35,7 @@ class FeedView(View):
                 user=request.user,
             ).delete()
 
-        content = render_feeds_and_entries(request)
-
-        return HttpResponse(content)
+        return HttpResponse()
 
 
 def prepare_feed_error(request, error_message):

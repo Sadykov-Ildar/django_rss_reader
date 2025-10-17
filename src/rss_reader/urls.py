@@ -3,6 +3,7 @@ from django.urls import path, register_converter
 from . import url_converters
 from .views import entry_views
 from .views import feed_views
+from .views import main_view
 
 app_name = "rss_reader"
 
@@ -36,4 +37,5 @@ urlpatterns = [
         name="entries_pagination",
     ),
     path("entries/<int:user_feed_id>", entry_views.entries_view, name="entries"),
+    path("settings", main_view.settings_view, name="settings"),
 ]
