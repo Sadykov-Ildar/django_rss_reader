@@ -9,8 +9,7 @@
 
         <form enctype="multipart/form-data"
               hx-post="{% url "rss_reader:import_feeds" %}"
-              hx-swap="outerHTML"
-              hx-target="#feeds_list"
+              hx-swap="none"
         >
             {% csrf_token %}
             {{ file_import_form }}

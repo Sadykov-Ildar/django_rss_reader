@@ -9,7 +9,6 @@ app_name = "rss_reader"
 
 register_converter(url_converters.DateTimeConverter, "datetime")
 
-
 urlpatterns = [
     path("feed/<int:user_feed_id>", feed_views.FeedView.as_view(), name="feed"),
     path("feed", feed_views.FeedView.as_view(), name="feed"),
@@ -40,5 +39,10 @@ urlpatterns = [
     path("settings", main_view.settings_view, name="settings"),
     path(
         "export_user_feeds", feed_views.export_user_feeds_view, name="export_user_feeds"
+    ),
+    path(
+        "delete_all_user_feeds",
+        feed_views.delete_all_user_feeds_view,
+        name="delete_all_user_feeds",
     ),
 ]

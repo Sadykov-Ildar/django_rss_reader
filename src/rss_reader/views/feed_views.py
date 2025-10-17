@@ -57,6 +57,19 @@ def prepare_feed_error(request, error_message):
     )
 
 
+def delete_all_user_feeds_view(request):
+    with transaction.atomic():
+        UserFeed.objects.filter(
+            user=request.user,
+        ).delete()
+
+        UserEntry.objects.filter(
+            user=request.user,
+        ).delete()
+
+    return HttpResponse()
+
+
 def add_feed_modal(request):
     context = {
         "file_import_form": UploadFileForm,
@@ -77,7 +90,7 @@ def import_feeds(request):
         for outline in document:
             rss_urls.append(outline.xmlUrl)
 
-        import_from_rss_urls_task.delay(request.user, rss_urls)
+        import_from_rss_urls_task.delay(request.user.id, rss_urls)
 
         content = render_info_message(
             request,
@@ -90,7 +103,7 @@ def import_feeds(request):
 
 
 def export_user_feeds_view(request):
-    feeds = get_user_feeds(request.user)
+    feeds = get_user_feeds(request.user).order_by("id")
     file_content = get_feeds_in_opml(feeds)
     filename = "rss_feeds-{}.opml".format(datetime.date.today().isoformat())
 
