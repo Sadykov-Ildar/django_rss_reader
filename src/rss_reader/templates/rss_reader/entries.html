@@ -2,6 +2,10 @@
     {% include "rss_reader/entry.html" %}
 {% endfor %}
 {% if more_entries %}
-    <div hx-trigger="intersect once" hx-swap="outerHTML" hx-get="{% url "rss_reader:entries_pagination" user_feed_id=user_feed.id start=entries_start %}"></div>
+    <div
+        hx-trigger="intersect once"
+        hx-swap="outerHTML"
+        hx-get="{% url "rss_reader:entries_pagination" user_feed_id=user_feed.id start=entries_start %}{% if search %}?search={{ search }}{% endif %}"
+    ></div>
     <div></div>
 {% endif %}

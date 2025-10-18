@@ -1,0 +1,15 @@
+{% load static %}
+
+{% if active_feed %}
+    <input type="search"
+           name="search"
+            {% if search %} value="{{ search }}" {% endif %}
+           placeholder="Search in feed"
+           hx-get="{% url 'rss_reader:entries' user_feed_id=active_feed.id %}"
+           hx-trigger="input changed delay:500ms, keyup[key=='Enter']"
+           hx-target="#entries_list"
+           hx-indicator=".htmx-indicator">
+    <div class="htmx-indicator">
+        <img src="{% static 'images/bars.svg' %}" alt="loading" style="width: 1rem">
+    </div>
+{% endif %}

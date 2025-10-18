@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from django.db.models import Q
 from django.template import loader
 
 from rss_reader.api.entry_api import _get_and_create_user_entries
@@ -114,8 +115,13 @@ def render_entry_content(request, user_entry: UserEntry, user_feed: UserFeed):
     return renderer.get_result()
 
 
-def render_entries(request, user_feed: UserFeed, start: datetime | None = None):
-    context = get_user_entries_in_context(user_feed, start)
+def render_entries(
+    request,
+    user_feed: UserFeed,
+    start: datetime | None = None,
+    search: str | None = None,
+):
+    context = get_user_entries_in_context(user_feed, start, search)
 
     renderer = FeedsRenderer(request, context)
     renderer.include_oob_feed()
@@ -125,8 +131,14 @@ def render_entries(request, user_feed: UserFeed, start: datetime | None = None):
     return renderer.get_result()
 
 
-def get_user_entries_in_context(user_feed, start: datetime = None):
+def get_user_entries_in_context(user_feed, start: datetime = None, search: str = None):
     user_entries = _get_and_create_user_entries(user_feed)
+    if search:
+        user_entries = user_entries.filter(
+            Q(entry__title__icontains=search)
+            | Q(entry__content__icontains=search)
+            | Q(entry__summary__icontains=search)
+        )
 
     batch_size = 25
     more = False
@@ -147,5 +159,6 @@ def get_user_entries_in_context(user_feed, start: datetime = None):
         "user_entries": user_entries,
         "more_entries": more,
         "entries_start": start,
+        "search": search,
     }
     return context

@@ -2,7 +2,6 @@ from datetime import datetime
 
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404
-from django.views.decorators.http import require_POST
 
 from rss_reader.api.entry_api import mark_entry_as_read, mark_user_feed_as_read
 from rss_reader.api.render_api import render_entry_content, render_entries
@@ -44,15 +43,7 @@ def entry_content_view(request, user_entry_id: int):
 
 def entries_view(request, user_feed_id: int, start: datetime = None):
     user_feed = get_object_or_404(UserFeed, id=user_feed_id)
-    content = render_entries(request, user_feed, start)
+    search = request.GET.get("search")
+    content = render_entries(request, user_feed, start, search)
 
     return HttpResponse(content)
-
-
-@require_POST
-def search_entries_view(request):
-    # TODO: сделать поиск по статьям (по имени? по тексту?)
-    search_query = request.POST.get("search")
-    if search_query:
-        pass
-    return HttpResponse("Search results: " + search_query)

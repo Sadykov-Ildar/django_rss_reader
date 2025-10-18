@@ -1,7 +1,9 @@
 {% load static %}
 
 <div class="sidebar_header">
-    <span>Your entries</span>
+    <div id="search_entries_form">
+        {% include "rss_reader/search_entries_form.html" %}
+    </div>
     <div class="sidebar_buttons">
         {% if active_feed %}
             <div hx-get="{% url "rss_reader:mark_entries_as_read" user_feed_id=active_feed.id %}"
