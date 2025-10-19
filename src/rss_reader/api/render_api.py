@@ -96,6 +96,8 @@ def render_entry_content(request, user_entry: UserEntry, user_feed: UserFeed):
     if entry_content.startswith(entry_summary[:100]):
         need_summary = False
 
+    # TODO: в content могут быть ссылки на картинки, урлы которых относительные,
+    #  а не абсолютные - нужно бы поправить
     user_entry.entry.content = clean_html(user_entry.entry.content)
 
     context = {

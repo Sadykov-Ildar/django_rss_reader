@@ -43,6 +43,10 @@ def entry_content_view(request, user_entry_id: int):
 
 def entries_view(request, user_feed_id: int, start: datetime = None):
     user_feed = get_object_or_404(UserFeed, id=user_feed_id)
+    # TODO: нужен поиск по всем фидам
+    # TODO: а еще нужно добавить игнор записей shorts из ютуба
+    # TODO: и что-то придумать с сабстаком и другими фидами, где страницы нужно подгружать постоянно
+    # TODO: иконки фидам как-нибудь добавить бы
     search = request.GET.get("search")
     content = render_entries(request, user_feed, start, search)
 
