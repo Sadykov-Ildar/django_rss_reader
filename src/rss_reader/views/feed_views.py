@@ -71,9 +71,7 @@ def delete_all_user_feeds_view(request):
 
 
 def add_feed_modal(request):
-    context = {
-        "file_import_form": UploadFileForm,
-    }
+    context = {}
     return render(request, "rss_reader/add_new_feed_modal.html", context=context)
 
 

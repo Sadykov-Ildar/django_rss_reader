@@ -22,6 +22,22 @@
                 </button>
             </div>
         </div>
+
+        <br>
+        <div>
+            <form enctype="multipart/form-data"
+                  hx-post="{% url "rss_reader:import_feeds" %}"
+                  hx-swap="none"
+            >
+                {% csrf_token %}
+                {{ file_import_form }}
+                <input type="submit" value="Import feeds from OPML file">
+
+                <div class="htmx-indicator">
+                    <img src="{% static 'images/bars.svg' %}" alt="loading" style="width: 1rem">
+                </div>
+            </form>
+        </div>
         <br>
         <br>
         <div id="feeds_list">

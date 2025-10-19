@@ -2,6 +2,7 @@ from django.shortcuts import render
 
 from rss_reader.api.feed_api import get_user_feeds
 from rss_reader.api.render_api import get_user_entries_in_context
+from rss_reader.forms import UploadFileForm
 
 
 def index_view(request):
@@ -28,5 +29,6 @@ def settings_view(request):
 
     context = {
         "user_feeds": user_feeds,
+        "file_import_form": UploadFileForm,
     }
     return render(request, "rss_reader/settings.html", context=context)
