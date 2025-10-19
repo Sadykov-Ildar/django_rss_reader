@@ -1,4 +1,4 @@
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
 
 from django.db import IntegrityError, transaction
@@ -107,9 +107,9 @@ def __parse_feed(rss_url, etag=None, modified=None):
         else:
             raise URLValidationError("Some error occured: " + str(e))
     except TimeoutError as e:
-        raise URLValidationError(
-            f"Time out while trying to access {rss_url}: : " + str(e)
-        )
+        raise URLValidationError("Time out: " + str(e))
+    except URLError as e:
+        raise URLValidationError("Error: " + str(e))
 
     return response, new_entries_added
 

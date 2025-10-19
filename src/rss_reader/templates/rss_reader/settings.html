@@ -4,64 +4,82 @@
 {% block content %}
 
     <h3><a href="/" style="margin-left:80px;">Back to main page</a></h3>
-    <div style="margin-left:130px;width: 800px; padding:1px 16px;">
-        <h1>Feed settings</h1>
-        <div style="display: flex;">
-            <div style="flex:80%">
-                <a href="{% url 'rss_reader:export_user_feeds' %}" download>
-                    <button>Export feeds into OPML</button>
-                </a>
-            </div>
-            <div style="flex:20%">
-                <button hx-delete="{% url 'rss_reader:delete_all_user_feeds' %}"
-                        hx-confirm="Are you sure you want to delete all your feeds?"
-                        hx-target="#feeds_list"
-                        hx-swap="innerHTML"
-                >
-                    Delete all feeds
-                </button>
-            </div>
-        </div>
-
-        <br>
-        <div>
-            <form enctype="multipart/form-data"
-                  hx-post="{% url "rss_reader:import_feeds" %}"
-                  hx-swap="none"
-            >
-                {% csrf_token %}
-                {{ file_import_form }}
-                <input type="submit" value="Import feeds from OPML file">
-
-                <div class="htmx-indicator">
-                    <img src="{% static 'images/bars.svg' %}" alt="loading" style="width: 1rem">
+    <div style="display: flex">
+        <div style="margin-left:130px;width: 800px; padding:1px 16px; flex:1">
+            <h1>Feed settings</h1>
+            <div style="display: flex;">
+                <div style="flex:80%">
+                    <a href="{% url 'rss_reader:export_user_feeds' %}" download>
+                        <button>Export feeds into OPML</button>
+                    </a>
                 </div>
-            </form>
-        </div>
-        <br>
-        <br>
-        <div id="feeds_list">
-            {% for user_feed in user_feeds %}
-                <div style="display: flex;"
-                     id="user-feed-{{ user_feed.pk }}"
-                >
-                    <div style="flex: 80%;">
-                        {{ user_feed.feed.title }}
-                    </div>
-                    <div
-                            hx-delete="{% url "rss_reader:feed" user_feed.pk %}"
-                            hx-swap="outerHTML swap:500ms"
-                            hx-target="#user-feed-{{ user_feed.pk }}"
-                            style="width: 50px; cursor: pointer; flex: 20%; color: red"
+                <div style="flex:20%">
+                    <button hx-delete="{% url 'rss_reader:delete_all_user_feeds' %}"
+                            hx-confirm="Are you sure you want to delete all your feeds?"
+                            hx-target="#feeds_list"
+                            hx-swap="innerHTML"
                     >
-                        <div>Delete feed</div>
-                        <div class="htmx-indicator">
-                            <img src="{% static 'images/bars.svg' %}" alt="loading" style="width: 1rem">
-                        </div>
-                    </div>
-                    <hr>
+                        Delete all feeds
+                    </button>
                 </div>
+            </div>
+
+            <br>
+            <div>
+                <form enctype="multipart/form-data"
+                      hx-post="{% url "rss_reader:import_feeds" %}"
+                      hx-swap="none"
+                >
+                    {% csrf_token %}
+                    {{ file_import_form }}
+                    <input type="submit" value="Import feeds from OPML file">
+
+                    <div class="htmx-indicator">
+                        <img src="{% static 'images/bars.svg' %}" alt="loading" style="width: 1rem">
+                    </div>
+                </form>
+            </div>
+            <br>
+            <br>
+            <div id="feeds_list">
+                {% for user_feed in user_feeds %}
+                    <div style="display: flex;"
+                         id="user-feed-{{ user_feed.pk }}"
+                    >
+                        <div style="flex: 80%;">
+                            {{ user_feed.feed.title }}
+                        </div>
+                        <div
+                                hx-delete="{% url "rss_reader:feed" user_feed.pk %}"
+                                hx-swap="outerHTML swap:500ms"
+                                hx-target="#user-feed-{{ user_feed.pk }}"
+                                style="width: 50px; cursor: pointer; flex: 20%; color: red"
+                        >
+                            <div>Delete feed</div>
+                            <div class="htmx-indicator">
+                                <img src="{% static 'images/bars.svg' %}" alt="loading" style="width: 1rem">
+                            </div>
+                        </div>
+                        <hr>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div style="margin-top:80px; flex:1">
+            <h2>Results of background tasks</h2>
+            <br>
+            {% for task in tasks %}
+                <b>{{ task.task_name }}</b>
+                <br>
+                <span>{{ task.result | safe }}</span>
+                <br>
+                <br>
+                <span>Created: {{ task.date_created | date:"Y-m-d H:i:s"}},</span>
+                <span>done: {{ task.date_done | date:"Y-m-d H:i:s" }}</span>
+                <hr>
             {% endfor %}
+
+
         </div>
     </div>
 {% endblock content %}

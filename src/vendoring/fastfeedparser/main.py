@@ -142,7 +142,7 @@ def parse(source: str | bytes, etag=None, modified=None) -> FastFeedParserDict:
             method="GET",
             headers={
                 "Accept-Encoding": "gzip, deflate",
-                "User-Agent": "fastfeedparser (+https://github.com/kagisearch/fastfeedparser)",
+                "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:143.0) Gecko/20100101 Firefox/143.0",
             },
         )
         if etag:

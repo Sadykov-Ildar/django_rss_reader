@@ -152,7 +152,7 @@ def get_user_entries_in_context(user_feed, start: datetime = None, search: str =
             entry__published__lt=start,
         )
 
-    user_entries = user_entries.order_by("-entry__published")[:batch_size]
+    user_entries = user_entries.order_by("read", "-entry__published")[:batch_size]
     if len(user_entries) == batch_size:
         more = True
         start = list(user_entries)[-1].entry.published

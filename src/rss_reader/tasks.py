@@ -7,7 +7,7 @@ from rss_reader.exceptions import URLValidationError
 from rss_reader.models import Feed
 
 
-@shared_task(bind=True)
+@shared_task(bind=True, name="Refreshing feeds")
 def refresh_feeds_task(self):
     error_messages = []
     all_feeds = Feed.objects.all()
@@ -19,13 +19,12 @@ def refresh_feeds_task(self):
         except URLValidationError as e:
             error_messages.append(f"{feed.rss_url}: {e.message}")
 
-    error_message = "\n\n".join(error_messages)
+    error_message = "<br>".join(error_messages)
 
-    return error_message
+    return error_message or "Refreshed successfully"
 
 
-@shared_task(bind=True)
+@shared_task(bind=True, name="Importing feeds")
 def import_from_rss_urls_task(self, user_id, rss_urls: list[str]) -> str:
     user = get_user_model().objects.get(id=user_id)
-    # TODO: настроить вывод сообщений из фоновых задач в приложении
     return import_from_rss_urls(user, rss_urls)
