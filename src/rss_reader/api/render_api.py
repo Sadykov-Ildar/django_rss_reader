@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from django.conf import settings
 from django.db.models import Q
 from django.template import loader
 
@@ -13,11 +14,11 @@ class FeedsRenderer:
     def __init__(self, request, context=None, separator="\n\n"):
         self.request = request
         self.context = context or {}
-        self._content = ""
+        self._content = []
         self.separator = separator
 
     def get_result(self):
-        return self._content
+        return self.separator.join(self._content)
 
     def include_oob_feed(self):
         self._render_template("rss_reader/oob_feed.html")
@@ -50,9 +51,10 @@ class FeedsRenderer:
         self._render_template("rss_reader/info_message.html")
 
     def _render_template(self, template_name):
-        self._content += self.separator
-        self._content += loader.render_to_string(
-            template_name, self.context, self.request
+        if settings.DEBUG:
+            self._content.append(f"<!-- {template_name} -->")
+        self._content.append(
+            loader.render_to_string(template_name, self.context, self.request)
         )
 
 
