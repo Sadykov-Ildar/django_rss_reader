@@ -282,7 +282,6 @@ dependencies = [
     { name = "django" },
     { name = "django-celery-results" },
     { name = "django-htmx" },
-    { name = "django-stubs" },
     { name = "docutils" },
     { name = "lxml" },
     { name = "pyopml" },
@@ -293,6 +292,7 @@ dependencies = [
 dev = [
     { name = "coverage" },
     { name = "django-debug-toolbar" },
+    { name = "django-stubs" },
 ]
 test = [
     { name = "coverage" },
@@ -307,7 +307,6 @@ requires-dist = [
     { name = "django", specifier = ">=5.2.6" },
     { name = "django-celery-results", specifier = ">=2.6.0" },
     { name = "django-htmx", specifier = ">=1.26.0" },
-    { name = "django-stubs", specifier = ">=5.2.5" },
     { name = "docutils", specifier = ">=0.22" },
     { name = "lxml", specifier = ">=6.0.1" },
     { name = "pyopml", specifier = ">=1.0.0" },
@@ -318,6 +317,7 @@ requires-dist = [
 dev = [
     { name = "coverage", specifier = ">=7.10.6" },
     { name = "django-debug-toolbar", specifier = ">=6.0.0" },
+    { name = "django-stubs", specifier = ">=5.2.7" },
 ]
 test = [{ name = "coverage", specifier = ">=7.10.6" }]
 
