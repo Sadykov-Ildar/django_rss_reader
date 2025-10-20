@@ -29,7 +29,7 @@
 
 .feed_title {
     text-wrap: stable;
-    flex: 90%;
+    flex: 80%;
 }
 .feed_unread_count {
     text-align: right;

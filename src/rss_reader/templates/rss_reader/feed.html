@@ -6,6 +6,12 @@
      hx-target="#entries_list"
 
 >
+    {% if user_feed.feed.image_url %}
+        <div style="flex: 10%;">
+            <img style="width: 1.5rem" src="{{ user_feed.feed.image_url }}">
+        </div>
+    {% endif %}
+
     <div class="feed_title">
         {{ user_feed.feed.title }}
     </div>

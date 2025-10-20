@@ -15,6 +15,8 @@ class Feed(models.Model):
     etag = models.CharField()
     modified = models.CharField()
 
+    image_url = models.URLField(null=True, blank=True)
+
     entry_count = models.PositiveIntegerField(default=0)
 
     class Meta:

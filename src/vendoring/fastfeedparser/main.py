@@ -91,6 +91,11 @@ def _clean_feed_content(content: str | bytes) -> str:
     return content
 
 
+regex_atom_link = re.compile(
+    r"<link([^>]*[^/])>\s*(?=\n\s*<(?!/link\s*>))", flags=re.MULTILINE
+)
+
+
 def _fix_malformed_xml(content: str) -> str:
     """Fix common malformed XML issues in feeds.
 
@@ -103,17 +108,11 @@ def _fix_malformed_xml(content: str) -> str:
     # Fix unclosed link tags - common in Atom feeds
     # Pattern: <link ...> followed by whitespace and another tag (not </link>)
     # should be <link .../>
-    import re
 
     # Only fix link tags that are clearly malformed:
     # - End with > instead of />
     # - Are followed by whitespace and another tag (not a closing </link>)
-    content = re.sub(
-        r"<link([^>]*[^/])>\s*(?=\n\s*<(?!/link\s*>))",
-        r"<link\1/>",
-        content,
-        flags=re.MULTILINE,
-    )
+    content = regex_atom_link.sub(r"<link\1/>", content)
 
     return content
 
@@ -200,6 +199,8 @@ def parse(source: str | bytes, etag=None, modified=None) -> FastFeedParserDict:
     feed_type: _FeedType
     atom_namespace: Optional[str] = None
 
+    image_url = None
+
     if (
         root.tag == "rss"
         or root.tag.endswith("}rss")
@@ -234,6 +235,13 @@ def parse(source: str | bytes, etag=None, modified=None) -> FastFeedParserDict:
             # Handle malformed RSS where channel is empty but items are at root level
             # This handles feeds like canolcer.eu that have <channel></channel> but items outside
             channel = root
+
+        image_tag = channel.find("image")
+        if image_tag is not None:
+            url_tag = image_tag.find("url")
+            if url_tag is not None:
+                image_url = url_tag.text
+
         # Find items with or without namespace
         items = channel.findall("item")
         if not items:
@@ -287,6 +295,13 @@ def parse(source: str | bytes, etag=None, modified=None) -> FastFeedParserDict:
         feed_type = "atom"
         channel = root
         items = channel.findall(f".//{{{atom_namespace}}}entry")
+        icon_tag = channel.find(f".//{{{atom_namespace}}}icon")
+        if icon_tag is not None:
+            image_url = icon_tag.text
+        else:
+            logo_tag = channel.find(f".//{{{atom_namespace}}}logo")
+            if logo_tag is not None:
+                image_url = logo_tag.text
     elif root.tag == "{http://www.w3.org/1999/02/22-rdf-syntax-ns#}RDF":
         feed_type = "rdf"
         channel = root
@@ -305,6 +320,7 @@ def parse(source: str | bytes, etag=None, modified=None) -> FastFeedParserDict:
     feed["etag"] = headers.get("etag") or ""
     feed["modified"] = headers.get("Last-modified") or ""
     feed["feed_type"] = feed_type
+    feed["feed"]["image_url"] = image_url
 
     for item in items:
         entry = _parse_feed_entry(item, feed_type, atom_namespace)

@@ -37,9 +37,9 @@ def _create_feed_and_entries(user, rss_url: str):
         response, _ = __parse_feed(rss_url)
 
         feed_data: dict = response["feed"]
+        image_url = feed_data.get("image_url")
 
         try:
-            # TODO: parsing?
             feed = Feed.objects.create(
                 site_url=feed_data["link"],
                 rss_url=rss_url,
@@ -49,9 +49,10 @@ def _create_feed_and_entries(user, rss_url: str):
                 etag=response.get("etag") or "",
                 modified=response.get("modified") or "",
                 feed_type=response.get("feed_type", "rss"),
+                image_url=image_url,
             )
-        except IntegrityError:
-            raise URLValidationError("Feed with this url already exists.")
+        except IntegrityError as e:
+            raise URLValidationError("Feed with this url already exists: " + str(e))
         _create_entries(feed, response)
 
     try:
@@ -73,8 +74,7 @@ def _validate_rss_url(user, rss_url):
     if scheme not in ("http", "https"):
         raise URLValidationError("Url must start with http or https.")
 
-    site_url = scheme + "://" + parsed_url.netloc + "/"
-    if UserFeed.objects.filter(user=user, feed__site_url=site_url).exists():
+    if UserFeed.objects.filter(user=user, feed__rss_url=rss_url).exists():
         raise URLValidationError("Feed with this url already exists.")
 
 
