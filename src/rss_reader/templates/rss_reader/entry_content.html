@@ -10,8 +10,6 @@
                 {% endif %}
                 <a href="{{ entry.feed.site_url }}" target="_blank" rel="noopener noreferrer">{{ entry.feed.title }}</a>
                 <br>
-                RSS link: <a href="{{ entry.feed.rss_url }}" target="_blank" rel="noopener noreferrer">{{ entry.feed.rss_url }}</a>
-                <br>
                 <br>
                 Link to article: <a href="{{ entry.link }}" target="_blank" rel="noopener noreferrer">{{ entry.link }}</a>
                 <br>
@@ -27,6 +25,11 @@
                 {# TODO: что если в контенте будет элемент с аттрибутом htmx? Не будет ли он делать запросы? #}
                 {{ entry.content | safe }}
                 <br>
+            {% elif active_feed %}
+                <a href="{{ active_feed.feed.site_url }}" target="_blank" rel="noopener noreferrer">{{ active_feed.feed.title }}</a>
+                <br>
+                <br>
+                RSS link: <a href="{{ active_feed.feed.rss_url }}" target="_blank" rel="noopener noreferrer">{{ active_feed.feed.rss_url }}</a>
             {% else %}
                 <h2>Add some subscriptions to see content here</h2>
             {% endif %}

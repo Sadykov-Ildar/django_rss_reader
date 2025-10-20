@@ -83,6 +83,7 @@ def render_feeds_and_entries(request, error_message="", add_form=False):
     renderer.include_oob_feeds()
     renderer.include_oob_entries_header()
     renderer.include_oob_entries()
+    renderer.include_oob_entry_content()
     if add_form:
         renderer.include_add_feed_form()
     if error_message:
@@ -131,6 +132,7 @@ def render_entries(
     renderer.include_oob_feed()
     renderer.include_oob_entries_header()
     renderer.include_entries()
+    renderer.include_oob_entry_content()
 
     return renderer.get_result()
 

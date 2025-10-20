@@ -34,6 +34,7 @@
 
     <title>{% block title %}Django rss reader{% endblock %}</title>
 </head>
+{# TODO: использовать hx-target-error, чтобы показывать ошибку если сервер упал #}
 <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' id="body">
 
 {% block content %}
