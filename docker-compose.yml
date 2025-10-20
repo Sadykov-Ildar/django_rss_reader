@@ -4,6 +4,9 @@ services:
     container_name: app
     build:
       context: .
+      dockerfile: Dockerfile
+      cache_from:
+        - type=local,src=${UV_CACHE_DIR}
     ports:
       - '127.0.0.1:8000:8000'
     volumes:
@@ -23,36 +26,35 @@ services:
     image: postgres:18
     container_name: postgres
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ${POSTGRES_VOLUME}:/var/lib/postgresql/
     environment:
-      POSTGRES_DB: rss_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
     ports:
       - '127.0.0.1:5433:5432'
     restart: always
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER}" ]
       interval: 10s
       timeout: 2s
       retries: 5
     networks:
       - db_network
+    secrets:
+     - db_password
 
   rabbitmq:
-    image: rabbitmq:4-management
+    image: rabbitmq:4
     container_name: rabbitmq
     ports:
       - '127.0.0.1:5672:5672'
-      - '127.0.0.1:15672:15672'
-    expose:
-      - "15672"
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     environment:
-      RABBITMQ_DEFAULT_VHOST: "/"
-      RABBITMQ_DEFAULT_USER: "guest"
-      RABBITMQ_DEFAULT_PASS: "guest"
+      RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_DEFAULT_VHOST}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
     networks:
       - rabbitmq_network
 
@@ -60,6 +62,7 @@ services:
     container_name: celery_worker
     build:
       context: .
+      dockerfile: Dockerfile
     command: python -m celery -A django_rss_reader worker --loglevel=INFO
     depends_on:
       postgres:
@@ -76,6 +79,7 @@ services:
     container_name: celery_beat
     build:
       context: .
+      dockerfile: Dockerfile
     command: python -m celery -A django_rss_reader beat
     depends_on:
       rabbitmq:
@@ -85,8 +89,11 @@ services:
 
 volumes:
   rabbitmq_data:
-  postgres_data:
 
 networks:
   db_network:
   rabbitmq_network:
+
+secrets:
+   db_password:
+     file: db_password.txt

@@ -13,3 +13,5 @@ wheels/
 # dev files
 justfile
 data/
+.env
+db_password.txt

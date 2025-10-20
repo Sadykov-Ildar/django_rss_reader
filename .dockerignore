@@ -34,3 +34,5 @@
 LICENSE
 README.md
 justfile
+.env
+db_password.txt

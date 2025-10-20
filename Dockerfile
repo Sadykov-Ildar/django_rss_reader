@@ -63,9 +63,6 @@ STOPSIGNAL SIGINT
 # Copy the pre-built `/app` directory to the runtime container
 COPY --from=build /app /app
 
-COPY . /app/
-
-
 
 #USER ildar
 WORKDIR /app
