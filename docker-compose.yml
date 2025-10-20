@@ -1,6 +1,7 @@
 name: rss_reader
 services:
   app:
+    container_name: app
     build:
       context: .
     ports:
@@ -9,6 +10,34 @@ services:
       - ./data/:/data/
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    links:
+      - postgres:postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - db_network
+      - rabbitmq_network
+
+  postgres:
+    image: postgres:18
+    container_name: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: rss_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - '127.0.0.1:5433:5432'
+    restart: always
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 2s
+      retries: 5
+    networks:
+      - db_network
 
   rabbitmq:
     image: rabbitmq:4-management
@@ -20,31 +49,44 @@ services:
       - "15672"
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
-      - ./data/:/data/
     environment:
       RABBITMQ_DEFAULT_VHOST: "/"
       RABBITMQ_DEFAULT_USER: "guest"
       RABBITMQ_DEFAULT_PASS: "guest"
+    networks:
+      - rabbitmq_network
 
   celery_worker:
+    container_name: celery_worker
     build:
       context: .
     command: python -m celery -A django_rss_reader worker --loglevel=INFO
-    volumes:
-      - ./data/:/data/
     depends_on:
+      postgres:
+        condition: service_healthy
       rabbitmq:
         condition: service_started
+    links:
+      - postgres:postgres
+    networks:
+      - db_network
+      - rabbitmq_network
 
   celery_beat:
+    container_name: celery_beat
     build:
       context: .
     command: python -m celery -A django_rss_reader beat
-    volumes:
-      - ./data/:/data/
     depends_on:
       rabbitmq:
         condition: service_started
+    networks:
+      - rabbitmq_network
 
 volumes:
   rabbitmq_data:
+  postgres_data:
+
+networks:
+  db_network:
+  rabbitmq_network:

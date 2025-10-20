@@ -114,8 +114,12 @@ WSGI_APPLICATION = "django_rss_reader.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR.parent / "data" / "db.sqlite3",
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "rss_db",
+        "USER": "postgres",
+        "PASSWORD": "postgres",
+        "HOST": "postgres",
+        "PORT": "5432",
     }
 }
 
@@ -135,7 +139,7 @@ CELERY_RESULT_EXTENDED = True
 
 CELERY_BEAT_SCHEDULE = {
     "rss_reader.refresh_feeds_task": {
-        "task": "rss_reader.tasks.refresh_feeds_task",  # put the name here.
+        "task": "rss_reader.refresh_feeds_task",
         "schedule": crontab(
             minute=0,
             hour="*/2",

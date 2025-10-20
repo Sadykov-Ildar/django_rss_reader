@@ -7,7 +7,7 @@ from rss_reader.exceptions import URLValidationError
 from rss_reader.models import Feed
 
 
-@shared_task(bind=True, name="Refreshing feeds")
+@shared_task(bind=True, name="rss_reader.refresh_feeds_task")
 def refresh_feeds_task(self):
     error_messages = []
     all_feeds = Feed.objects.all()
@@ -24,7 +24,7 @@ def refresh_feeds_task(self):
     return error_message or "Refreshed successfully"
 
 
-@shared_task(bind=True, name="Importing feeds")
+@shared_task(bind=True, name="rss_reader.import_from_rss_urls_task")
 def import_from_rss_urls_task(self, user_id, rss_urls: list[str]) -> str:
     user = get_user_model().objects.get(id=user_id)
     return import_from_rss_urls(user, rss_urls)
