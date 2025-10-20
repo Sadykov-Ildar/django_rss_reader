@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Add your description here"
 requires-python = ">=3.13"
 dependencies = [
+    "beautifulsoup4>=4.14.2",
     "brotli>=1.1.0",
     "celery>=5.5.3",
     "celery-types==0.23.0",

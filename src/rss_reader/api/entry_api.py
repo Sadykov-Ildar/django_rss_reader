@@ -2,6 +2,7 @@ from django.db.models import QuerySet
 from django.utils import timezone
 
 from rss_reader.helpers.date_helpers import get_datetime
+from rss_reader.helpers.html_cleaner import clean_html, resolve_urls
 from rss_reader.models import UserEntry, Entry, UserFeed
 
 
@@ -37,13 +38,16 @@ def _create_entries(feed, response):
         if content:
             # TODO: what to do if several contents exist?
             content = content[0]["value"]
+
+            content = clean_html(content)
+            content = resolve_urls(content, feed.site_url)
+
         published = get_datetime(entry.get("published"))
         if published is None:
             published = timezone.now()
         entry_bulk_create.append(
             Entry(
                 feed=feed,
-                # TODO: parsing?
                 link=entry.get("link", ""),
                 title=entry.get("title", ""),
                 published=published,
