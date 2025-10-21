@@ -34,6 +34,9 @@ def _get_and_create_user_entries(user_feed: UserFeed) -> QuerySet[UserEntry]:
 def _create_entries(feed, response):
     entry_bulk_create = []
     for entry in reversed(response.get("entries", [])):
+        link = entry.get("link", "")
+        if "youtube.com/shorts/" in link: # YouTube shorts are bad
+            continue
         content = entry.get("content")
         if content:
             # TODO: what to do if several contents exist?
