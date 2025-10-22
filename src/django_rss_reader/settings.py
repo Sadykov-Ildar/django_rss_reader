@@ -124,6 +124,13 @@ DATABASES = {
 }
 
 
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": "redis://redis:6379",
+    }
+}
+
 # Celery settings
 CELERY_BROKER_URL = "amqp://rabbitmq"
 CELERY_RESULT_BACKEND = "django-db"

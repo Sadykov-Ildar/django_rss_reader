@@ -35,7 +35,7 @@ def _create_entries(feed, response):
     entry_bulk_create = []
     for entry in reversed(response.get("entries", [])):
         link = entry.get("link", "")
-        if "youtube.com/shorts/" in link: # YouTube shorts are bad
+        if "youtube.com/shorts/" in link:  # YouTube shorts are bad
             continue
         content = entry.get("content")
         if content:

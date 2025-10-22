@@ -18,9 +18,12 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_started
     networks:
       - db_network
       - rabbitmq_network
+      - redis_network
 
   postgres:
     image: postgres:18
@@ -69,11 +72,14 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_started
+      redis:
+        condition: service_started
     links:
       - postgres:postgres
     networks:
       - db_network
       - rabbitmq_network
+      - redis_network
 
   celery_beat:
     container_name: celery_beat
@@ -87,12 +93,19 @@ services:
     networks:
       - rabbitmq_network
 
+  redis:
+    container_name: redis
+    image: redis:latest
+    networks:
+      - redis_network
+
 volumes:
   rabbitmq_data:
 
 networks:
   db_network:
   rabbitmq_network:
+  redis_network:
 
 secrets:
    db_password:

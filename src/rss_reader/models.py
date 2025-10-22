@@ -15,13 +15,22 @@ class Feed(models.Model):
     etag = models.CharField()
     modified = models.CharField()
 
-    image_url = models.URLField(null=True, blank=True)
+    image_url = models.URLField(max_length=255, null=True, blank=True)
+    searched_image_url = models.BooleanField(default=False)
 
     entry_count = models.PositiveIntegerField(default=0)
 
     class Meta:
         verbose_name_plural = "Feeds"
         db_table = "rss_reader_feeds"
+
+        indexes = [
+            models.Index(
+                fields=["searched_image_url"],
+                condition=models.Q(searched_image_url=False),
+                name="partial_searched_image_url",
+            ),
+        ]
 
     def update_entry_count(self):
         self.entry_count = Entry.objects.filter(
