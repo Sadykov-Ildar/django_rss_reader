@@ -31,6 +31,7 @@ def import_from_rss_urls(user, rss_urls: list[str]) -> str:
 
 
 def _create_feed_and_entries(user, rss_url: str):
+    # TODO: может это сделать асинхронным? (с timeout)
     try:
         feed = Feed.objects.get(rss_url=rss_url)
     except Feed.DoesNotExist:

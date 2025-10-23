@@ -7,6 +7,7 @@ services:
       dockerfile: Dockerfile
       cache_from:
         - type=local,src=${UV_CACHE_DIR}
+    user: "${UID}:${GID}"
     ports:
       - '127.0.0.1:8000:8000'
     volumes:
@@ -67,6 +68,7 @@ services:
       context: .
       dockerfile: Dockerfile
     command: python -m celery -A django_rss_reader worker --loglevel=INFO
+    user: "${UID}:${GID}"
     depends_on:
       postgres:
         condition: service_healthy
@@ -98,9 +100,12 @@ services:
     image: redis:latest
     networks:
       - redis_network
+    volumes:
+      - redis_data:/data
 
 volumes:
   rabbitmq_data:
+  redis_data:
 
 networks:
   db_network:

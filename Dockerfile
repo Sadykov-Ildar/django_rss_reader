@@ -39,32 +39,19 @@ FROM python:${PYTHON_VERSION}-slim
 ENV PATH=/app/bin:$PATH
 
 
-#RUN <<EOT
-#groupadd -r ildar -g 1000
-#useradd -r -u 1000 -d /app -g ildar -N ildar
-#EOT
+RUN <<EOT
+groupadd -r nonroot -g 1000
+useradd -r -u 1000 -d /app -g nonroot -N nonroot
+EOT
 
 
 STOPSIGNAL SIGINT
-
-
-#RUN <<EOT
-#apt-get update -qy
-#apt-get install -qyy \
-#    -o APT::Install-Recommends=false \
-#    -o APT::Install-Suggests=false \
-#    sqlite3 \
-#    pydevd-pycharm
-#
-#apt-get clean
-#rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-#EOT
 
 # Copy the pre-built `/app` directory to the runtime container
 COPY --from=build /app /app
 
 
-#USER ildar
+#USER nonroot
 WORKDIR /app
 
 EXPOSE 8000
