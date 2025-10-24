@@ -43,6 +43,9 @@ class FeedsRenderer:
     def include_oob_entries_header(self):
         self._render_template("rss_reader/oob_entries_header.html")
 
+    def include_oob_entry_content_header(self):
+        self._render_template("rss_reader/oob_entry_content_header.html")
+
     def include_error_message(self):
         self._render_template("rss_reader/error_message.html")
 
@@ -91,6 +94,21 @@ def render_feeds_and_entries(request, error_message="", add_form=False):
     return renderer.get_result()
 
 
+def render_feed_and_entry(request, user_entry: UserEntry, user_feed: UserFeed):
+    context = {
+        "user_entry": user_entry,
+        "user_feed": user_feed,
+        "active_entry": user_entry,
+        "active_feed": user_feed,
+    }
+
+    renderer = FeedsRenderer(request, context)
+    renderer.include_entry()
+    renderer.include_oob_feed()
+
+    return renderer.get_result()
+
+
 def render_entry_content(request, user_entry: UserEntry, user_feed: UserFeed):
     entry_summary = user_entry.entry.summary
     entry_content = user_entry.entry.content
@@ -111,6 +129,7 @@ def render_entry_content(request, user_entry: UserEntry, user_feed: UserFeed):
     renderer.include_oob_feed()
     renderer.include_entry()
     renderer.include_oob_entry_content()
+    renderer.include_oob_entry_content_header()
 
     return renderer.get_result()
 

@@ -31,6 +31,11 @@ urlpatterns = [
         name="entry_content",
     ),
     path(
+        "toggle_entry_read/<int:user_entry_id>",
+        entry_views.toggle_entry_read_view,
+        name="toggle_entry_read",
+    ),
+    path(
         "entries/<int:user_feed_id>/<datetime:start>",
         entry_views.entries_view,
         name="entries_pagination",

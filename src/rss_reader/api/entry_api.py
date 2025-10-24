@@ -66,7 +66,6 @@ def _create_entries(feed, response):
 
 
 def mark_all_feeds_as_read(user):
-    # TODO: добавить возможность отмечать только одну статью прочитанной?
     UserEntry.objects.filter(
         user_id=user,
     ).update(
@@ -94,3 +93,18 @@ def mark_entry_as_read(user_entry: UserEntry, user_feed):
 
     user_feed.update_read_count()
     user_feed.save()
+
+
+def toggle_entry_read(user_entry: UserEntry, user_feed):
+    user_entry.read = not user_entry.read
+    user_entry.save()
+
+    user_feed.update_read_count()
+    user_feed.save()
+
+
+def get_user_entry(user_entry_id: int) -> UserEntry:
+    user_entry = (
+        UserEntry.objects.filter(pk=user_entry_id).select_related("entry").get()
+    )
+    return user_entry

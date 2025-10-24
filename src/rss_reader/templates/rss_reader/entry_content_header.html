@@ -1,17 +1,30 @@
 {% load static %}
 
 {#  TODO: следующая непрочитанная статья #}
-<div class="entry_content_header">
-    <div class="sidebar_buttons">
+<div id="entry_content_header">
+    <div class="entry_content_header">
+        <div class="sidebar_buttons">
 
-        <form action="{% url 'accounts:log_out' %}" method="post">
-            {% csrf_token %}
-            <input type="image" src="{% static 'images/logout.png' %}" alt="mark all entries as read" value="Log out"
-                   style="width: 1.5rem">
-        </form>
+            {% if user_entry %}
+                <div hx-get="{% url "rss_reader:toggle_entry_read" user_entry.pk %}"
+                     hx-swap="outerHTML"
+                     hx-target="#user-entry-{{ user_entry.pk }}"
+                     class="image_button">
+                    <img src="{% static 'images/mark_green.png' %}" alt="toggle entry as read/not read"
+                         style="width: 1rem">
+                </div>
+            {% endif %}
 
-        <a href="{% url "accounts:profile" %}">
-            <img src="{% static 'images/profile.png' %}" alt="View profile" style="width: 1.5rem">
-        </a>
+            <form action="{% url 'accounts:log_out' %}" method="post">
+                {% csrf_token %}
+                <input type="image" src="{% static 'images/logout.png' %}" alt="mark all entries as read"
+                       value="Log out"
+                       style="width: 1.5rem">
+            </form>
+
+            <a href="{% url "accounts:profile" %}">
+                <img src="{% static 'images/profile.png' %}" alt="View profile" style="width: 1.5rem">
+            </a>
+        </div>
     </div>
 </div>
