@@ -9,10 +9,10 @@ from django.views.decorators.http import require_POST
 from rss_reader import opml_parser
 from rss_reader.api.entry_api import mark_all_feeds_as_read
 from rss_reader.api.feed_api import (
-    import_from_rss_urls,
     get_user_feeds,
     get_feeds_in_opml,
 )
+from rss_reader.api.rss_api import import_from_rss_urls
 from rss_reader.api.render_api import render_feeds_and_entries, render_info_message
 from rss_reader.forms import UploadFileForm
 from rss_reader.models import UserFeed, UserEntry
@@ -85,6 +85,7 @@ def import_feeds(request):
     form = UploadFileForm(request.POST, request.FILES)
 
     if form.is_valid():
+        # TODO: ограничить размер файла
         file = request.FILES["file"]
 
         document = opml_parser.from_string(file.read())

@@ -1,7 +1,4 @@
-from urllib.error import HTTPError, URLError
-from urllib.parse import urlparse
-
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError
 from django.db.models import QuerySet
 from django.utils import timezone
 from opml import OpmlDocument
@@ -9,110 +6,32 @@ from opml import OpmlDocument
 from rss_reader.api.entry_api import _create_entries
 from rss_reader.exceptions import URLValidationError
 from rss_reader.models import Feed, UserFeed
-from vendoring import fastfeedparser
 
 
-def import_from_rss_urls(user, rss_urls: list[str]) -> str:
-    error_messages = []
+def create_feed_and_entries(user, rss_url: str, response: dict):
+    feed_data: dict = response["feed"]
+    image_url = feed_data.get("image_url")
 
-    # TODO: проверить на sql-иньекции, вставку путей к файлам, и всячески обезопасить,
-    #  а также ограничить размер файла
-    for rss_url in rss_urls:
-        try:
-            _validate_rss_url(user, rss_url)
-            with transaction.atomic():
-                _create_feed_and_entries(user, rss_url)
-        except URLValidationError as e:
-            error_messages.append(f"{rss_url}: {e.message}")
-
-    error_message = "<br>".join(error_messages)
-
-    return error_message
-
-
-def _create_feed_and_entries(user, rss_url: str):
-    # TODO: может это сделать асинхронным? (с timeout)
     try:
-        feed = Feed.objects.get(rss_url=rss_url)
-    except Feed.DoesNotExist:
-        response, _ = __parse_feed(rss_url)
-
-        feed_data: dict = response["feed"]
-        image_url = feed_data.get("image_url")
-
-        try:
-            feed = Feed.objects.create(
-                site_url=feed_data["link"],
-                rss_url=rss_url,
-                title=feed_data.get("title", ""),
-                subtitle=feed_data.get("subtitle", ""),
-                author=feed_data.get("author", ""),
-                etag=response.get("etag") or "",
-                modified=response.get("modified") or "",
-                feed_type=response.get("feed_type", "rss"),
-                image_url=image_url,
-            )
-        except IntegrityError as e:
-            raise URLValidationError("Feed with this url already exists: " + str(e))
-        _create_entries(feed, response)
+        feed = Feed.objects.create(
+            site_url=feed_data["link"],
+            rss_url=rss_url,
+            title=feed_data.get("title", ""),
+            subtitle=feed_data.get("subtitle", ""),
+            author=feed_data.get("author", ""),
+            etag=response.get("etag") or "",
+            modified=response.get("modified") or "",
+            feed_type=response.get("feed_type", "rss"),
+            image_url=image_url,
+        )
+    except IntegrityError as e:
+        raise URLValidationError("Feed with this url already exists: " + str(e))
+    _create_entries(feed, response)
 
     try:
         UserFeed.objects.create(user=user, feed=feed)
     except IntegrityError:
         raise URLValidationError("Feed with this url already exists.")
-
-
-def _validate_rss_url(user, rss_url):
-    if not rss_url:
-        raise URLValidationError("Empty rss url")
-
-    parsed_url = urlparse(rss_url)
-
-    if not parsed_url.netloc:
-        raise URLValidationError("Invalid URL")
-
-    scheme = parsed_url.scheme
-    if scheme not in ("http", "https"):
-        raise URLValidationError("Url must start with http or https.")
-
-    if UserFeed.objects.filter(user=user, feed__rss_url=rss_url).exists():
-        raise URLValidationError("Feed with this url already exists.")
-
-
-def refresh_feed(feed: Feed):
-    response, new_entries_added = __parse_feed(
-        feed.rss_url, etag=feed.etag, modified=feed.modified
-    )
-
-    feed.etag = response.get("etag", "") or ""
-    feed.modified = response.get("modified", "") or ""
-    feed.save()
-
-    if new_entries_added:
-        UserFeed.objects.filter(feed=feed).update(stale=True)
-
-        _create_entries(feed, response)
-
-
-def __parse_feed(rss_url, etag=None, modified=None):
-    new_entries_added = False
-    try:
-        response = fastfeedparser.parse(rss_url)
-        new_entries_added = True
-    except (ValueError, HTTPError) as e:
-        if e.code == 304:
-            response = {
-                "etag": e.headers.get("Etag") or "",
-                "modified": e.headers.get("Last-modified") or "",
-            }
-        else:
-            raise URLValidationError("Some error occured: " + str(e))
-    except TimeoutError as e:
-        raise URLValidationError("Time out: " + str(e))
-    except URLError as e:
-        raise URLValidationError("Error: " + str(e))
-
-    return response, new_entries_added
 
 
 def get_user_feeds(user):

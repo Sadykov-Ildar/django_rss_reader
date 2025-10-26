@@ -10,8 +10,12 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.core.cache import cache
 
-from rss_reader.api.feed_api import refresh_feed, import_from_rss_urls
-from rss_reader.exceptions import URLValidationError
+from rss_reader.api.rss_api import (
+    import_from_rss_urls,
+    refresh_feed,
+    get_responses_by_rss_urls,
+    RssUrlArgs,
+)
 from rss_reader.helpers.urls import get_base_url
 from rss_reader.models import Feed
 
@@ -23,13 +27,26 @@ CACHE_FAVICON_PREFIX = "favicon:"
 def refresh_feeds_task(self):
     error_messages = []
     all_feeds = Feed.objects.all()
+    feeds_by_urls = {}
+    rss_urls_args = []
     for feed in all_feeds:
-        try:
-            with transaction.atomic():
-                refresh_feed(feed)
+        feeds_by_urls[feed.rss_url] = feed
+        rss_urls_args.append(
+            RssUrlArgs(
+                url=feed.rss_url,
+                etag=feed.etag,
+                modified=feed.modified,
+            )
+        )
 
-        except URLValidationError as e:
-            error_messages.append(f"{feed.rss_url}: {e.message}")
+    responses_by_rss_urls = asyncio.run(get_responses_by_rss_urls(rss_urls_args))
+    for url, response, new_entries_added, error_message in responses_by_rss_urls:
+        if error_message:
+            error_messages.append(f"{url}: {error_message}")
+        else:
+            feed = feeds_by_urls[url]
+            with transaction.atomic():
+                refresh_feed(feed, response, new_entries_added)
 
     error_message = "<br>".join(error_messages)
 
@@ -56,7 +73,6 @@ def create_favicons_task(self):
     urls_to_parse = set()
     favicon_urls_by_site_url = {}
     for url in url_to_feeds.keys():
-        # TODO: этот кэш лучше хранить в БД
         result_url = cache.get(CACHE_FAVICON_PREFIX + url)
         if result_url:
             favicon_urls_by_site_url[url] = result_url
