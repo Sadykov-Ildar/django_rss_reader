@@ -97,7 +97,7 @@ def refresh_feed(feed: Feed):
 def __parse_feed(rss_url, etag=None, modified=None):
     new_entries_added = False
     try:
-        response = fastfeedparser.parse(rss_url, etag=etag, modified=modified)
+        response = fastfeedparser.parse(rss_url)
         new_entries_added = True
     except (ValueError, HTTPError) as e:
         if e.code == 304:
