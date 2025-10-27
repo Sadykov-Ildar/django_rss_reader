@@ -10,7 +10,7 @@ from django.db import IntegrityError, transaction
 from rss_reader.api.entry_api import _create_entries
 from rss_reader.api.feed_api import create_feed_and_entries
 from rss_reader.exceptions import URLValidationError
-from rss_reader.models import Feed, UserFeed
+from rss_reader.models import Feed, UserFeed, RequestHistory
 from vendoring import fastfeedparser
 
 
@@ -79,7 +79,7 @@ def _validate_rss_url(user, rss_url):
 async def get_responses_by_rss_urls(
     rss_urls_args: Iterable[RssUrlArgs],
 ) -> list[tuple[str, dict, bool, str]]:
-    async with ClientSession(timeout=ClientTimeout(10)) as session:
+    async with ClientSession(timeout=ClientTimeout(30)) as session:
         return await asyncio.gather(
             *(
                 _async_parse_feed(
@@ -111,13 +111,18 @@ async def _async_parse_feed(
         async with session.get(rss_urls_arg.url, headers=req_headers) as response:
             response.raise_for_status()
             resp_headers = response.headers
+
+            content = await response.text()
+
+            await save_request(content, resp_headers, rss_urls_arg)
+
             if response.status == 304:
                 response = {
                     "etag": resp_headers.get("Etag") or "",
                     "modified": resp_headers.get("Last-modified") or "",
                 }
             else:
-                response = fastfeedparser.parse(await response.text())
+                response = fastfeedparser.parse(content)
                 response["etag"] = resp_headers.get("etag") or ""
                 response["modified"] = resp_headers.get("Last-modified") or ""
 
@@ -131,6 +136,18 @@ async def _async_parse_feed(
         error_message = "Error: " + str(e)
 
     return rss_urls_arg.url, response, new_entries_added, error_message
+
+
+async def save_request(content: str, resp_headers, rss_urls_arg: RssUrlArgs):
+    header_string = ""
+    for key, value in resp_headers.items():
+        header_string += f"{key}: {value}\n"
+
+    await RequestHistory.objects.acreate(
+        url=rss_urls_arg.url,
+        headers=header_string,
+        content=content,
+    )
 
 
 def refresh_feed(feed: Feed, response, new_entries_added):

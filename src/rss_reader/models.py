@@ -101,3 +101,16 @@ class UserEntry(models.Model):
                 name="user_entry_partial_read",
             ),
         ]
+
+
+class RequestHistory(models.Model):
+    url = models.URLField(db_index=True)
+
+    headers = models.TextField()
+    content = models.TextField()
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name_plural = "Request history"
+        db_table = "rss_reader_request_history"
