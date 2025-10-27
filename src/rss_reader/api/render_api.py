@@ -140,6 +140,7 @@ def render_entries(
     renderer.include_oob_entries_header()
     renderer.include_entries()
     renderer.include_oob_entry_content()
+    renderer.include_oob_entry_content_header()
 
     return renderer.get_result()
 
