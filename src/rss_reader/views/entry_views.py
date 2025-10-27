@@ -18,7 +18,10 @@ from rss_reader.models import UserEntry, UserFeed
 
 
 def mark_entries_as_read_view(request, user_feed_id):
-    user_feed = get_object_or_404(UserFeed, id=user_feed_id)
+    try:
+        user_feed = UserFeed.objects.select_related("feed").get(id=user_feed_id)
+    except UserFeed.DoesNotExist:
+        raise Http404
 
     mark_user_feed_as_read(user_feed)
 

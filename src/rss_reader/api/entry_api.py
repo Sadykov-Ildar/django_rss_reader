@@ -1,4 +1,4 @@
-from django.db.models import QuerySet
+from django.db.models import QuerySet, Subquery, OuterRef
 from django.utils import timezone
 
 from rss_reader.helpers.date_helpers import get_datetime
@@ -74,15 +74,14 @@ def _create_entries(feed, response):
 
 
 def mark_all_feeds_as_read(user):
-    UserEntry.objects.filter(
-        user_id=user,
-    ).update(
-        read=True,
+    UserEntry.objects.filter(user_id=user).update(read=True)
+
+    # set read_count equal to feed.entry_count
+    UserFeed.objects.filter(user_id=user).update(
+        read_count=Subquery(
+            UserFeed.objects.filter(pk=OuterRef("pk")).values("feed__entry_count")[:1]
+        )
     )
-    # TODO: не оптимально - попробовать одним запросом
-    for user_feed in UserFeed.objects.filter(user_id=user):
-        user_feed.update_read_count()
-        user_feed.save()
 
 
 def mark_user_feed_as_read(user_feed: UserFeed):
@@ -91,7 +90,7 @@ def mark_user_feed_as_read(user_feed: UserFeed):
     ).update(
         read=True,
     )
-    user_feed.update_read_count()
+    user_feed.read_count = user_feed.feed.entry_count
     user_feed.save()
 
 
