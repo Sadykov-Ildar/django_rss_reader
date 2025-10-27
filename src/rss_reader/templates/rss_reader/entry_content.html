@@ -16,7 +16,7 @@
                 {% if entry.published %}
                     <em>Published at: {{ entry.published | date:"Y-m-d H:i" }}</em>
                 {% endif %}
-                {% if need_summary %}
+                {% if entry.summary %}
                     <hr>
                     <span>{{ entry.summary | safe }}</span>
                 {% endif %}

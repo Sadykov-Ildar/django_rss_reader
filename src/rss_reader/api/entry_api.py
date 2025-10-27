@@ -38,12 +38,20 @@ def _create_entries(feed, response):
         if "youtube.com/shorts/" in link:  # YouTube shorts are bad
             continue
         content = entry.get("content")
+        summary = entry.get("description", "")
+
         if content:
-            # TODO: what to do if several contents exist?
             content = content[0]["value"]
+            if content.startswith(summary[:100]):
+                # summary is often the same as content - skip it
+                summary = ""
 
             content = clean_html(content)
             content = resolve_urls(content, feed.site_url)
+
+        if summary:
+            summary = clean_html(summary)
+            summary = resolve_urls(summary, feed.site_url)
 
         published = get_datetime(entry.get("published"))
         if published is None:
@@ -56,7 +64,7 @@ def _create_entries(feed, response):
                 published=published,
                 author=entry.get("author", ""),
                 content=content or "",
-                summary=entry.get("description", ""),
+                summary=summary,
             )
         )
     Entry.objects.bulk_create(entry_bulk_create, ignore_conflicts=True)

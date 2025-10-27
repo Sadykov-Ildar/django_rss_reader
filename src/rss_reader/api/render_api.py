@@ -110,16 +110,9 @@ def render_feed_and_entry(request, user_entry: UserEntry, user_feed: UserFeed):
 
 
 def render_entry_content(request, user_entry: UserEntry, user_feed: UserFeed):
-    entry_summary = user_entry.entry.summary
-    entry_content = user_entry.entry.content
-    need_summary = bool(entry_summary)
-    if entry_content.startswith(entry_summary[:100]):
-        need_summary = False
-
     context = {
         "user_entry": user_entry,
         "entry": user_entry.entry,
-        "need_summary": need_summary,
         "active_entry": user_entry,
         "active_feed": user_feed,
         "user_feed": user_feed,
