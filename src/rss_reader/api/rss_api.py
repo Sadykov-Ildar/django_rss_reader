@@ -114,7 +114,7 @@ async def _async_parse_feed(
 
             content = await response.text()
 
-            await save_request(content, resp_headers, rss_urls_arg)
+            await save_request(content, resp_headers, rss_urls_arg.url, response.status)
 
             if response.status == 304:
                 response = {
@@ -138,13 +138,14 @@ async def _async_parse_feed(
     return rss_urls_arg.url, response, new_entries_added, error_message
 
 
-async def save_request(content: str, resp_headers, rss_urls_arg: RssUrlArgs):
+async def save_request(content: str, resp_headers, url: str, status:int):
     header_string = ""
     for key, value in resp_headers.items():
         header_string += f"{key}: {value}\n"
 
     await RequestHistory.objects.acreate(
-        url=rss_urls_arg.url,
+        url=url,
+        status=status,
         headers=header_string,
         content=content,
     )

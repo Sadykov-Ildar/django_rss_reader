@@ -106,6 +106,7 @@ class UserEntry(models.Model):
 class RequestHistory(models.Model):
     url = models.URLField(db_index=True)
 
+    status = models.PositiveIntegerField()
     headers = models.TextField()
     content = models.TextField()
 
