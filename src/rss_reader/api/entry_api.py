@@ -31,9 +31,9 @@ def _get_and_create_user_entries(user_feed: UserFeed) -> QuerySet[UserEntry]:
     return user_entries
 
 
-def _create_entries(feed, response):
+def _create_entries(feed, parsed_data: dict):
     entry_bulk_create = []
-    for entry in reversed(response.get("entries", [])):
+    for entry in reversed(parsed_data.get("entries", [])):
         link = entry.get("link", "")
         if "youtube.com/shorts/" in link:  # YouTube shorts are bad
             continue

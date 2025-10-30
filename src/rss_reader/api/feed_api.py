@@ -8,8 +8,8 @@ from rss_reader.exceptions import URLValidationError
 from rss_reader.models import Feed, UserFeed
 
 
-def create_feed_and_entries(user, rss_url: str, response: dict):
-    feed_data: dict = response["feed"]
+def create_feed_and_entries(user, rss_url: str, parsed_data: dict):
+    feed_data: dict = parsed_data["feed"]
     image_url = feed_data.get("image_url")
 
     try:
@@ -19,15 +19,19 @@ def create_feed_and_entries(user, rss_url: str, response: dict):
             title=feed_data.get("title", ""),
             subtitle=feed_data.get("subtitle", ""),
             author=feed_data.get("author", ""),
-            etag=response.get("etag") or "",
-            modified=response.get("modified") or "",
-            feed_type=response.get("feed_type", "rss"),
+            etag=parsed_data.get("etag") or "",
+            modified=parsed_data.get("modified") or "",
+            feed_type=parsed_data.get("feed_type", "rss"),
             image_url=image_url,
         )
     except IntegrityError as e:
         raise URLValidationError("Feed with this url already exists: " + str(e))
-    _create_entries(feed, response)
+    _create_entries(feed, parsed_data)
 
+    create_user_feed(feed, user)
+
+
+def create_user_feed(feed: Feed, user):
     try:
         UserFeed.objects.create(user=user, feed=feed)
     except IntegrityError:

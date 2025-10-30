@@ -13,7 +13,7 @@ from django.core.cache import cache
 from rss_reader.api.rss_api import (
     import_from_rss_urls,
     refresh_feed,
-    get_responses_by_rss_urls,
+    fetch_and_parse_rss_urls,
     RssUrlArgs,
 )
 from rss_reader.helpers.urls import get_base_url
@@ -25,11 +25,9 @@ CACHE_FAVICON_PREFIX = "favicon:"
 
 @shared_task(bind=True, name="rss_reader.refresh_feeds_task")
 def refresh_feeds_task(self):
-    error_messages = []
-    all_feeds = Feed.objects.all()
     feeds_by_urls = {}
     rss_urls_args = []
-    for feed in all_feeds:
+    for feed in Feed.objects.all():
         feeds_by_urls[feed.rss_url] = feed
         rss_urls_args.append(
             RssUrlArgs(
@@ -39,14 +37,17 @@ def refresh_feeds_task(self):
             )
         )
 
-    responses_by_rss_urls = asyncio.run(get_responses_by_rss_urls(rss_urls_args))
-    for url, response, new_entries_added, error_message in responses_by_rss_urls:
+    error_messages = []
+    parsed_results = asyncio.run(fetch_and_parse_rss_urls(rss_urls_args))
+    for request_result, parsed_data, new_entries_added in parsed_results:
+        error_message = request_result.error_message
+        url = request_result.url
         if error_message:
             error_messages.append(f"{url}: {error_message}")
         else:
             feed = feeds_by_urls[url]
             with transaction.atomic():
-                refresh_feed(feed, response, new_entries_added)
+                refresh_feed(feed, parsed_data, new_entries_added)
 
     error_message = "<br>".join(error_messages)
 
@@ -104,7 +105,7 @@ async def get_favicon_url(session, site_url):
     try:
         async with session.get(site_url) as response:
             response.raise_for_status()
-            soup = BeautifulSoup(await response.text(), "html.parser")
+            soup = BeautifulSoup(await response.text(), "lxml")
 
         # Find all favicon-related link tags
         favicon_tags = soup.find_all(

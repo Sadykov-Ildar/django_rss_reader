@@ -12,7 +12,7 @@ from rss_reader.api.feed_api import (
     get_user_feeds,
     get_feeds_in_opml,
 )
-from rss_reader.api.rss_api import import_from_rss_urls
+from rss_reader.api.rss_api import process_rss_url
 from rss_reader.api.render_api import render_feeds_and_entries, render_info_message
 from rss_reader.forms import UploadFileForm
 from rss_reader.models import UserFeed, UserEntry
@@ -27,9 +27,10 @@ class FeedView(View):
     def post(self, request, *args, **kwargs):
         rss_url = request.POST.get("url")
 
-        error_message = import_from_rss_urls(request.user, [rss_url])
+        error_message = process_rss_url(request, rss_url)
         if error_message:
             return prepare_feed_error(request, error_message)
+
         create_favicons_task.delay()
 
         content = render_feeds_and_entries(request, add_form=True)
