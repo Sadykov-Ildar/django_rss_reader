@@ -16,6 +16,9 @@ class Feed(models.Model):
     modified = models.CharField()
 
     image_url = models.URLField(max_length=255, null=True, blank=True)
+    image = models.FileField(
+        "img", max_length=500, upload_to="favicons/", null=True, blank=True
+    )
     searched_image_url = models.BooleanField(default=False)
 
     entry_count = models.PositiveIntegerField(default=0)

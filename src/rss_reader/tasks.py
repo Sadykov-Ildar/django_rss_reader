@@ -1,5 +1,6 @@
 import asyncio
 from collections import defaultdict
+from pathlib import Path
 from typing import Iterable
 from urllib.parse import urljoin
 
@@ -16,6 +17,11 @@ from rss_reader.api.rss_api import (
     fetch_and_parse_rss_urls,
     RssUrlArgs,
 )
+from rss_reader.helpers.file_paths import (
+    save_image,
+    get_favicon_name_from_url,
+    get_image_file_path,
+)
 from rss_reader.helpers.urls import get_base_url
 from rss_reader.models import Feed
 
@@ -25,6 +31,14 @@ CACHE_FAVICON_PREFIX = "favicon:"
 
 @shared_task(bind=True, name="rss_reader.refresh_feeds_task")
 def refresh_feeds_task(self):
+    # TODO: automatically slow down polling rates for feeds that update rarely
+    #  and if feed stops returning feed data - stop polling
+    # TODO: tell user if feed died
+    # TODO: check Retry-After, max-age=, and other stuff
+    # TODO: rss has different tags for hints as to when is a bad time to poll for updates
+    # TODO: don't start multiple requests to the same server at the same time, give the server a break
+    # TODO: https://rachelbythebay.com/frb/
+
     feeds_by_urls = {}
     rss_urls_args = []
     for feed in Feed.objects.all():
@@ -64,7 +78,7 @@ def import_from_rss_urls_task(self, user_id, rss_urls: list[str]) -> str:
 
 @shared_task(bind=True, name="Creating favicons for feeds")
 def create_favicons_task(self):
-    feeds = Feed.objects.filter(image_url=None, searched_image_url=False)
+    feeds = Feed.objects.filter(searched_image_url=False)
 
     url_to_feeds = defaultdict(list)
     for feed in feeds:
@@ -88,6 +102,11 @@ def create_favicons_task(self):
         for feed in _feeds:
             if image_url:
                 feed.image_url = image_url
+                image_name = get_favicon_name_from_url(image_url)
+                image_path = get_image_file_path(image_name)
+                if Path(image_path).exists():
+                    feed.image.name = str(image_name)
+                    feed.save()
             feed.searched_image_url = True
             feed.save()
 
@@ -120,21 +139,27 @@ async def get_favicon_url(session, site_url):
                 favicon_urls.append(urljoin(site_url, href))
 
         for favicon_url in favicon_urls:
-            async with session.head(
+            async with session.get(
                 favicon_url, allow_redirects=True, timeout=ClientTimeout(5)
             ) as response:
                 if response.status == 200:
                     image_url = favicon_url
+                    image_name = get_favicon_name_from_url(image_url)
+                    image_path = get_image_file_path(image_name)
+                    await save_image(image_path, response)
                     break
 
         # Fallback: Check for default /favicon.ico
         if image_url is None:
             default_favicon = urljoin(get_base_url(site_url), "/favicon.ico")
-            async with session.head(
+            async with session.get(
                 default_favicon, allow_redirects=True, timeout=ClientTimeout(5)
             ) as response:
                 if response.status == 200:
                     image_url = default_favicon
+                    image_name = get_favicon_name_from_url(image_url)
+                    image_path = get_image_file_path(image_name)
+                    await save_image(image_path, response)
 
     except (ClientResponseError, TimeoutError):
         pass

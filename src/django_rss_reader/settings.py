@@ -23,6 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
+# TODO: засунуть в .env файл, или в файл конфигурации
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "django-insecure-fpl#qrsx^0cx25&4kfxeorb&0!xe1@$k)4os#hco0w4k^rb+ul"
 
@@ -101,6 +102,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "django.template.context_processors.debug",
+                "django.template.context_processors.media",
             ],
         },
     },
@@ -191,6 +193,9 @@ USE_TZ = True
 STATIC_URL = "static/"
 
 STATICFILES_DIRS = (BASE_DIR / "static",)
+
+MEDIA_ROOT = BASE_DIR.parent / "data" / "media"
+MEDIA_URL = "media/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

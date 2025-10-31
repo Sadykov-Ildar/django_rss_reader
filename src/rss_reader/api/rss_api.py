@@ -151,7 +151,7 @@ async def async_request_for_rss(
 
     req_headers = {
         "Accept-Encoding": "gzip, deflate",
-        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:143.0) Gecko/20100101 Firefox/143.0",
+        "User-Agent": "Django RSS Reader",
     }
     if rss_urls_arg.etag:
         req_headers["If-None-Match"] = rss_urls_arg.etag
