@@ -1,0 +1,1 @@
+Sanitizer for HTML, taken out of feedparser.

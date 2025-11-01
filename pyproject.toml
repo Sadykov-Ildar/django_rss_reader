@@ -20,6 +20,7 @@ dependencies = [
     "pyopml>=1.0.0",
     "python-dateutil>=2.9.0.post0",
     "redis[hiredis]>=6.4.0",
+    "sgmllib3k>=1.0.0",
 ]
 [dependency-groups]
 dev = [

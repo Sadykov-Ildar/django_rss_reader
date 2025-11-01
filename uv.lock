@@ -411,6 +411,7 @@ dependencies = [
     { name = "pyopml" },
     { name = "python-dateutil" },
     { name = "redis", extra = ["hiredis"] },
+    { name = "sgmllib3k" },
 ]
 
 [package.dev-dependencies]
@@ -441,6 +442,7 @@ requires-dist = [
     { name = "pyopml", specifier = ">=1.0.0" },
     { name = "python-dateutil", specifier = ">=2.9.0.post0" },
     { name = "redis", extras = ["hiredis"], specifier = ">=6.4.0" },
+    { name = "sgmllib3k", specifier = ">=1.0.0" },
 ]
 
 [package.metadata.requires-dev]
@@ -1005,6 +1007,12 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/a7/24/02d4e4f88466f17b145f7ea2b2c11af3a942db6222429c2c146accf16054/regex-2025.9.18-cp314-cp314t-win_amd64.whl", hash = "sha256:8620d247fb8c0683ade51217b459cb4a1081c0405a3072235ba43a40d355c09a", size = 282680, upload-time = "2025-09-19T00:38:04.102Z" },
     { url = "https://files.pythonhosted.org/packages/1f/a3/c64894858aaaa454caa7cc47e2f225b04d3ed08ad649eacf58d45817fad2/regex-2025.9.18-cp314-cp314t-win_arm64.whl", hash = "sha256:b7531a8ef61de2c647cdf68b3229b071e46ec326b3138b2180acb4275f470b01", size = 273034, upload-time = "2025-09-19T00:38:05.807Z" },
 ]
+
+[[package]]
+name = "sgmllib3k"
+version = "1.0.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/9e/bd/3704a8c3e0942d711c1299ebf7b9091930adae6675d7c8f476a7ce48653c/sgmllib3k-1.0.0.tar.gz", hash = "sha256:7868fb1c8bfa764c1ac563d3cf369c381d1325d36124933a726f29fcdaa812e9", size = 5750, upload-time = "2010-08-24T14:33:52.445Z" }
 
 [[package]]
 name = "six"

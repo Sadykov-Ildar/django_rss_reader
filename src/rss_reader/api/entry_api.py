@@ -4,6 +4,7 @@ from django.utils import timezone
 from rss_reader.helpers.date_helpers import get_datetime
 from rss_reader.helpers.html_cleaner import clean_html, resolve_urls
 from rss_reader.models import UserEntry, Entry, UserFeed
+from vendoring.html_sanitizer.sanitizer import sanitize_html
 
 
 def _create_user_entries(user_id: int):
@@ -48,10 +49,12 @@ def _create_entries(feed, parsed_data: dict):
 
             content = clean_html(content)
             content = resolve_urls(content, feed.site_url)
+            content = sanitize_html(content, "utf-8", "text/html")
 
         if summary:
             summary = clean_html(summary)
             summary = resolve_urls(summary, feed.site_url)
+            summary = sanitize_html(summary, "utf-8", "text/html")
 
         published = get_datetime(entry.get("published"))
         if published is None:

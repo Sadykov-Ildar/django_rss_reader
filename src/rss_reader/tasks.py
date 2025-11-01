@@ -78,6 +78,8 @@ def import_from_rss_urls_task(self, user_id, rss_urls: list[str]) -> str:
 
 @shared_task(bind=True, name="Creating favicons for feeds")
 def create_favicons_task(self):
+    # TODO: можно сделать попроще
+    # TODO: можно сперва поискать в файловой системе по урлу, и только потом - скачивать
     feeds = Feed.objects.filter(searched_image_url=False)
 
     url_to_feeds = defaultdict(list)

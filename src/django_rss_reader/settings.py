@@ -24,6 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # TODO: засунуть в .env файл, или в файл конфигурации
+# TODO: сделать docker-compose и dockerfile для прода
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "django-insecure-fpl#qrsx^0cx25&4kfxeorb&0!xe1@$k)4os#hco0w4k^rb+ul"
 
