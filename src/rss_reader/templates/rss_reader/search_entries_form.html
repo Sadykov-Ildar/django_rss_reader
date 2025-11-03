@@ -3,6 +3,7 @@
 {% if active_feed %}
     <input type="search"
            name="search"
+           autocomplete="off"
             {% if search %} value="{{ search }}" {% endif %}
            placeholder="Search in feed"
            hx-get="{% url 'rss_reader:entries' user_feed_id=active_feed.id %}"
