@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django_celery_results.models import TaskResult
 
 from rss_reader.api.feed_api import get_user_feeds
-from rss_reader.api.render_api import get_user_entries_in_context
+from rss_reader.api.render_api import render_main_page
 from rss_reader.forms import UploadFileForm
 
 
@@ -13,14 +13,7 @@ def index_view(request):
 
     # TODO: группировка по папкам?
     user_feeds = get_user_feeds(user)
-
-    context = {
-        "user_feeds": user_feeds,
-    }
-    if user_feeds:
-        user_entries_context = get_user_entries_in_context(user_feeds[0])
-        context.update(user_entries_context)
-    return render(request, "rss_reader/index.html", context=context)
+    return render_main_page(request, user_feeds, user_feeds[0])
 
 
 def settings_view(request):

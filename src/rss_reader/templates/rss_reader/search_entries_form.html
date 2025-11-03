@@ -6,6 +6,7 @@
             {% if search %} value="{{ search }}" {% endif %}
            placeholder="Search in feed"
            hx-get="{% url 'rss_reader:entries' user_feed_id=active_feed.id %}"
+           hx-push-url="true"
            hx-trigger="input changed delay:500ms, keyup[key=='Enter']"
            hx-target="#entries_list"
            hx-indicator=".htmx-indicator">

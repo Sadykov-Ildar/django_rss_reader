@@ -9,10 +9,12 @@ from rss_reader.api.entry_api import (
     toggle_entry_read,
     get_user_entry,
 )
+from rss_reader.api.feed_api import get_user_feeds
 from rss_reader.api.render_api import (
     render_entry_content,
     render_entries,
     render_feed_and_entry,
+    render_main_page,
 )
 from rss_reader.models import UserEntry, UserFeed
 
@@ -46,9 +48,12 @@ def entry_content_view(request, user_entry_id: int):
 
     mark_entry_as_read(user_entry, user_feed)
 
-    content = render_entry_content(request, user_entry, user_feed)
-
-    return HttpResponse(content)
+    if request.htmx:
+        content = render_entry_content(request, user_entry, user_feed)
+        return HttpResponse(content)
+    else:
+        user_feeds = get_user_feeds(request.user)
+        return render_main_page(request, user_feeds, user_feed, user_entry=user_entry)
 
 
 def toggle_entry_read_view(request, user_entry_id: int):
@@ -73,10 +78,15 @@ def toggle_entry_read_view(request, user_entry_id: int):
 
 
 def entries_view(request, user_feed_id: int, start: datetime = None):
-    user_feed = get_object_or_404(UserFeed, id=user_feed_id)
+    user_feed = get_object_or_404(UserFeed, id=user_feed_id, user_id=request.user)
     # TODO: нужен поиск по всем фидам
     # TODO: и что-то придумать с сабстаком и другими фидами, где страницы нужно подгружать постоянно
     search = request.GET.get("search")
-    content = render_entries(request, user_feed, start, search)
-
-    return HttpResponse(content)
+    if request.htmx:
+        content = render_entries(request, user_feed, start, search)
+        return HttpResponse(content)
+    else:
+        user_feeds = get_user_feeds(request.user)
+        return render_main_page(
+            request, user_feeds, user_feed, start=start, search=search
+        )

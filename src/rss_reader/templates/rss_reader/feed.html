@@ -2,6 +2,7 @@
 <div class="feed {% if user_feed == active_feed %}feed_active{% endif %}"
      id="user-feed-{{ user_feed.pk }}"
      hx-get="{% url "rss_reader:entries" user_feed.pk %}"
+     hx-push-url="true"
      hx-swap="innerHTML scroll:.entries:top"
      hx-target="#entries_list"
 

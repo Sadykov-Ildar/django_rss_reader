@@ -2,6 +2,7 @@ from datetime import datetime
 
 from django.conf import settings
 from django.db.models import Q
+from django.shortcuts import render
 from django.template import loader
 
 from rss_reader.api.entry_api import _get_and_create_user_entries
@@ -58,6 +59,34 @@ class FeedsRenderer:
         self._content.append(
             loader.render_to_string(template_name, self.context, self.request)
         )
+
+
+def render_main_page(
+    request,
+    user_feeds: list[UserFeed],
+    user_feed: UserFeed,
+    *,
+    user_entry: UserEntry | None = None,
+    start: datetime | None = None,
+    search: str | None = None,
+):
+    context: dict = {
+        "user_feeds": user_feeds,
+    }
+    if user_entry:
+        context.update(
+            {
+                "active_entry": user_entry,
+                "user_entry": user_entry,
+                "entry": user_entry.entry,
+            }
+        )
+
+    if user_feeds:
+        user_entries_context = get_user_entries_in_context(user_feed, start, search)
+        context.update(user_entries_context)
+
+    return render(request, "rss_reader/index.html", context=context)
 
 
 def render_info_message(request, info_message):
