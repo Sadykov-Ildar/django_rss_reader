@@ -5,6 +5,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="htmx-config" content='{
+        "responseHandling": [
+            {"code":"422", "swap": true, "error": false},
+            {"code":"204", "swap": false},
+            {"code":"[23]..", "swap": true},
+            {"code":"[45]..", "swap": false, "error": true},
+            {"code":"...", "swap": false}]
+    }'>
     <link rel="shortcut icon" type="image/png" href="{% static 'images/favicon.ico' %}"/>
 
     {% block styles %}
@@ -21,7 +29,7 @@
 
     <script>
         {% if debug %}
-            document.addEventListener('htmx:afterSettle', function(event) {
+            document.addEventListener('htmx:afterSettle', function (event) {
                 if (
                     typeof window.djdt !== "undefined"
                     && event.target instanceof HTMLBodyElement
