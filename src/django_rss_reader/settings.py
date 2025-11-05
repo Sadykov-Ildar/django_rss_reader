@@ -68,7 +68,7 @@ LOGIN_URL = "accounts:log_in"
 # debug toolbar
 TESTING = "test" in sys.argv or "PYTEST_VERSION" in os.environ
 
-if not TESTING:
+if not TESTING and DEBUG:
     INSTALLED_APPS = [
         *INSTALLED_APPS,
         "debug_toolbar",

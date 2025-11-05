@@ -2,6 +2,7 @@ ARG PYTHON_VERSION=3.13
 
 FROM python:${PYTHON_VERSION}-slim AS build
 
+ARG UV_BUILD_ARG="--no-dev"
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
@@ -13,22 +14,22 @@ ENV UV_LINK_MODE=copy \
 COPY ./uv.lock uv.lock
 COPY ./pyproject.toml pyproject.toml
 
-RUN --mount=type=cache,target=/root/.cache \
+RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     uv sync \
         --locked \
         --no-install-project \
-        --dev
+        ${UV_BUILD_ARG}
 
 WORKDIR /app
 COPY ./src .
 
-RUN --mount=type=cache,target=/root/.cache \
+RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync \
         --locked \
         --no-editable \
-        --dev
+        ${UV_BUILD_ARG}
 
 
 ##########################################################################

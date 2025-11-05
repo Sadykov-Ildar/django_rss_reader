@@ -10,7 +10,6 @@ class OutlineElement(object):
         self._root = root
 
     def __getattr__(self, attr):
-
         if attr in self._root.attrib:
             return self._root.attrib[attr]
 
@@ -61,10 +60,8 @@ class Opml(object):
 
 
 def from_string(opml_text):
-
     return Opml(lxml.etree.fromstring(opml_text))
 
 
 def parse(opml_url):
-
     return Opml(lxml.etree.parse(opml_url))
