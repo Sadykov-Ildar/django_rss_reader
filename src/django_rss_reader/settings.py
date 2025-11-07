@@ -23,16 +23,26 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-# TODO: засунуть в .env файл, или в файл конфигурации
-# TODO: сделать docker-compose и dockerfile для прода
+
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-fpl#qrsx^0cx25&4kfxeorb&0!xe1@$k)4os#hco0w4k^rb+ul"
+def get_secret(key, default):
+    value = os.getenv(key, default)
+    if os.path.isfile(value):
+        with open(value) as f:
+            return f.read().strip()  # .strip() to remove potential newlines
+    return value
+
+
+SECRET_KEY = get_secret(
+    "SECRET_KEY", "django-insecure-fpl#qrsx^0cx25&4kfxeorb&0!xe1@$k)4os#hco0w4k^rb+ul"
+)
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get("DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = ["127.0.0.1"]
-
+CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:8080"]
 
 # Application definition
 
@@ -68,7 +78,7 @@ LOGIN_URL = "accounts:log_in"
 # debug toolbar
 TESTING = "test" in sys.argv or "PYTEST_VERSION" in os.environ
 
-if not TESTING and DEBUG:
+if not TESTING:
     INSTALLED_APPS = [
         *INSTALLED_APPS,
         "debug_toolbar",
@@ -194,6 +204,7 @@ USE_TZ = True
 STATIC_URL = "static/"
 
 STATICFILES_DIRS = (BASE_DIR / "static",)
+STATIC_ROOT = BASE_DIR.parent / "data" / "staticfiles"
 
 MEDIA_ROOT = BASE_DIR.parent / "data" / "media"
 MEDIA_URL = "media/"
