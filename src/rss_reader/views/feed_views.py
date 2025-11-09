@@ -86,7 +86,6 @@ def import_feeds(request):
     form = UploadFileForm(request.POST, request.FILES)
 
     if form.is_valid():
-        # TODO: ограничить размер файла
         file = request.FILES["file"]
 
         document = opml_parser.from_string(file.read())
