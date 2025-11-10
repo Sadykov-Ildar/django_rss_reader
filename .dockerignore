@@ -35,6 +35,5 @@ LICENSE
 README.md
 justfile
 .env
-.env.docker.app
 db_password.txt
 django_secret_key.txt

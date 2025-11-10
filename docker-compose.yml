@@ -10,7 +10,7 @@ services:
       args:
         UV_BUILD_ARG: ${UV_BUILD_ARG}
     env_file:
-        - .env.docker.app
+        - .env
     secrets:
       - django_secret_key
     user: "${UID}:${GID}"

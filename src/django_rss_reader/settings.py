@@ -128,11 +128,12 @@ WSGI_APPLICATION = "django_rss_reader.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "rss_db",
-        "USER": "postgres",
-        "PASSWORD": "postgres",
+        "NAME": os.environ.get("POSTGRES_DB", "rss_db"),
+        "USER": os.environ.get("POSTGRES_USER", "postgres"),
+        "PASSWORD": get_secret("POSTGRES_PASSWORD", "postgres"),
         "HOST": "postgres",
         "PORT": "5432",
+        "CONN_MAX_AGE": 3600,
     }
 }
 
