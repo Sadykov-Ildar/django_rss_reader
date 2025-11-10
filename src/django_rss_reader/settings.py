@@ -145,6 +145,8 @@ CACHES = {
     }
 }
 
+SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
+
 # Celery settings
 CELERY_BROKER_URL = "amqp://rabbitmq"
 CELERY_RESULT_BACKEND = "django-db"
