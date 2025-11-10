@@ -1,16 +1,19 @@
 from __future__ import annotations
 import asyncio
 from dataclasses import dataclass
-from typing import Iterable, TYPE_CHECKING, Optional
+from typing import Iterable, Optional
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse, urljoin
 
 from bs4 import BeautifulSoup
 
-if TYPE_CHECKING:
-    from aiohttp import ClientResponse, ClientConnectorError
-
-from aiohttp import ClientSession, ClientTimeout, ClientResponseError
+from aiohttp import (
+    ClientSession,
+    ClientTimeout,
+    ClientResponseError,
+    ClientConnectorError,
+    ClientResponse,
+)
 from django.db import transaction
 
 from rss_reader.api.entry_api import _create_entries
