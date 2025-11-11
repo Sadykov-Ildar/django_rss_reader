@@ -34,7 +34,8 @@ def get_secret(key, default):
 
 
 SECRET_KEY = get_secret(
-    "SECRET_KEY", "django-insecure-fpl#qrsx^0cx25&4kfxeorb&0!xe1@$k)4os#hco0w4k^rb+ul"
+    "SECRET_KEY_FILE",
+    "django-insecure-fpl#qrsx^0cx25&4kfxeorb&0!xe1@$k)4os#hco0w4k^rb+ul",
 )
 
 
@@ -130,7 +131,7 @@ DATABASES = {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": os.environ.get("POSTGRES_DB", "rss_db"),
         "USER": os.environ.get("POSTGRES_USER", "postgres"),
-        "PASSWORD": get_secret("POSTGRES_PASSWORD", "postgres"),
+        "PASSWORD": get_secret("POSTGRES_PASSWORD_FILE", "postgres"),
         "HOST": "postgres",
         "PORT": "5432",
         "CONN_MAX_AGE": 3600,

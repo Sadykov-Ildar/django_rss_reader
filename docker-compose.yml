@@ -1,49 +1,31 @@
 name: rss_reader
 services:
   app:
+    extends:
+      file: common.yml
+      service: with_db_config
     container_name: app
-    build:
-      context: .
-      dockerfile: Dockerfile
-      cache_from:
-        - type=local,src=${UV_CACHE_DIR}
-      args:
-        UV_BUILD_ARG: ${UV_BUILD_ARG}
-    env_file:
-        - .env
-    secrets:
-      - django_secret_key
-    user: "${UID}:${GID}"
     expose:
       - 8000
-    volumes:
-      - ./data/:/data/
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    links:
-      - postgres:postgres
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_started
     networks:
+      - app_network
       - db_network
       - rabbitmq_network
       - redis_network
-      - app_network
 
   celery_worker:
+    extends:
+      file: common.yml
+      service: with_db_config
     container_name: celery_worker
-    build:
-      context: .
-      dockerfile: Dockerfile
-      cache_from:
-        - type=local,src=${UV_CACHE_DIR}
-      args:
-        UV_BUILD_ARG: ${UV_BUILD_ARG}
     command: python -m celery -A django_rss_reader worker --loglevel=INFO
-    user: "${UID}:${GID}"
     depends_on:
       postgres:
         condition: service_healthy
@@ -51,33 +33,19 @@ services:
         condition: service_started
       redis:
         condition: service_started
-      app:
-        condition: service_started
-    links:
-      - postgres:postgres
     networks:
       - db_network
       - rabbitmq_network
       - redis_network
 
   celery_beat:
+    extends:
+      file: common.yml
+      service: app_build_config
     container_name: celery_beat
-    build:
-      context: .
-      dockerfile: Dockerfile
-      cache_from:
-        - type=local,src=${UV_CACHE_DIR}
-      args:
-        UV_BUILD_ARG: ${UV_BUILD_ARG}
     command: python -m celery -A django_rss_reader beat
     depends_on:
-      app:
-        condition: service_started
-      postgres:
-        condition: service_healthy
       rabbitmq:
-        condition: service_started
-      redis:
         condition: service_started
     networks:
       - rabbitmq_network
@@ -89,7 +57,7 @@ services:
       - "127.0.0.1:8080:8080"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ./data/:/var/www/html/
+      - ${DATA_VOLUME}:/var/www/html/
     depends_on:
       - app
     networks:

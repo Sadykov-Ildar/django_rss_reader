@@ -1,0 +1,31 @@
+name: common_services
+services:
+  # base service for building image
+  app_build_config:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      cache_from:
+        - type=local,src=${UV_CACHE_DIR}
+      args:
+        UV_BUILD_ARG: ${UV_BUILD_ARG}
+
+  # base service for image of app with database configuration
+  with_db_config:
+    extends:
+      service: app_build_config
+    user: "${UID}:${GID}"
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+      SECRET_KEY_FILE: /run/secrets/django_secret_key
+    secrets:
+      - django_secret_key
+      - db_password
+    volumes:
+      - ${DATA_VOLUME}:/data/
+    links:
+      - postgres:postgres
