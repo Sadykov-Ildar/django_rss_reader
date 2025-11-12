@@ -1,7 +1,6 @@
 from django.db.models import QuerySet, Subquery, OuterRef
 from django.utils import timezone
 
-from rss_reader.api.feed_api import get_user_feeds
 from rss_reader.helpers.date_helpers import get_datetime
 from rss_reader.helpers.html_cleaner import clean_html, resolve_urls
 from rss_reader.models import UserEntry, Entry, UserFeed
@@ -82,7 +81,7 @@ def mark_all_feeds_as_read(user):
     get_user_entries(user=user).update(read=True)
 
     # set read_count equal to feed.entry_count
-    get_user_feeds(user).update(
+    UserFeed.objects.filter(user_id=user).update(
         read_count=Subquery(
             UserFeed.objects.filter(pk=OuterRef("pk")).values("feed__entry_count")[:1]
         )
