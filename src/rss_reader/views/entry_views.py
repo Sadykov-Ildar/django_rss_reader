@@ -1,7 +1,6 @@
 from datetime import datetime
 
 from django.http import Http404, HttpResponse
-from django.shortcuts import get_object_or_404
 
 from rss_reader.api.entry_api import (
     mark_entry_as_read,
@@ -9,7 +8,11 @@ from rss_reader.api.entry_api import (
     toggle_entry_read,
     get_user_entry,
 )
-from rss_reader.api.feed_api import get_user_feeds
+from rss_reader.api.feed_api import (
+    get_user_feeds,
+    get_user_feed_by_id,
+    get_user_feed_by_feed_id,
+)
 from rss_reader.api.render_api import (
     render_entry_content,
     render_entries,
@@ -38,13 +41,7 @@ def entry_content_view(request, user_entry_id: int):
     except UserEntry.DoesNotExist:
         raise Http404
 
-    try:
-        user_feed = UserFeed.objects.get(
-            user=request.user,
-            feed=user_entry.entry.feed_id,
-        )
-    except UserFeed.DoesNotExist:
-        raise Http404
+    user_feed = get_user_feed_by_feed_id(user_entry.entry.feed_id, request.user)
 
     mark_entry_as_read(user_entry, user_feed)
 
@@ -62,13 +59,7 @@ def toggle_entry_read_view(request, user_entry_id: int):
     except UserEntry.DoesNotExist:
         raise Http404
 
-    try:
-        user_feed = UserFeed.objects.get(
-            user=request.user,
-            feed=user_entry.entry.feed_id,
-        )
-    except UserFeed.DoesNotExist:
-        raise Http404
+    user_feed = get_user_feed_by_feed_id(user_entry.entry.feed_id, request.user)
 
     toggle_entry_read(user_entry, user_feed)
 
@@ -78,7 +69,7 @@ def toggle_entry_read_view(request, user_entry_id: int):
 
 
 def entries_view(request, user_feed_id: int, start: datetime = None):
-    user_feed = get_object_or_404(UserFeed, id=user_feed_id, user_id=request.user)
+    user_feed = get_user_feed_by_id(user_feed_id, request.user)
     # TODO: нужен поиск по всем фидам
     # TODO: и что-то придумать с сабстаком и другими фидами, где страницы нужно подгружать постоянно
     search = request.GET.get("search")

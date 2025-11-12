@@ -2,7 +2,7 @@ import datetime
 
 from django.db import transaction
 from django.http import HttpResponseForbidden, HttpResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import render
 from django.views import View
 from django.views.decorators.http import require_POST
 
@@ -11,6 +11,7 @@ from rss_reader.api.entry_api import mark_all_feeds_as_read
 from rss_reader.api.feed_api import (
     get_user_feeds,
     get_feeds_in_opml,
+    get_user_feed_by_id,
 )
 from rss_reader.api.rss_api import process_rss_url
 from rss_reader.api.render_api import render_feeds_and_entries, render_info_message
@@ -39,13 +40,13 @@ class FeedView(View):
 
     def delete(self, request, user_feed_id, *args, **kwargs):
         with transaction.atomic():
-            user_feed = get_object_or_404(UserFeed, pk=user_feed_id)
-            user_feed.delete()
+            user_feed = get_user_feed_by_id(user_feed_id, request.user)
 
             UserEntry.objects.filter(
                 entry__feed_id=user_feed.feed_id,
                 user=request.user,
             ).delete()
+            user_feed.delete()
 
         return HttpResponse()
 

@@ -29,6 +29,13 @@
                 <br>
                 <br>
                 RSS link: <a href="{{ active_feed.feed.rss_url }}" target="_blank" rel="noopener noreferrer">{{ active_feed.feed.rss_url }}</a>
+                {% with active_feed.last_request_history as request_history %}
+                    {% if request_history %}
+                        <br>
+                        Status of last successful request: {{ request_history.status }},
+                        made at {{ request_history.created_at | date:"Y-m-d H:i:s" }}
+                    {% endif %}
+                {% endwith %}
             {% else %}
                 <h2>Add some subscriptions to see content here</h2>
             {% endif %}

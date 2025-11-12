@@ -84,6 +84,15 @@ class UserFeed(models.Model):
     def unread_count(self):
         return self.feed.entry_count - self.read_count
 
+    @property
+    def last_request_history(self):
+        try:
+            return RequestHistory.objects.filter(
+                url=self.feed.rss_url,
+            ).latest("id")
+        except RequestHistory.DoesNotExist:
+            return None
+
 
 class UserEntry(models.Model):
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
