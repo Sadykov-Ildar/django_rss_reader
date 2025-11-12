@@ -37,11 +37,14 @@ def mark_entries_as_read_view(request, user_feed_id):
 
 def entry_content_view(request, user_entry_id: int):
     try:
-        user_entry = get_user_entry(user_entry_id)
+        user_entry = get_user_entry(user_entry_id, request.user)
     except UserEntry.DoesNotExist:
         raise Http404
 
-    user_feed = get_user_feed_by_feed_id(user_entry.entry.feed_id, request.user)
+    try:
+        user_feed = get_user_feed_by_feed_id(user_entry.entry.feed_id, request.user)
+    except UserFeed.DoesNotExist:
+        raise Http404
 
     mark_entry_as_read(user_entry, user_feed)
 
@@ -55,11 +58,14 @@ def entry_content_view(request, user_entry_id: int):
 
 def toggle_entry_read_view(request, user_entry_id: int):
     try:
-        user_entry = get_user_entry(user_entry_id)
+        user_entry = get_user_entry(user_entry_id, request.user)
     except UserEntry.DoesNotExist:
         raise Http404
 
-    user_feed = get_user_feed_by_feed_id(user_entry.entry.feed_id, request.user)
+    try:
+        user_feed = get_user_feed_by_feed_id(user_entry.entry.feed_id, request.user)
+    except UserFeed.DoesNotExist:
+        raise Http404
 
     toggle_entry_read(user_entry, user_feed)
 
@@ -69,7 +75,10 @@ def toggle_entry_read_view(request, user_entry_id: int):
 
 
 def entries_view(request, user_feed_id: int, start: datetime = None):
-    user_feed = get_user_feed_by_id(user_feed_id, request.user)
+    try:
+        user_feed = get_user_feed_by_id(user_feed_id, request.user)
+    except UserFeed.DoesNotExist:
+        raise Http404
     # TODO: нужен поиск по всем фидам
     # TODO: и что-то придумать с сабстаком и другими фидами, где страницы нужно подгружать постоянно
     search = request.GET.get("search")

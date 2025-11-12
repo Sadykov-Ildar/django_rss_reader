@@ -114,8 +114,13 @@ def toggle_entry_read(user_entry: UserEntry, user_feed):
     user_feed.save()
 
 
-def get_user_entry(user_entry_id: int) -> UserEntry:
+def get_user_entry(user_entry_id: int, user) -> UserEntry:
     user_entry = (
-        UserEntry.objects.filter(pk=user_entry_id).select_related("entry").get()
+        UserEntry.objects.filter(
+            pk=user_entry_id,
+            user=user,
+        )
+        .select_related("entry")
+        .get()
     )
     return user_entry

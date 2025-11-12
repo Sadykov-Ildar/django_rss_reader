@@ -1,7 +1,7 @@
 import datetime
 
 from django.db import transaction
-from django.http import HttpResponseForbidden, HttpResponse
+from django.http import HttpResponseForbidden, HttpResponse, Http404
 from django.shortcuts import render
 from django.views import View
 from django.views.decorators.http import require_POST
@@ -40,7 +40,10 @@ class FeedView(View):
 
     def delete(self, request, user_feed_id, *args, **kwargs):
         with transaction.atomic():
-            user_feed = get_user_feed_by_id(user_feed_id, request.user)
+            try:
+                user_feed = get_user_feed_by_id(user_feed_id, request.user)
+            except UserFeed.DoesNotExist:
+                raise Http404
 
             UserEntry.objects.filter(
                 entry__feed_id=user_feed.feed_id,

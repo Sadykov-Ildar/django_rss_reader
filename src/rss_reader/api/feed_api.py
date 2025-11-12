@@ -2,7 +2,6 @@ from typing import Optional
 
 from django.db import IntegrityError
 from django.db.models import QuerySet
-from django.http import Http404
 from django.utils import timezone
 from opml import OpmlDocument
 
@@ -42,17 +41,11 @@ def create_user_feed(feed: Feed, user):
 
 
 def get_user_feed_by_id(pk: int, user) -> Optional[UserFeed]:
-    try:
-        return UserFeed.objects.select_related("feed").get(pk=pk, user=user)
-    except UserFeed.DoesNotExist:
-        raise Http404
+    return UserFeed.objects.select_related("feed").get(pk=pk, user=user)
 
 
 def get_user_feed_by_feed_id(feed_id: int, user) -> Optional[UserFeed]:
-    try:
-        return UserFeed.objects.select_related("feed").get(feed=feed_id, user=user)
-    except UserFeed.DoesNotExist:
-        raise Http404
+    return UserFeed.objects.select_related("feed").get(feed=feed_id, user=user)
 
 
 def get_user_feeds(user):
