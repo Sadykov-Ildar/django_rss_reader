@@ -9,7 +9,7 @@ from rss_reader.api.entry_api import (
     get_user_entry,
 )
 from rss_reader.api.feed_api import (
-    get_user_feeds,
+    get_ordered_user_feeds,
     get_user_feed_by_id,
     get_user_feed_by_feed_id,
 )
@@ -24,7 +24,7 @@ from rss_reader.models import UserEntry, UserFeed
 
 def mark_entries_as_read_view(request, user_feed_id):
     try:
-        user_feed = UserFeed.objects.select_related("feed").get(id=user_feed_id)
+        user_feed = get_user_feed_by_id(user_feed_id, request.user)
     except UserFeed.DoesNotExist:
         raise Http404
 
@@ -52,7 +52,7 @@ def entry_content_view(request, user_entry_id: int):
         content = render_entry_content(request, user_entry, user_feed)
         return HttpResponse(content)
     else:
-        user_feeds = get_user_feeds(request.user)
+        user_feeds = get_ordered_user_feeds(request.user)
         return render_main_page(request, user_feeds, user_feed, user_entry=user_entry)
 
 
@@ -86,7 +86,7 @@ def entries_view(request, user_feed_id: int, start: datetime = None):
         content = render_entries(request, user_feed, start, search)
         return HttpResponse(content)
     else:
-        user_feeds = get_user_feeds(request.user)
+        user_feeds = get_ordered_user_feeds(request.user)
         return render_main_page(
             request, user_feeds, user_feed, start=start, search=search
         )

@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Iterable
 
 from django.conf import settings
 from django.db.models import Q
@@ -6,7 +7,7 @@ from django.shortcuts import render
 from django.template import loader
 
 from rss_reader.api.entry_api import _get_and_create_user_entries
-from rss_reader.api.feed_api import get_user_feeds
+from rss_reader.api.feed_api import get_ordered_user_feeds
 from rss_reader.models import UserFeed, UserEntry
 
 
@@ -63,7 +64,7 @@ class FeedsRenderer:
 
 def render_main_page(
     request,
-    user_feeds: list[UserFeed],
+    user_feeds: Iterable[UserFeed],
     user_feed: UserFeed,
     *,
     user_entry: UserEntry | None = None,
@@ -100,7 +101,7 @@ def render_info_message(request, info_message):
 
 
 def render_feeds_and_entries(request, error_message="", add_form=False):
-    user_feeds = get_user_feeds(request.user)
+    user_feeds = get_ordered_user_feeds(request.user)
 
     context = {
         "user_feeds": user_feeds,

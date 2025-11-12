@@ -9,9 +9,10 @@ from django.views.decorators.http import require_POST
 from rss_reader import opml_parser
 from rss_reader.api.entry_api import mark_all_feeds_as_read, get_user_entries
 from rss_reader.api.feed_api import (
-    get_user_feeds,
+    get_ordered_user_feeds,
     get_feeds_in_opml,
     get_user_feed_by_id,
+    get_user_feeds,
 )
 from rss_reader.api.rss_api import process_rss_url
 from rss_reader.api.render_api import render_feeds_and_entries, render_info_message
@@ -68,9 +69,7 @@ def prepare_feed_error(request, error_message):
 
 def delete_all_user_feeds_view(request):
     with transaction.atomic():
-        UserFeed.objects.filter(
-            user=request.user,
-        ).delete()
+        get_user_feeds(request.user).delete()
 
         get_user_entries(user=request.user).delete()
 
@@ -108,7 +107,7 @@ def import_feeds(request):
 
 
 def export_user_feeds_view(request):
-    feeds = get_user_feeds(request.user).order_by("id")
+    feeds = get_ordered_user_feeds(request.user).order_by("id")
     file_content = get_feeds_in_opml(feeds)
     filename = "rss_feeds-{}.opml".format(datetime.date.today().isoformat())
 

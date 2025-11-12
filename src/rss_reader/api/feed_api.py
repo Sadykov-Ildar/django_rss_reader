@@ -1,5 +1,3 @@
-from typing import Optional
-
 from django.db import IntegrityError
 from django.db.models import QuerySet
 from django.utils import timezone
@@ -40,15 +38,15 @@ def create_user_feed(feed: Feed, user):
         raise URLValidationError("Feed with this url already exists.")
 
 
-def get_user_feed_by_id(pk: int, user) -> Optional[UserFeed]:
+def get_user_feed_by_id(pk: int, user) -> UserFeed:
     return UserFeed.objects.select_related("feed").get(pk=pk, user=user)
 
 
-def get_user_feed_by_feed_id(feed_id: int, user) -> Optional[UserFeed]:
+def get_user_feed_by_feed_id(feed_id: int, user) -> UserFeed:
     return UserFeed.objects.select_related("feed").get(feed=feed_id, user=user)
 
 
-def get_user_feeds(user):
+def get_ordered_user_feeds(user) -> QuerySet[UserFeed]:
     user_feeds = (
         UserFeed.objects.filter(
             user=user,
@@ -61,6 +59,12 @@ def get_user_feeds(user):
         )
     )
     return user_feeds
+
+
+def get_user_feeds(user) -> QuerySet[UserFeed]:
+    return UserFeed.objects.filter(
+        user=user,
+    )
 
 
 def get_feeds_in_opml(user_feeds: QuerySet[UserFeed]) -> str:

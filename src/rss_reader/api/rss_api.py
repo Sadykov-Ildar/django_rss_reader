@@ -17,7 +17,11 @@ from aiohttp import (
 from django.db import transaction
 
 from rss_reader.api.entry_api import _create_entries
-from rss_reader.api.feed_api import create_feed_and_entries, create_user_feed
+from rss_reader.api.feed_api import (
+    create_feed_and_entries,
+    create_user_feed,
+    get_user_feeds,
+)
 from rss_reader.exceptions import URLValidationError
 from rss_reader.models import Feed, UserFeed, RequestHistory
 from vendoring import fastfeedparser
@@ -98,7 +102,7 @@ def _validate_rss_url(user, rss_url):
     if scheme not in ("http", "https"):
         raise URLValidationError("Url must start with http or https.")
 
-    if UserFeed.objects.filter(user=user, feed__rss_url=rss_url).exists():
+    if get_user_feeds(user).filter(feed__rss_url=rss_url).exists():
         raise URLValidationError("Feed with this url already exists.")
 
 
