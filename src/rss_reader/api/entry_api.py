@@ -90,6 +90,7 @@ def mark_all_feeds_as_read(user):
 def mark_user_feed_as_read(user_feed: UserFeed):
     UserEntry.objects.filter(
         entry__feed=user_feed.feed_id,
+        user=user_feed.user_id,
     ).update(
         read=True,
     )
