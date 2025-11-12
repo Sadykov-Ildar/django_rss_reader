@@ -8,8 +8,8 @@ from vendoring.html_sanitizer.sanitizer import sanitize_html
 
 
 def _create_user_entries(user_id: int):
-    entries_with_user_entries = UserEntry.objects.filter(
-        user_id=user_id,
+    entries_with_user_entries = get_user_entries(
+        user=user_id,
     ).values_list("entry_id", flat=True)
     entries = Entry.objects.exclude(
         id__in=entries_with_user_entries,
@@ -24,10 +24,11 @@ def _get_and_create_user_entries(user_feed: UserFeed) -> QuerySet[UserEntry]:
         user_feed.stale = False
         user_feed.save()
 
-    user_entries = UserEntry.objects.filter(
-        entry__feed_id=user_feed.feed_id,
-        user_id=user_feed.user_id,
-    ).select_related("entry")
+    user_entries = (
+        get_user_entries(user_feed.user_id)
+        .filter(entry__feed_id=user_feed.feed_id)
+        .select_related("entry")
+    )
 
     return user_entries
 
@@ -77,7 +78,7 @@ def _create_entries(feed, parsed_data: dict):
 
 
 def mark_all_feeds_as_read(user):
-    UserEntry.objects.filter(user_id=user).update(read=True)
+    get_user_entries(user=user).update(read=True)
 
     # set read_count equal to feed.entry_count
     UserFeed.objects.filter(user_id=user).update(
@@ -88,9 +89,8 @@ def mark_all_feeds_as_read(user):
 
 
 def mark_user_feed_as_read(user_feed: UserFeed):
-    UserEntry.objects.filter(
+    get_user_entries(user_feed.user_id).filter(
         entry__feed=user_feed.feed_id,
-        user=user_feed.user_id,
     ).update(
         read=True,
     )
@@ -114,11 +114,19 @@ def toggle_entry_read(user_entry: UserEntry, user_feed):
     user_feed.save()
 
 
+def get_user_entries(user) -> QuerySet[UserEntry]:
+    return UserEntry.objects.filter(
+        user_id=user,
+    )
+
+
 def get_user_entry(user_entry_id: int, user) -> UserEntry:
     user_entry = (
-        UserEntry.objects.filter(
-            pk=user_entry_id,
+        get_user_entries(
             user=user,
+        )
+        .filter(
+            pk=user_entry_id,
         )
         .select_related("entry")
         .get()

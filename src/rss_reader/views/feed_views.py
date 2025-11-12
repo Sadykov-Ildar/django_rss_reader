@@ -7,7 +7,7 @@ from django.views import View
 from django.views.decorators.http import require_POST
 
 from rss_reader import opml_parser
-from rss_reader.api.entry_api import mark_all_feeds_as_read
+from rss_reader.api.entry_api import mark_all_feeds_as_read, get_user_entries
 from rss_reader.api.feed_api import (
     get_user_feeds,
     get_feeds_in_opml,
@@ -16,7 +16,7 @@ from rss_reader.api.feed_api import (
 from rss_reader.api.rss_api import process_rss_url
 from rss_reader.api.render_api import render_feeds_and_entries, render_info_message
 from rss_reader.forms import UploadFileForm
-from rss_reader.models import UserFeed, UserEntry
+from rss_reader.models import UserFeed
 from rss_reader.tasks import (
     refresh_feeds_task,
     import_from_rss_urls_task,
@@ -45,9 +45,8 @@ class FeedView(View):
             except UserFeed.DoesNotExist:
                 raise Http404
 
-            UserEntry.objects.filter(
+            get_user_entries(user=request.user).filter(
                 entry__feed_id=user_feed.feed_id,
-                user=request.user,
             ).delete()
             user_feed.delete()
 
@@ -73,9 +72,7 @@ def delete_all_user_feeds_view(request):
             user=request.user,
         ).delete()
 
-        UserEntry.objects.filter(
-            user=request.user,
-        ).delete()
+        get_user_entries(user=request.user).delete()
 
     return HttpResponse()
 
