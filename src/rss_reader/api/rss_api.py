@@ -6,6 +6,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse, urljoin
 
 from bs4 import BeautifulSoup
+from django.utils import timezone
 
 from aiohttp import (
     ClientSession,
@@ -167,7 +168,6 @@ async def async_request_for_rss(
 
     try:
         async with session.get(rss_urls_arg.url, headers=req_headers) as response:
-            response.raise_for_status()
             resp_headers = response.headers
 
             result.status = response.status
@@ -176,6 +176,7 @@ async def async_request_for_rss(
             result.content = await response.text()
 
             await save_request(result)
+            response.raise_for_status()
 
     except (ValueError, HTTPError) as e:
         error_message = "Some error occurred: " + str(e)
@@ -204,9 +205,18 @@ async def save_request(request_result: RequestResult):
     )
 
 
-def refresh_feed(feed: Feed, parsed_data: dict, new_entries_added):
+def refresh_feed(
+    feed: Feed, parsed_data: dict, new_entries_added, request_result: RequestResult
+):
     feed.etag = parsed_data.get("etag", "") or ""
     feed.modified = parsed_data.get("modified", "") or ""
+
+    feed.last_updated = timezone.now()
+    feed.last_exception = request_result.error_message
+    feed.last_response_body = None
+    if request_result.status not in {200, 304}:
+        feed.last_response_body = request_result.content
+
     feed.save()
 
     if new_entries_added:

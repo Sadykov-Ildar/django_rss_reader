@@ -12,6 +12,12 @@ class Feed(models.Model):
     subtitle = models.CharField()
     author = models.CharField()
 
+    last_updated = models.DateTimeField(null=True, blank=True)
+    # None if no errors
+    last_exception = models.TextField(null=True, blank=True)
+    # None if no errors
+    last_response_body = models.TextField(null=True, blank=True)
+
     etag = models.CharField()
     modified = models.CharField()
 

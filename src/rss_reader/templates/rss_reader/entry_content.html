@@ -5,13 +5,14 @@
                 <h1>{{ entry.title }}</h1>
 
                 {% if entry.author %}
-                <br>
-                Author: {{ entry.author }} at
+                    <br>
+                    Author: {{ entry.author }} at
                 {% endif %}
                 <a href="{{ entry.feed.site_url }}" target="_blank" rel="noopener noreferrer">{{ entry.feed.title }}</a>
                 <br>
                 <br>
-                Link to article: <a href="{{ entry.link }}" target="_blank" rel="noopener noreferrer">{{ entry.link }}</a>
+                Link to article:
+                <a href="{{ entry.link }}" target="_blank" rel="noopener noreferrer">{{ entry.link }}</a>
                 <br>
                 {% if entry.published %}
                     <em>Published at: {{ entry.published | date:"Y-m-d H:i" }}</em>
@@ -25,17 +26,32 @@
                 {{ entry.content | safe }}
                 <br>
             {% elif active_feed %}
-                <a href="{{ active_feed.feed.site_url }}" target="_blank" rel="noopener noreferrer">{{ active_feed.feed.title }}</a>
+                <a href="{{ active_feed.feed.site_url }}" target="_blank"
+                   rel="noopener noreferrer">{{ active_feed.feed.title }}</a>
                 <br>
                 <br>
-                RSS link: <a href="{{ active_feed.feed.rss_url }}" target="_blank" rel="noopener noreferrer">{{ active_feed.feed.rss_url }}</a>
+                RSS link:<a href="{{ active_feed.feed.rss_url }}" target="_blank"
+                            rel="noopener noreferrer">{{ active_feed.feed.rss_url }}</a>
                 {% with active_feed.last_request_history as request_history %}
                     {% if request_history %}
                         <br>
-                        Status of last successful request: {{ request_history.status }},
+                        <br>
+                        Status of last request: {{ request_history.status }},
                         made at {{ request_history.created_at | date:"Y-m-d H:i:s" }}
                     {% endif %}
                 {% endwith %}
+                <br>
+                {% if active_feed.feed.last_updated %}
+                    Last updated: {{ active_feed.feed.last_updated | date:"Y-m-d H:i:s"}}
+                {% endif %}
+                <br>
+                {% if active_feed.feed.last_exception %}
+                    Last attempt to fetch updates resulted in error: {{ active_feed.feed.last_exception }}
+                {% endif %}
+                <br>
+                {% if active_feed.feed.last_response_body %}
+                    Response from server: {{ active_feed.feed.last_response_body }}
+                {% endif %}
             {% else %}
                 <h2>Add some subscriptions to see content here</h2>
             {% endif %}

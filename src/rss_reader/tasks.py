@@ -61,7 +61,7 @@ def refresh_feeds_task(self):
         else:
             feed = feeds_by_urls[url]
             with transaction.atomic():
-                refresh_feed(feed, parsed_data, new_entries_added)
+                refresh_feed(feed, parsed_data, new_entries_added, request_result)
 
     error_message = "<br>".join(error_messages)
 
