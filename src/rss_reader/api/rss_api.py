@@ -99,7 +99,6 @@ def check_and_create_user_feed(rss_url: str, user) -> bool:
 
 
 def _validate_rss_url(user, rss_url):
-    # TODO: проверить на sql-иньекции, вставку путей к файлам, и всячески обезопасить
     if not rss_url:
         raise URLValidationError("Empty rss url")
 
