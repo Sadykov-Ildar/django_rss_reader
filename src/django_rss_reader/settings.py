@@ -166,7 +166,7 @@ CELERY_BEAT_SCHEDULE = {
         "task": "rss_reader.refresh_feeds_task",
         "schedule": crontab(
             minute=0,
-            hour="*/2",
+            hour="*/1",
         ),
     },
 }

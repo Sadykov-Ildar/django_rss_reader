@@ -1,6 +1,7 @@
 from __future__ import annotations
 import asyncio
 from dataclasses import dataclass
+from datetime import timedelta
 from typing import Iterable, Optional
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse, urljoin
@@ -17,6 +18,13 @@ from aiohttp import (
 )
 from django.db import transaction
 
+from rss_reader.api._refresh_intervals import (
+    increase_update_interval,
+    get_update_delay_in_hours,
+    should_slow_down,
+    decrease_update_interval,
+    HOURS_IN_YEAR,
+)
 from rss_reader.api.entry_api import _create_entries
 from rss_reader.api.feed_api import (
     create_feed_and_entries,
@@ -33,6 +41,7 @@ class RssUrlArgs:
     url: str
     etag: str = None
     modified: str = None
+    delay: int = 0  # to avoid hammering the same server
 
 
 @dataclass
@@ -123,18 +132,18 @@ def parse_rss_responses(
     result = []
 
     for request_result in requests_results:
-        fresh_data = False
+        feed_has_entries = False
         parsed_data = {}
         if not request_result.error_message:
             if request_result.status != 304:
                 parsed_data = fastfeedparser.parse(request_result.content)
-                fresh_data = True
+                feed_has_entries = True
 
             resp_headers = request_result.headers
             parsed_data["etag"] = resp_headers.get("Etag") or ""
             parsed_data["modified"] = resp_headers.get("Last-modified") or ""
 
-        result.append((request_result, parsed_data, fresh_data))
+        result.append((request_result, parsed_data, feed_has_entries))
 
     return result
 
@@ -166,6 +175,8 @@ async def async_request_for_rss(
     if rss_urls_arg.modified:
         req_headers["If-Modified-Since"] = rss_urls_arg.modified
 
+    if rss_urls_arg.delay:
+        await asyncio.sleep(rss_urls_arg.delay)
     try:
         async with session.get(rss_urls_arg.url, headers=req_headers) as response:
             resp_headers = response.headers
@@ -206,22 +217,72 @@ async def save_request(request_result: RequestResult):
 
 
 def refresh_feed(
-    feed: Feed, parsed_data: dict, new_entries_added, request_result: RequestResult
+    feed: Feed, parsed_data: dict, feed_has_entries, request_result: RequestResult
 ):
+    # TODO: rss has different tags for hints as to when is a bad time to poll for updates
     feed.etag = parsed_data.get("etag", "") or ""
     feed.modified = parsed_data.get("modified", "") or ""
 
-    feed.last_updated = timezone.now()
+    current_time = timezone.now()
+    status = request_result.status
+
+    feed.last_updated = current_time
     feed.last_exception = request_result.error_message
+
     feed.last_response_body = None
-    if request_result.status not in {200, 304}:
+    if status not in {200, 304}:
+        # response body could have hint that we need to show to user
         feed.last_response_body = request_result.content
 
-    feed.save()
+    old_entry_count = feed.entry_count
 
-    if new_entries_added:
+    if feed_has_entries:
         UserFeed.objects.filter(feed=feed).update(stale=True)
         _create_entries(feed, parsed_data)
+    # we need to check this now, because response could just have stale entries
+    # or entries that we filtered out
+    new_entries = feed.entry_count > old_entry_count
+
+    if status in {301, 308}:
+        # moved permanently
+        new_location = request_result.headers.get("Location")
+        if new_location:
+            feed.last_exception = f"Moved from {feed.rss_url} to {new_location}"
+            feed.rss_url = new_location
+    elif status in {302, 307}:
+        new_location = request_result.headers.get("Location")
+        if new_location:
+            # moved temporarily
+            feed.last_exception = (
+                f"Temporarily moved from {feed.rss_url} to {new_location}"
+            )
+        pass
+    elif status == 410:
+        # gone
+        feed.updates_enabled = False
+        feed.disabled_reason = 'Server responded with [status 410] "gone"'
+
+    update_interval = feed.update_interval
+    update_delay = get_update_delay_in_hours(request_result.headers)
+    if update_delay:
+        update_interval = update_delay
+    else:
+        if should_slow_down(status, new_entries, request_result.error_message):
+            # slow down
+            update_interval = increase_update_interval(update_interval)
+        else:
+            # new updates - speed up a little bit
+            update_interval = decrease_update_interval(update_interval)
+
+    if update_interval > HOURS_IN_YEAR:
+        feed.updates_enabled = False
+        feed.disabled_reason = "Last updated more than a year ago"
+    if update_interval < 2:
+        update_interval = 2
+
+    feed.update_interval = update_interval
+    feed.update_after = current_time + timedelta(hours=update_interval)
+    feed.save()
 
 
 def process_rss_url(request, rss_url):

@@ -18,6 +18,11 @@ class Feed(models.Model):
     # None if no errors
     last_response_body = models.TextField(null=True, blank=True)
 
+    updates_enabled = models.BooleanField(default=True)
+    disabled_reason = models.TextField(null=True, blank=True)
+    update_interval = models.PositiveIntegerField(default=24)
+    update_after = models.DateTimeField(null=True, blank=True)
+
     etag = models.CharField()
     modified = models.CharField()
 

@@ -45,6 +45,15 @@
                     Last updated: {{ active_feed.feed.last_updated | date:"Y-m-d H:i:s"}}
                 {% endif %}
                 <br>
+                {% if not active_feed.feed.updates_enabled %}
+                    Feed is disabled. Reason: {{ active_feed.feed.disabled_reason }}
+                {% else %}
+                    {% if active_feed.feed.update_after %}
+                        Feed will be updated at: {{ active_feed.feed.update_after | date:"Y-m-d H:00"}}
+                    {% endif %}
+                {% endif %}
+
+                <br>
                 {% if active_feed.feed.last_exception %}
                     Last attempt to fetch updates resulted in error: {{ active_feed.feed.last_exception }}
                 {% endif %}

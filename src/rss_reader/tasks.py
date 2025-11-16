@@ -1,5 +1,5 @@
 import asyncio
-from collections import defaultdict
+from collections import defaultdict, Counter
 from pathlib import Path
 from typing import Iterable
 from urllib.parse import urljoin
@@ -10,6 +10,8 @@ from celery import shared_task
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.core.cache import cache
+from django.db.models import Q
+from django.utils import timezone
 
 from rss_reader.api.rss_api import (
     import_from_rss_urls,
@@ -31,37 +33,36 @@ CACHE_FAVICON_PREFIX = "favicon:"
 
 @shared_task(bind=True, name="rss_reader.refresh_feeds_task")
 def refresh_feeds_task(self):
-    # TODO: automatically slow down polling rates for feeds that update rarely
-    #  and if feed stops returning feed data - stop polling
-    # TODO: tell user if feed died
-    # TODO: check Retry-After, max-age=, and other stuff
-    # TODO: rss has different tags for hints as to when is a bad time to poll for updates
-    # TODO: don't start multiple requests to the same server at the same time, give the server a break
-    # TODO: https://rachelbythebay.com/frb/
-
     feeds_by_urls = {}
     rss_urls_args = []
-    for feed in Feed.objects.all():
+    feeds = Feed.objects.filter(
+        updates_enabled=True,
+    ).filter(Q(update_after__isnull=True) | Q(update_after__lt=timezone.now()))
+    site_urls_counter = Counter()
+    for feed in feeds:
+        site_url = get_base_url(feed.rss_url)
+
         feeds_by_urls[feed.rss_url] = feed
         rss_urls_args.append(
             RssUrlArgs(
                 url=feed.rss_url,
                 etag=feed.etag,
                 modified=feed.modified,
+                delay=site_urls_counter[site_url],
             )
         )
+        site_urls_counter[site_url] += 1
 
     error_messages = []
     parsed_results = asyncio.run(fetch_and_parse_rss_urls(rss_urls_args))
-    for request_result, parsed_data, new_entries_added in parsed_results:
+    for request_result, parsed_data, feed_has_entries in parsed_results:
         error_message = request_result.error_message
         url = request_result.url
         if error_message:
             error_messages.append(f"{url}: {error_message}")
-        else:
-            feed = feeds_by_urls[url]
-            with transaction.atomic():
-                refresh_feed(feed, parsed_data, new_entries_added, request_result)
+        feed = feeds_by_urls[url]
+        with transaction.atomic():
+            refresh_feed(feed, parsed_data, feed_has_entries, request_result)
 
     error_message = "<br>".join(error_messages)
 

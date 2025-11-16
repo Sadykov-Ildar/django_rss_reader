@@ -73,6 +73,11 @@ def _create_entries(feed, parsed_data: dict):
         )
     Entry.objects.bulk_create(entry_bulk_create, ignore_conflicts=True)
 
+    # update site_url in case it changed
+    site_url = parsed_data.get("feed", {}).get("link")
+    if site_url and feed.site_url != site_url:
+        feed.site_url = site_url
+
     feed.update_entry_count()
     feed.save()
 
