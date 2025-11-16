@@ -23,8 +23,8 @@ from rss_reader.api._refresh_intervals import (
     get_update_delay_in_hours,
     should_slow_down,
     decrease_update_interval,
-    HOURS_IN_YEAR,
 )
+from rss_reader.constants import HOURS_IN_YEAR
 from rss_reader.api.entry_api import _create_entries
 from rss_reader.api.feed_api import (
     create_feed_and_entries,

@@ -10,8 +10,8 @@ from bs4 import BeautifulSoup
 from django.conf import settings
 from django.core.cache import cache
 
+from rss_reader.constants import CACHE_FAVICON_PREFIX
 from rss_reader.helpers.urls import get_base_url
-from rss_reader.tasks import CACHE_FAVICON_PREFIX
 
 
 async def get_favicons(urls: Iterable[str]) -> list[tuple[str, str]]:

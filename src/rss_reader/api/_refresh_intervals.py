@@ -5,12 +5,13 @@ from datetime import datetime
 
 from django.utils import timezone
 
-
-HOURS_IN_DAY = 24
-HOURS_IN_THREE_DAYS = HOURS_IN_DAY * 3
-HOURS_IN_WEEK = HOURS_IN_DAY * 7
-HOURS_IN_MONTH = HOURS_IN_DAY * 30
-HOURS_IN_YEAR = HOURS_IN_DAY * 365
+from rss_reader.constants import (
+    HOURS_IN_DAY,
+    HOURS_IN_THREE_DAYS,
+    HOURS_IN_WEEK,
+    HOURS_IN_MONTH,
+    HOURS_IN_YEAR,
+)
 
 max_age_regex = re.compile(r"max-age=(\d+)", re.IGNORECASE)
 

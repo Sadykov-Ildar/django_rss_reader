@@ -20,11 +20,9 @@ from rss_reader.api.favicons_api import (
     get_image_file_path,
     get_favicons,
 )
+from rss_reader.constants import CACHE_FAVICON_PREFIX
 from rss_reader.helpers.urls import get_base_url
 from rss_reader.models import Feed
-
-
-CACHE_FAVICON_PREFIX = "favicon:"
 
 
 @shared_task(bind=True, name="rss_reader.refresh_feeds_task")
