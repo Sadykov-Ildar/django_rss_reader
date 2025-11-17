@@ -48,7 +48,7 @@ class RssUrlArgs:
 class RequestResult:
     url: str
     status: int = 0
-    headers: dict = ""
+    headers: Optional[dict] = None
     response: Optional[ClientResponse] = None
     content: str = ""
     error_message: str = ""
@@ -242,14 +242,15 @@ def refresh_feed(
     # or entries that we filtered out
     new_entries = feed.entry_count > old_entry_count
 
-    if status in {301, 308}:
+    headers = request_result.headers
+    if status in {301, 308} and headers:
         # moved permanently
-        new_location = request_result.headers.get("Location")
+        new_location = headers.get("Location")
         if new_location:
             feed.last_exception = f"Moved from {feed.rss_url} to {new_location}"
             feed.rss_url = new_location
-    elif status in {302, 307}:
-        new_location = request_result.headers.get("Location")
+    elif status in {302, 307} and headers:
+        new_location = headers.get("Location")
         if new_location:
             # moved temporarily
             feed.last_exception = (
@@ -262,7 +263,7 @@ def refresh_feed(
         feed.disabled_reason = 'Server responded with [status 410] "gone"'
 
     update_interval = feed.update_interval
-    update_delay = get_update_delay_in_hours(request_result.headers)
+    update_delay = get_update_delay_in_hours(headers)
     if update_delay:
         update_interval = update_delay
     else:
