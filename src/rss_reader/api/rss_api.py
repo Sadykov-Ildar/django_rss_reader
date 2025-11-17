@@ -14,7 +14,6 @@ from aiohttp import (
     ClientTimeout,
     ClientResponseError,
     ClientConnectorError,
-    ClientResponse,
 )
 from django.db import transaction
 
@@ -49,7 +48,6 @@ class RequestResult:
     url: str
     status: int = 0
     headers: Optional[dict] = None
-    response: Optional[ClientResponse] = None
     content: str = ""
     error_message: str = ""
 
@@ -182,7 +180,6 @@ async def async_request_for_rss(
 
             result.status = response.status
             result.headers = resp_headers
-            result.response = response
             result.content = await response.text()
 
             await save_request(result)
