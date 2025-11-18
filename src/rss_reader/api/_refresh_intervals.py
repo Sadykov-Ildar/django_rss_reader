@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import re
 from datetime import datetime
-from typing import Optional
 
 from django.utils import timezone
 
@@ -48,12 +47,10 @@ def decrease_update_interval(update_interval: int):
     return update_interval
 
 
-def get_update_delay_in_hours(headers: Optional[dict]) -> int:
+def get_update_delay_in_hours(headers: dict) -> int:
     """
     Returns the amount of seconds of delay before making another request to the server
     """
-    if headers is None:
-        return 0
     delay = get_retry_after(headers)
 
     if not delay:

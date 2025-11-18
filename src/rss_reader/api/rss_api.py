@@ -46,8 +46,11 @@ class RssUrlArgs:
 @dataclass
 class RequestResult:
     url: str
+    # TODO: отрефакторить код так чтобы мне не нужно было думать о том как оно устроено внутри и какие ошибки оно может выдавать
+    #  не выдавать ошибки, всегда отдавать либо валидные данные, либо пустые данные (может с ошибкой?),
+    #  чтобы мне нужно было помнить как можно меньше о коде. Снизь количество путей (control path) которыми может быть выполнен код
+    headers: dict
     status: int = 0
-    headers: Optional[dict] = None
     content: str = ""
     error_message: str = ""
 
@@ -161,6 +164,7 @@ async def async_request_for_rss(
     error_message = ""
     result = RequestResult(
         url=rss_urls_arg.url,
+        headers={},
     )
 
     req_headers = {
@@ -216,6 +220,12 @@ def refresh_feed(
     feed: Feed, parsed_data: dict, feed_has_entries, request_result: RequestResult
 ):
     # TODO: rss has different tags for hints as to when is a bad time to poll for updates
+    #  присылает ли кто-то хинты для этого? глянуть в истории
+
+    # TODO: https://rachelbythebay.com/frb/ - там еще есть полезные вещи
+    # TODO: может быть добавить версию приложения в юзер-агент
+    # TODO: поискать в истории запросов всякие хэдеры с retry-after и проч,
+
     feed.etag = parsed_data.get("etag", "") or ""
     feed.modified = parsed_data.get("modified", "") or ""
 
@@ -240,13 +250,13 @@ def refresh_feed(
     new_entries = feed.entry_count > old_entry_count
 
     headers = request_result.headers
-    if status in {301, 308} and headers:
+    if status in {301, 308}:
         # moved permanently
         new_location = headers.get("Location")
         if new_location:
             feed.last_exception = f"Moved from {feed.rss_url} to {new_location}"
             feed.rss_url = new_location
-    elif status in {302, 307} and headers:
+    elif status in {302, 307}:
         new_location = headers.get("Location")
         if new_location:
             # moved temporarily
