@@ -42,8 +42,29 @@
 
     <title>{% block title %}Django rss reader{% endblock %}</title>
 </head>
-{# TODO: использовать hx-target-error, чтобы показывать ошибку если сервер упал #}
 <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' id="body">
+
+<dialog class="center" id="global_error_message">
+    <div>
+        <h2 style="color: red;">Error</h2>
+        <div style="max-width: 400px" id="global_error_message_text"></div>
+
+        <form method="dialog">
+            <button class="btn danger">Close</button>
+        </form>
+
+        <script>
+            var dialog = document.getElementById('global_error_message');
+
+            // Event listener for the Escape key
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && dialog.open) {
+                    dialog.close();
+                }
+            });
+        </script>
+    </div>
+</dialog>
 
 {% block content %}
 
