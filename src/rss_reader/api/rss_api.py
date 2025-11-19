@@ -2,7 +2,7 @@ from __future__ import annotations
 import asyncio
 from dataclasses import dataclass
 from datetime import timedelta
-from typing import Iterable, Optional
+from typing import Iterable
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse, urljoin
 
@@ -288,7 +288,9 @@ def refresh_feed(
         update_interval = 2
 
     feed.update_interval = update_interval
-    feed.update_after = current_time + timedelta(hours=update_interval)
+    update_after = current_time + timedelta(hours=update_interval)
+    update_after = update_after.replace(minute=0, second=0, microsecond=0)
+    feed.update_after = update_after
     feed.save()
 
 

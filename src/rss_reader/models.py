@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 
+from rss_reader.helpers.date_helpers import get_delta_from_current_time_in_human
+
 
 class Feed(models.Model):
     site_url = models.URLField(max_length=255, verbose_name="Site URL")
@@ -51,6 +53,14 @@ class Feed(models.Model):
             feed=self.pk,
         ).count()
 
+    @property
+    def last_updated_delta_from_current_time(self):
+        return get_delta_from_current_time_in_human(self.last_updated)
+
+    @property
+    def update_after_delta_from_current_time(self):
+        return get_delta_from_current_time_in_human(self.update_after)
+
 
 class Entry(models.Model):
     feed = models.ForeignKey(Feed, on_delete=models.CASCADE)
@@ -94,15 +104,6 @@ class UserFeed(models.Model):
     @property
     def unread_count(self):
         return self.feed.entry_count - self.read_count
-
-    @property
-    def last_request_history(self):
-        try:
-            return RequestHistory.objects.filter(
-                url=self.feed.rss_url,
-            ).latest("id")
-        except RequestHistory.DoesNotExist:
-            return None
 
 
 class UserEntry(models.Model):

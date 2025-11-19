@@ -32,24 +32,21 @@
                 <br>
                 RSS link:<a href="{{ active_feed.feed.rss_url }}" target="_blank"
                             rel="noopener noreferrer">{{ active_feed.feed.rss_url }}</a>
-                {% with active_feed.last_request_history as request_history %}
-                    {% if request_history %}
-                        <br>
-                        <br>
-                        Status of last request: {{ request_history.status }},
-                        made at {{ request_history.created_at | date:"Y-m-d H:i:s" }}
-                    {% endif %}
-                {% endwith %}
+                <br>
                 <br>
                 {% if active_feed.feed.last_updated %}
-                    Last updated: {{ active_feed.feed.last_updated | date:"Y-m-d H:i:s"}}
+                    Last updated:
+                    {{ active_feed.feed.last_updated | date:"Y-m-d H:i:s"}}
+                    ({{active_feed.feed.last_updated_delta_from_current_time}})
                 {% endif %}
                 <br>
                 {% if not active_feed.feed.updates_enabled %}
                     Feed is disabled. Reason: {{ active_feed.feed.disabled_reason }}
                 {% else %}
                     {% if active_feed.feed.update_after %}
-                        Feed will be updated at: {{ active_feed.feed.update_after | date:"Y-m-d H:00"}}
+                        Feed will be updated at:
+                        {{ active_feed.feed.update_after | date:"Y-m-d H:00"}}
+                        ({{ active_feed.feed.update_after_delta_from_current_time }})
                     {% endif %}
                 {% endif %}
 
