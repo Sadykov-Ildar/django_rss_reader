@@ -15,7 +15,7 @@ from aiohttp import (
     ClientResponseError,
     ClientConnectorError,
 )
-from django.db import transaction
+from django.db import transaction, IntegrityError
 
 from rss_reader.api._refresh_intervals import (
     increase_update_interval,
@@ -29,6 +29,7 @@ from rss_reader.api.feed_api import (
     create_feed_and_entries,
     create_user_feed,
     get_user_feeds,
+    delete_feed,
 )
 from rss_reader.exceptions import URLValidationError
 from rss_reader.models import Feed, UserFeed, RequestHistory
@@ -136,8 +137,12 @@ def parse_rss_responses(
         parsed_data = {}
         if not request_result.error_message:
             if request_result.status != 304:
-                parsed_data = fastfeedparser.parse(request_result.content)
-                feed_has_entries = True
+                try:
+                    parsed_data = fastfeedparser.parse(request_result.content)
+                except ValueError as e:
+                    request_result.error_message = str(e)
+                else:
+                    feed_has_entries = True
 
             resp_headers = request_result.headers
             parsed_data["etag"] = resp_headers.get("Etag") or ""
@@ -169,6 +174,7 @@ async def async_request_for_rss(
 
     req_headers = {
         "Accept-Encoding": "gzip, deflate",
+        # TODO: добавить версию приложения в юзер-агент
         "User-Agent": "Django RSS Reader",
     }
     if rss_urls_arg.etag:
@@ -219,13 +225,6 @@ async def save_request(request_result: RequestResult):
 def refresh_feed(
     feed: Feed, parsed_data: dict, feed_has_entries, request_result: RequestResult
 ):
-    # TODO: rss has different tags for hints as to when is a bad time to poll for updates
-    #  присылает ли кто-то хинты для этого? глянуть в истории
-
-    # TODO: https://rachelbythebay.com/frb/ - там еще есть полезные вещи
-    # TODO: может быть добавить версию приложения в юзер-агент
-    # TODO: поискать в истории запросов всякие хэдеры с retry-after и проч,
-
     feed.etag = parsed_data.get("etag", "") or ""
     feed.modified = parsed_data.get("modified", "") or ""
 
@@ -291,7 +290,12 @@ def refresh_feed(
     update_after = current_time + timedelta(hours=update_interval)
     update_after = update_after.replace(minute=0, second=0, microsecond=0)
     feed.update_after = update_after
-    feed.save()
+    try:
+        with transaction.atomic():
+            feed.save()
+    except IntegrityError:
+        # changing rss_url as a result of 301/308 permanent redirect can lead to merging two feeds into one
+        delete_feed(feed)
 
 
 def process_rss_url(request, rss_url):

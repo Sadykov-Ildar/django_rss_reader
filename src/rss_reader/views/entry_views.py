@@ -80,7 +80,6 @@ def entries_view(request, user_feed_id: int, start: datetime = None):
     except UserFeed.DoesNotExist:
         raise Http404
     # TODO: нужен поиск по всем фидам
-    # TODO: и что-то придумать с сабстаком и другими фидами, где страницы нужно подгружать постоянно
     search = request.GET.get("search")
     if request.htmx:
         content = render_entries(request, user_feed, start, search)

@@ -3,7 +3,7 @@ from django.db.models import QuerySet
 from django.utils import timezone
 from opml import OpmlDocument
 
-from rss_reader.api.entry_api import _create_entries
+from rss_reader.api.entry_api import _create_entries, get_user_entries
 from rss_reader.exceptions import URLValidationError
 from rss_reader.models import Feed, UserFeed
 
@@ -85,3 +85,23 @@ def get_feeds_in_opml(user_feeds: QuerySet[UserFeed]) -> str:
     file_content = str(document)
 
     return str(file_content)
+
+
+def delete_feed(feed: Feed):
+    feed.delete()
+
+
+def delete_user_feed(user_feed: UserFeed):
+    get_user_entries(
+        user=user_feed.user_id,
+    ).filter(
+        entry__feed_id=user_feed.feed_id,
+    ).delete()
+
+    user_feed.delete()
+
+
+def delete_user_feeds_for_user(user):
+    get_user_feeds(user).delete()
+
+    get_user_entries(user=user).delete()

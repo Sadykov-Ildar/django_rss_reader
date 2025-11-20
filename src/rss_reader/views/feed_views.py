@@ -7,12 +7,13 @@ from django.views import View
 from django.views.decorators.http import require_POST
 
 from rss_reader import opml_parser
-from rss_reader.api.entry_api import mark_all_feeds_as_read, get_user_entries
+from rss_reader.api.entry_api import mark_all_feeds_as_read
 from rss_reader.api.feed_api import (
     get_ordered_user_feeds,
     get_feeds_in_opml,
     get_user_feed_by_id,
-    get_user_feeds,
+    delete_user_feed,
+    delete_user_feeds_for_user,
 )
 from rss_reader.api.rss_api import process_rss_url
 from rss_reader.api.render_api import render_feeds_and_entries, render_info_message
@@ -46,10 +47,7 @@ class FeedView(View):
             except UserFeed.DoesNotExist:
                 raise Http404
 
-            get_user_entries(user=request.user).filter(
-                entry__feed_id=user_feed.feed_id,
-            ).delete()
-            user_feed.delete()
+            delete_user_feed(user_feed)
 
         return HttpResponse()
 
@@ -69,9 +67,7 @@ def prepare_feed_error(request, error_message):
 
 def delete_all_user_feeds_view(request):
     with transaction.atomic():
-        get_user_feeds(request.user).delete()
-
-        get_user_entries(user=request.user).delete()
+        delete_user_feeds_for_user(request.user)
 
     return HttpResponse()
 
