@@ -169,6 +169,13 @@ CELERY_BEAT_SCHEDULE = {
             hour="*/1",
         ),
     },
+    "rss_reader.delete_old_request_history_records": {
+        "task": "rss_reader.delete_old_request_history_records",
+        "schedule": crontab(
+            minute=0,
+            hour="*/6",
+        ),
+    },
 }
 
 # Password validation

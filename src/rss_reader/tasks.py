@@ -1,5 +1,6 @@
 import asyncio
 from collections import defaultdict, Counter
+from datetime import timedelta
 from pathlib import Path
 
 from celery import shared_task
@@ -22,9 +23,11 @@ from rss_reader.api.favicons_api import (
 )
 from rss_reader.constants import CACHE_FAVICON_PREFIX
 from rss_reader.helpers.urls import get_base_url
-from rss_reader.models import Feed
+from rss_reader.models import Feed, RequestHistory
 
 
+# TODO: надо сделать так чтобы одновременно мог работать только один таск (https://docs.celeryq.dev/en/latest/tutorials/task-cookbook.html#ensuring-a-task-is-only-executed-one-at-a-time)
+# TODO: использовать вебсокеты на случай если обновление произошло пока я что-то читаю
 @shared_task(bind=True, name="rss_reader.refresh_feeds_task")
 def refresh_feeds_task(self):
     feeds_by_urls = {}
@@ -106,3 +109,9 @@ def create_favicons_task(self):
             feed.save()
 
     return "Created favicons for feeds"
+
+
+@shared_task(bind=True, name="rss_reader.delete_old_request_history_records")
+def delete_old_request_history_records(self):
+    two_weeks_ago = timezone.now() - timedelta(days=14)
+    RequestHistory.objects.filter(created_at__lt=two_weeks_ago).delete()
