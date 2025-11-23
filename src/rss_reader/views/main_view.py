@@ -8,10 +8,6 @@ from rss_reader.forms import UploadFileForm
 
 def index_view(request):
     user = request.user
-
-    # TODO: папка с непрочитанными статьями
-
-    # TODO: группировка по папкам?
     user_feeds = get_ordered_user_feeds(user)
     return render_main_page(request, user_feeds, user_feeds[0])
 

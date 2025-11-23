@@ -79,7 +79,6 @@ def entries_view(request, user_feed_id: int, start: datetime = None):
         user_feed = get_user_feed_by_id(user_feed_id, request.user)
     except UserFeed.DoesNotExist:
         raise Http404
-    # TODO: нужен поиск по всем фидам
     search = request.GET.get("search")
     if request.htmx:
         content = render_entries(request, user_feed, start, search)

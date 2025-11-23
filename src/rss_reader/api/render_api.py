@@ -194,8 +194,6 @@ def get_user_entries_in_context(user_feed, start: datetime = None, search: str =
 
     user_entries = user_entries.order_by("read", "-entry__published")[:batch_size]
     if len(user_entries) == batch_size:
-        # TODO: потестить, что будет если загрузить старую запись, выбрать ее, а потом обновить страницу
-        # TODO: а еще добавить возможность перемещаться между фидами и записями при помощи клавиатуры
         more = True
         start = list(user_entries)[-1].entry.published
 

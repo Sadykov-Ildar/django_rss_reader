@@ -17,6 +17,7 @@ from aiohttp import (
 )
 from django.db import transaction, IntegrityError
 
+from django_rss_reader.version import get_version
 from rss_reader.api._refresh_intervals import (
     increase_update_interval,
     get_update_delay_in_hours,
@@ -172,10 +173,11 @@ async def async_request_for_rss(
         headers={},
     )
 
+    version = get_version()
+
     req_headers = {
         "Accept-Encoding": "gzip, deflate",
-        # TODO: добавить версию приложения в юзер-агент
-        "User-Agent": "Django RSS Reader",
+        "User-Agent": f"Django RSS Reader/{version}",
     }
     if rss_urls_arg.etag:
         req_headers["If-None-Match"] = rss_urls_arg.etag
