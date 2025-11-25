@@ -1,67 +1,36 @@
 import asyncio
-from collections import defaultdict, Counter
+from collections import defaultdict
 from datetime import timedelta
 from pathlib import Path
 
 from celery import shared_task
 from django.contrib.auth import get_user_model
-from django.db import transaction
 from django.core.cache import cache
-from django.db.models import Q
 from django.utils import timezone
 
 from rss_reader.api.rss_api import (
     import_from_rss_urls,
-    refresh_feed,
-    fetch_and_parse_rss_urls,
-    RssUrlArgs,
+    refresh_feeds,
 )
 from rss_reader.api.favicons_api import (
     get_favicon_name_from_url,
     get_image_file_path,
     get_favicons,
 )
-from rss_reader.constants import CACHE_FAVICON_PREFIX
+from rss_reader.constants import CACHE_FAVICON_PREFIX, CACHE_MUTEX_PREFIX
 from rss_reader.helpers.urls import get_base_url
 from rss_reader.models import Feed, RequestHistory
+from rss_reader.mutex import redis_lock
 
 
-# TODO: надо сделать так чтобы одновременно мог работать только один таск (https://docs.celeryq.dev/en/latest/tutorials/task-cookbook.html#ensuring-a-task-is-only-executed-one-at-a-time)
 # TODO: использовать вебсокеты на случай если обновление произошло пока я что-то читаю
 @shared_task(bind=True, name="rss_reader.refresh_feeds_task")
 def refresh_feeds_task(self):
-    feeds_by_urls = {}
-    rss_urls_args = []
-    feeds = Feed.objects.filter(
-        updates_enabled=True,
-    ).filter(Q(update_after__isnull=True) | Q(update_after__lt=timezone.now()))
-    site_urls_counter = Counter()
-    for feed in feeds:
-        site_url = get_base_url(feed.rss_url)
-
-        feeds_by_urls[feed.rss_url] = feed
-        rss_urls_args.append(
-            RssUrlArgs(
-                url=feed.rss_url,
-                etag=feed.etag,
-                modified=feed.modified,
-                delay=site_urls_counter[site_url],
-            )
-        )
-        site_urls_counter[site_url] += 1
-
-    error_messages = []
-    parsed_results = asyncio.run(fetch_and_parse_rss_urls(rss_urls_args))
-    for request_result, parsed_data, feed_has_entries in parsed_results:
-        error_message = request_result.error_message
-        url = request_result.url
-        if error_message:
-            error_messages.append(f"{url}: {error_message}")
-        feed = feeds_by_urls[url]
-        with transaction.atomic():
-            refresh_feed(feed, parsed_data, feed_has_entries, request_result)
-
-    error_message = "<br>".join(error_messages)
+    with redis_lock(CACHE_MUTEX_PREFIX + "refresh_feeds", 1) as acquired:
+        if acquired:
+            error_message = refresh_feeds()
+        else:
+            return "Task for refreshing feeds already started"
 
     return error_message or "Refreshed successfully"
 

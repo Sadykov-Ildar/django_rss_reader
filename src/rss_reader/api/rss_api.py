@@ -1,5 +1,6 @@
 from __future__ import annotations
 import asyncio
+from collections import Counter
 from dataclasses import dataclass
 from datetime import timedelta
 from typing import Iterable
@@ -7,6 +8,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse, urljoin
 
 from bs4 import BeautifulSoup
+from django.db.models import Q
 from django.utils import timezone
 
 from aiohttp import (
@@ -33,6 +35,7 @@ from rss_reader.api.feed_api import (
     delete_feed,
 )
 from rss_reader.exceptions import URLValidationError
+from rss_reader.helpers.urls import get_base_url
 from rss_reader.models import Feed, UserFeed, RequestHistory
 from vendoring import fastfeedparser
 
@@ -375,3 +378,40 @@ def extract_feed_urls_from_html(rss_url, soup: BeautifulSoup):
 
     rss_urls = list(rss_urls)
     return rss_urls
+
+
+def refresh_feeds() -> str:
+    feeds_by_urls = {}
+    rss_urls_args = []
+    feeds = Feed.objects.filter(
+        updates_enabled=True,
+    ).filter(Q(update_after__isnull=True) | Q(update_after__lt=timezone.now()))
+    site_urls_counter = Counter()
+    for feed in feeds:
+        site_url = get_base_url(feed.rss_url)
+
+        feeds_by_urls[feed.rss_url] = feed
+        rss_urls_args.append(
+            RssUrlArgs(
+                url=feed.rss_url,
+                etag=feed.etag,
+                modified=feed.modified,
+                delay=site_urls_counter[site_url],
+            )
+        )
+        site_urls_counter[site_url] += 1
+
+    error_messages = []
+    parsed_results = asyncio.run(fetch_and_parse_rss_urls(rss_urls_args))
+    for request_result, parsed_data, feed_has_entries in parsed_results:
+        error_message = request_result.error_message
+        url = request_result.url
+        if error_message:
+            error_messages.append(f"{url}: {error_message}")
+        feed = feeds_by_urls[url]
+        with transaction.atomic():
+            refresh_feed(feed, parsed_data, feed_has_entries, request_result)
+
+    error_message = "<br>".join(error_messages)
+
+    return error_message
