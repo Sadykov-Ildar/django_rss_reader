@@ -12,16 +12,7 @@
         </form>
 
         <script>
-            var dialog = document.getElementById('error_message_dialog');
-
-            {# TODO: оно срабатывает при открытии окна каждый раз и добавляет новый listener - переделать так чтобы оно работало только один раз #}
-            {# TODO: и остальные похожие места тоже переделать#}
-            // Event listener for the Escape key
-            document.addEventListener('keydown', (event) => {
-                if (event.key === 'Escape' && dialog.open) {
-                    dialog.close();
-                }
-            });
+            close_dialog_on_esc(document.getElementById('error_message_dialog'));
         </script>
     </div>
 </dialog>

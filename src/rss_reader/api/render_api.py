@@ -43,10 +43,14 @@ class FeedsRenderer:
         self._render_template("rss_reader/add_feed_form.html")
 
     def include_oob_entries_header(self):
-        self._render_template("rss_reader/entries_header.html#oob_entries_header_partial")
+        self._render_template(
+            "rss_reader/entries_header.html#oob_entries_header_partial"
+        )
 
     def include_oob_entry_content_header(self):
-        self._render_template("rss_reader/entry_content_header.html#oob_entry_content_header_partial")
+        self._render_template(
+            "rss_reader/entry_content_header.html#oob_entry_content_header_partial"
+        )
 
     def include_error_message(self):
         self._render_template("rss_reader/error_message.html")

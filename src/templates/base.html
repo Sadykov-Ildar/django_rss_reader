@@ -54,14 +54,7 @@
         </form>
 
         <script>
-            var dialog = document.getElementById('global_error_message');
-
-            // Event listener for the Escape key
-            document.addEventListener('keydown', (event) => {
-                if (event.key === 'Escape' && dialog.open) {
-                    dialog.close();
-                }
-            });
+            close_dialog_on_esc(document.getElementById('global_error_message'));
         </script>
     </div>
 </dialog>

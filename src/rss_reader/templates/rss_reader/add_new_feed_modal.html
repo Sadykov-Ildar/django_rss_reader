@@ -12,14 +12,7 @@
         </form>
 
         <script>
-            var dialog = document.getElementById('new_feed_dialog');
-
-            // Event listener for the Escape key
-            document.addEventListener('keydown', (event) => {
-                if (event.key === 'Escape' && dialog.open) {
-                    dialog.close();
-                }
-            });
+            close_dialog_on_esc(document.getElementById('new_feed_dialog'));
         </script>
     </div>
 </dialog>
