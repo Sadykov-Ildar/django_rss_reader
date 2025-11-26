@@ -1,7 +1,7 @@
 <div class="entries" id="entries_div">
     <div class="entries_main" hx-on:htmx:after-on-load="deselect_active_elements('entry_active')">
         <div id="entries_list">
-            {% include "rss_reader/entries.html" %}
+            {% include "rss_reader/entries.html#entries_partial" %}
         </div>
     </div>
 </div>

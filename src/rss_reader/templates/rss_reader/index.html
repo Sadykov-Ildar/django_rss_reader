@@ -1,6 +1,5 @@
 {% extends 'base.html' %}
 
-{# TODO: может все таки partial templates? #}
 {# TODO: а еще добавить возможность перемещаться между фидами и записями при помощи клавиатуры #}
 {% load static %}
 {% block content %}
@@ -12,14 +11,14 @@
             </div>
             <div style="flex: 60%;">
                 <div id="entries_header">
-                    {% include "rss_reader/entries_header.html" %}
+                    {% include "rss_reader/entries_header.html#entries_header_partial" %}
                 </div>
             </div>
         </div>
 
         <div style="width: 64%; display: flex; ">
             <div style="border-left: 1px #ffffff solid; flex: 100%;">
-                {% include "rss_reader/entry_content_header.html" %}
+                {% include "rss_reader/entry_content_header.html#entry_content_header_partial" %}
             </div>
         </div>
     </div>
@@ -30,7 +29,7 @@
             {% include "rss_reader/entries_sidebar.html" %}
         </div>
         <div class="main-content">
-            {% include "rss_reader/entry_content.html" %}
+            {% include "rss_reader/entry_content.html#entry_content_partial" %}
         </div>
     </div>
 

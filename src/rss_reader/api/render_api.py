@@ -22,31 +22,31 @@ class FeedsRenderer:
         return self.separator.join(self._content)
 
     def include_oob_feed(self):
-        self._render_template("rss_reader/oob_feed.html")
+        self._render_template("rss_reader/feeds.html#oob_feed_partial")
 
     def include_oob_feeds(self):
-        self._render_template("rss_reader/oob_feeds.html")
+        self._render_template("rss_reader/feeds.html#oob_feeds_partial")
 
     def include_entries(self):
-        self._render_template("rss_reader/entries.html")
+        self._render_template("rss_reader/entries.html#entries_partial")
 
     def include_oob_entries(self):
-        self._render_template("rss_reader/oob_entries.html")
+        self._render_template("rss_reader/entries.html#oob_entries_partial")
 
     def include_entry(self):
-        self._render_template("rss_reader/entry.html")
+        self._render_template("rss_reader/entries.html#entry_partial")
 
     def include_oob_entry_content(self):
-        self._render_template("rss_reader/oob_entry_content.html")
+        self._render_template("rss_reader/entry_content.html#oob_entry_content_partial")
 
     def include_add_feed_form(self):
         self._render_template("rss_reader/add_feed_form.html")
 
     def include_oob_entries_header(self):
-        self._render_template("rss_reader/oob_entries_header.html")
+        self._render_template("rss_reader/entries_header.html#oob_entries_header_partial")
 
     def include_oob_entry_content_header(self):
-        self._render_template("rss_reader/oob_entry_content_header.html")
+        self._render_template("rss_reader/entry_content_header.html#oob_entry_content_header_partial")
 
     def include_error_message(self):
         self._render_template("rss_reader/error_message.html")

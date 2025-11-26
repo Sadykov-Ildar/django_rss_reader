@@ -1,29 +1,38 @@
 {% load static %}
 
-<div id="entry_content_header">
-    <div class="entry_content_header">
-        <div class="sidebar_buttons">
+{% partialdef entry_content_header_partial %}
+    <div id="entry_content_header">
+        <div class="entry_content_header">
+            <div class="sidebar_buttons">
 
-            {% if user_entry %}
-                <div hx-get="{% url "rss_reader:toggle_entry_read" user_entry.pk %}"
-                     hx-swap="outerHTML"
-                     hx-target="#user-entry-{{ user_entry.pk }}"
-                     class="image_button">
-                    <img src="{% static 'images/mark_green.png' %}" alt="toggle entry as read/not read"
-                         style="width: 1rem">
-                </div>
-            {% endif %}
+                {% if user_entry %}
+                    <div hx-get="{% url "rss_reader:toggle_entry_read" user_entry.pk %}"
+                         hx-swap="outerHTML"
+                         hx-target="#user-entry-{{ user_entry.pk }}"
+                         class="image_button">
+                        <img src="{% static 'images/mark_green.png' %}" alt="toggle entry as read/not read"
+                             style="width: 1rem">
+                    </div>
+                {% endif %}
 
-            <form action="{% url 'accounts:log_out' %}" method="post">
-                {% csrf_token %}
-                <input type="image" src="{% static 'images/logout.png' %}" alt="mark all entries as read"
-                       value="Log out"
-                       style="width: 1.5rem">
-            </form>
+                <form action="{% url 'accounts:log_out' %}" method="post">
+                    {% csrf_token %}
+                    <input type="image" src="{% static 'images/logout.png' %}" alt="mark all entries as read"
+                           value="Log out"
+                           style="width: 1.5rem">
+                </form>
 
-            <a href="{% url "accounts:profile" %}">
-                <img src="{% static 'images/profile.png' %}" alt="View profile" style="width: 1.5rem">
-            </a>
+                <a href="{% url "accounts:profile" %}">
+                    <img src="{% static 'images/profile.png' %}" alt="View profile" style="width: 1.5rem">
+                </a>
+            </div>
         </div>
     </div>
-</div>
+{% endpartialdef entry_content_header_partial %}
+
+
+{% partialdef oob_entry_content_header_partial %}
+    <div id="entry_content_header" hx-swap-oob="true">
+        {% partial entry_content_header_partial %}
+    </div>
+{% endpartialdef oob_entry_content_header_partial %}

@@ -1,18 +1,41 @@
 {% load static %}
 
-<div class="sidebar_header">
-    <div id="search_entries_form">
-        {% include "rss_reader/search_entries_form.html" %}
+{% partialdef entries_header_partial %}
+    <div class="sidebar_header">
+        <div id="search_entries_form">
+            {% if active_feed %}
+                <input type="search"
+                       name="search"
+                       autocomplete="off"
+                        {% if search %} value="{{ search }}" {% endif %}
+                       placeholder="Search in feed"
+                       hx-get="{% url 'rss_reader:entries' user_feed_id=active_feed.id %}"
+                       hx-push-url="true"
+                       hx-trigger="input changed delay:500ms, keyup[key=='Enter']"
+                       hx-target="#entries_list"
+                       hx-indicator=".htmx-indicator">
+                <div class="htmx-indicator">
+                    <img src="{% static 'images/bars.svg' %}" alt="loading" style="width: 1rem">
+                </div>
+            {% endif %}
+        </div>
+        <div class="sidebar_buttons">
+            {% if active_feed %}
+                <div hx-get="{% url "rss_reader:mark_entries_as_read" user_feed_id=active_feed.id %}"
+                     hx-swap="innerHTML"
+                     hx-target="#entries_list"
+                     hx-disabled-elt="this"
+                     class="image_button">
+                    <img src="{% static 'images/mark_green.png' %}" alt="mark all entries as read" style="width: 1rem">
+                </div>
+            {% endif %}
+        </div>
     </div>
-    <div class="sidebar_buttons">
-        {% if active_feed %}
-            <div hx-get="{% url "rss_reader:mark_entries_as_read" user_feed_id=active_feed.id %}"
-                 hx-swap="innerHTML"
-                 hx-target="#entries_list"
-                 hx-disabled-elt="this"
-                 class="image_button">
-                <img src="{% static 'images/mark_green.png' %}" alt="mark all entries as read" style="width: 1rem">
-            </div>
-        {% endif %}
+{% endpartialdef entries_header_partial %}
+
+
+{% partialdef oob_entries_header_partial %}
+    <div id="entries_header" hx-swap-oob="true">
+        {% partial entries_header_partial %}
     </div>
-</div>
+{% endpartialdef oob_entries_header_partial %}

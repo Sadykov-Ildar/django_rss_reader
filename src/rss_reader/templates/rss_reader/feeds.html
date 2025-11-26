@@ -1,4 +1,54 @@
-{% for user_feed in user_feeds %}
-    {% include "rss_reader/feed.html" %}
-    <hr>
-{% endfor %}
+{% load static %}
+
+
+{% partialdef feed_partial %}
+    <div class="feed {% if user_feed == active_feed %}feed_active{% endif %}"
+         id="user-feed-{{ user_feed.pk }}"
+         hx-get="{% url "rss_reader:entries" user_feed.pk %}"
+         hx-push-url="true"
+         hx-swap="innerHTML scroll:.entries:top"
+         hx-target="#entries_list"
+    >
+        {% if user_feed.feed.image %}
+            <div style="flex: 10%;">
+                <img style="width: 1.5rem" src="{{ user_feed.feed.image.url }}">
+            </div>
+
+        {% elif user_feed.feed.image_url %}
+            <div style="flex: 10%;">
+                <img style="width: 1.5rem" src="{{ user_feed.feed.image_url }}">
+            </div>
+        {% endif %}
+
+        <div class="feed_title">
+            {{ user_feed.feed.title }}
+        </div>
+        {% if user_feed.unread_count %}
+            <div class="feed_unread_count">
+                <b>{{ user_feed.unread_count }}</b>
+            </div>
+        {% endif %}
+    </div>
+{% endpartialdef feed_partial %}
+
+
+{% partialdef feeds_partial %}
+    {% for user_feed in user_feeds %}
+        {% partial feed_partial %}
+        <hr>
+    {% endfor %}
+{% endpartialdef feeds_partial %}
+
+
+{% partialdef oob_feed_partial %}
+    <div id="user-feed-{{ user_feed.pk }}" hx-swap-oob="true">
+        {% partial feed_partial %}
+    </div>
+{% endpartialdef oob_feed_partial %}
+
+
+{% partialdef oob_feeds_partial %}
+    <div id="feeds_list" hx-swap-oob="true">
+        {% partial feeds_partial %}
+    </div>
+{% endpartialdef oob_feeds_partial %}

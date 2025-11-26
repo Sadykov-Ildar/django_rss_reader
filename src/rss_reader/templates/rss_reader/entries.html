@@ -1,11 +1,40 @@
-{% for user_entry in user_entries %}
-    {% include "rss_reader/entry.html" %}
-{% endfor %}
-{% if more_entries %}
-    <div
-        hx-trigger="intersect once"
-        hx-swap="outerHTML"
-        hx-get="{% url "rss_reader:entries_pagination" user_feed_id=user_feed.id start=entries_start %}{% if search %}?search={{ search }}{% endif %}"
-    ></div>
-    <div></div>
-{% endif %}
+{% partialdef entry_partial %}
+    <div class="{% if not user_entry.read %}entry_unread{% else %}entry{% endif %}
+                {% if user_entry == active_entry %}entry_active{% endif %}"
+         id="user-entry-{{ user_entry.id }}"
+         hx-get="{% url "rss_reader:entry_content" user_entry.id %}"
+         hx-push-url="true"
+         hx-swap="outerHTML show:.main-content:top"
+         hx-target="#user-entry-{{ user_entry.pk }}"
+    >
+        <div>
+            {{ user_entry.entry.title }}
+        </div>
+        <div class="entry_published">
+            {{ user_entry.entry.published }}
+        </div>
+        <hr>
+    </div>
+{% endpartialdef entry_partial %}
+
+
+{% partialdef entries_partial %}
+    {% for user_entry in user_entries %}
+        {% partial entry_partial %}
+    {% endfor %}
+    {% if more_entries %}
+        <div
+            hx-trigger="intersect once"
+            hx-swap="outerHTML"
+            hx-get="{% url "rss_reader:entries_pagination" user_feed_id=user_feed.id start=entries_start %}{% if search %}?search={{ search }}{% endif %}"
+        ></div>
+        <div></div>
+    {% endif %}
+{% endpartialdef entries_partial %}
+
+
+{% partialdef oob_entries_partial %}
+<div id="entries_list" hx-swap-oob="true">
+    {% partial entries_partial %}
+</div>
+{% endpartialdef oob_entries_partial %}

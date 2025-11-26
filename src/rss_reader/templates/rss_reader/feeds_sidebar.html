@@ -1,7 +1,7 @@
 <div class="feeds">
     <div class="feeds_main" hx-on:htmx:after-on-load="deselect_active_elements('feed_active')">
         <div id="feeds_list">
-            {% include "rss_reader/feeds.html" %}
+            {% include "rss_reader/feeds.html#feeds_partial" %}
         </div>
     </div>
 </div>

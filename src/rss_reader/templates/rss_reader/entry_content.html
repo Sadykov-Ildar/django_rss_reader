@@ -1,66 +1,76 @@
-<div id="content">
-    <div class="main">
-        <div class="content">
-            {% if entry %}
-                <h1>{{ entry.title }}</h1>
+{% partialdef entry_content_partial %}
+    <div id="content">
+        <div class="main">
+            <div class="content">
+                {% if entry %}
+                    <h1>{{ entry.title }}</h1>
 
-                {% if entry.author %}
-                    <br>
-                    Author: {{ entry.author }} at
-                {% endif %}
-                <a href="{{ entry.feed.site_url }}" target="_blank" rel="noopener noreferrer">{{ entry.feed.title }}</a>
-                <br>
-                <br>
-                Link to article:
-                <a href="{{ entry.link }}" target="_blank" rel="noopener noreferrer">{{ entry.link }}</a>
-                <br>
-                {% if entry.published %}
-                    <em>Published at: {{ entry.published | date:"Y-m-d H:i" }}</em>
-                {% endif %}
-                {% if entry.summary %}
-                    <hr>
-                    <span>{{ entry.summary | safe }}</span>
-                {% endif %}
-                <hr>
-
-                {{ entry.content | safe }}
-                <br>
-            {% elif active_feed %}
-                <a href="{{ active_feed.feed.site_url }}" target="_blank"
-                   rel="noopener noreferrer">{{ active_feed.feed.title }}</a>
-                <br>
-                <br>
-                RSS link:<a href="{{ active_feed.feed.rss_url }}" target="_blank"
-                            rel="noopener noreferrer">{{ active_feed.feed.rss_url }}</a>
-                <br>
-                <br>
-                {% if active_feed.feed.last_updated %}
-                    Last updated:
-                    {{ active_feed.feed.last_updated | date:"Y-m-d H:i:s"}}
-                    ({{active_feed.feed.last_updated_delta_from_current_time}})
-                {% endif %}
-                <br>
-                {% if not active_feed.feed.updates_enabled %}
-                    Feed is disabled. Reason: {{ active_feed.feed.disabled_reason }}
-                {% else %}
-                    {% if active_feed.feed.update_after %}
-                        Feed will be updated at:
-                        {{ active_feed.feed.update_after | date:"Y-m-d H:00"}}
-                        ({{ active_feed.feed.update_after_delta_from_current_time }})
+                    {% if entry.author %}
+                        <br>
+                        Author: {{ entry.author }} at
                     {% endif %}
-                {% endif %}
+                    <a href="{{ entry.feed.site_url }}" target="_blank"
+                       rel="noopener noreferrer">{{ entry.feed.title }}</a>
+                    <br>
+                    <br>
+                    Link to article:
+                    <a href="{{ entry.link }}" target="_blank" rel="noopener noreferrer">{{ entry.link }}</a>
+                    <br>
+                    {% if entry.published %}
+                        <em>Published at: {{ entry.published | date:"Y-m-d H:i" }}</em>
+                    {% endif %}
+                    {% if entry.summary %}
+                        <hr>
+                        <span>{{ entry.summary | safe }}</span>
+                    {% endif %}
+                    <hr>
 
-                <br>
-                {% if active_feed.feed.last_exception %}
-                    Last attempt to fetch updates resulted in error: {{ active_feed.feed.last_exception }}
+                    {{ entry.content | safe }}
+                    <br>
+                {% elif active_feed %}
+                    <a href="{{ active_feed.feed.site_url }}" target="_blank"
+                       rel="noopener noreferrer">{{ active_feed.feed.title }}</a>
+                    <br>
+                    <br>
+                    RSS link:<a href="{{ active_feed.feed.rss_url }}" target="_blank"
+                                rel="noopener noreferrer">{{ active_feed.feed.rss_url }}</a>
+                    <br>
+                    <br>
+                    {% if active_feed.feed.last_updated %}
+                        Last updated:
+                        {{ active_feed.feed.last_updated | date:"Y-m-d H:i:s" }}
+                        ({{ active_feed.feed.last_updated_delta_from_current_time }})
+                    {% endif %}
+                    <br>
+                    {% if not active_feed.feed.updates_enabled %}
+                        Feed is disabled. Reason: {{ active_feed.feed.disabled_reason }}
+                    {% else %}
+                        {% if active_feed.feed.update_after %}
+                            Feed will be updated at:
+                            {{ active_feed.feed.update_after | date:"Y-m-d H:00" }}
+                            ({{ active_feed.feed.update_after_delta_from_current_time }})
+                        {% endif %}
+                    {% endif %}
+
+                    <br>
+                    {% if active_feed.feed.last_exception %}
+                        Last attempt to fetch updates resulted in error: {{ active_feed.feed.last_exception }}
+                    {% endif %}
+                    <br>
+                    {% if active_feed.feed.last_response_body %}
+                        Response from server: {{ active_feed.feed.last_response_body }}
+                    {% endif %}
+                {% else %}
+                    <h2>Add some subscriptions to see content here</h2>
                 {% endif %}
-                <br>
-                {% if active_feed.feed.last_response_body %}
-                    Response from server: {{ active_feed.feed.last_response_body }}
-                {% endif %}
-            {% else %}
-                <h2>Add some subscriptions to see content here</h2>
-            {% endif %}
+            </div>
         </div>
     </div>
-</div>
+{% endpartialdef entry_content_partial %}
+
+
+{% partialdef oob_entry_content_partial %}
+    <div id="content" hx-swap-oob="true">
+        {% partial entry_content_partial %}
+    </div>
+{% endpartialdef oob_entry_content_partial %}
