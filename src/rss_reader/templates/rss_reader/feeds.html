@@ -8,6 +8,8 @@
          hx-push-url="true"
          hx-swap="innerHTML scroll:.entries:top"
          hx-target="#entries_list"
+         tabindex="0"
+         hx-trigger="click,focus"
     >
         {% if user_feed.feed.image %}
             <div style="flex: 10%;">

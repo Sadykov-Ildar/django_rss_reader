@@ -6,6 +6,8 @@
          hx-push-url="true"
          hx-swap="outerHTML show:.main-content:top"
          hx-target="#user-entry-{{ user_entry.pk }}"
+         tabindex="0"
+         hx-trigger="click,focus"
     >
         <div>
             {{ user_entry.entry.title }}
