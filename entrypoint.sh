@@ -4,4 +4,4 @@ python manage.py migrate --no-input
 
 python manage.py collectstatic --no-input
 
-gunicorn django_rss_reader.wsgi --bind 0.0.0.0:8000
+granian --interface asgi --host 0.0.0.0 --port 8000 --workers 2 django_rss_reader.asgi:application
