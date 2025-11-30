@@ -188,7 +188,7 @@ async def async_request_for_rss(
         req_headers["If-Modified-Since"] = rss_urls_arg.modified
 
     if rss_urls_arg.delay:
-        await asyncio.sleep(rss_urls_arg.delay)
+        await asyncio.sleep(rss_urls_arg.delay * 2)
     try:
         async with session.get(rss_urls_arg.url, headers=req_headers) as response:
             resp_headers = response.headers
