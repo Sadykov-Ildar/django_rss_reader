@@ -25,7 +25,8 @@
     {% endblock styles %}
 
     {% htmx_script %}
-    <script src="{% static 'js/main.js' %}"></script>
+    <script src="{% static 'js/main.js' %}" defer></script>
+    <script src="{% static 'js/htmx-ext-ws.js' %}" defer></script>
 
     <script>
         {% if debug %}
@@ -44,6 +45,10 @@
 </head>
 <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' id="body">
 
+
+<div hx-ext="ws" ws-connect="/ws/background_tasks/" hx-on:htmx:ws-before-message="location.reload()">
+</div>
+
 <dialog class="center" id="global_error_message">
     <div>
         <h2 style="color: red;">Error</h2>
@@ -53,8 +58,10 @@
             <button class="btn danger">Close</button>
         </form>
 
-        <script>
-            close_dialog_on_esc(document.getElementById('global_error_message'));
+        <script defer>
+            if (typeof close_dialog_on_esc === 'function') {
+                close_dialog_on_esc(document.getElementById('global_error_message'));
+            }
         </script>
     </div>
 </dialog>
