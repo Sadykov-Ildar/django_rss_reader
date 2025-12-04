@@ -134,7 +134,7 @@ DATABASES = {
         "PASSWORD": get_secret("POSTGRES_PASSWORD_FILE", "postgres"),
         "HOST": "postgres",
         "PORT": "5432",
-        "CONN_MAX_AGE": 3600,
+        "CONN_MAX_AGE": 0,
     }
 }
 
