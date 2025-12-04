@@ -20,9 +20,6 @@ from celery.schedules import crontab
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
-
 
 # SECURITY WARNING: keep the secret key used in production secret!
 def get_secret(key, default):
@@ -121,6 +118,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "django_rss_reader.wsgi.application"
+ASGI_APPLICATION = "django_rss_reader.asgi.application"
 
 
 # Database
