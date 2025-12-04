@@ -60,26 +60,12 @@
                                 <img src="{% static 'images/bars.svg' %}" alt="loading" style="width: 1rem">
                             </div>
                         </div>
-                        <hr>
                     </div>
+                    <hr>
                 {% endfor %}
             </div>
         </div>
         <div style="margin-top:80px; flex:1">
-            <h2>Results of background tasks</h2>
-            <br>
-            {% for task in tasks %}
-                <b>{{ task.task_name }}</b>
-                <br>
-                <span>{{ task.result | safe }}</span>
-                <br>
-                <br>
-                <span>Created: {{ task.date_created | date:"Y-m-d H:i:s"}},</span>
-                <span>done: {{ task.date_done | date:"Y-m-d H:i:s" }}</span>
-                <hr>
-            {% endfor %}
-
-
         </div>
     </div>
 {% endblock content %}
