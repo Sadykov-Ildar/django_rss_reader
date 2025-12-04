@@ -20,7 +20,11 @@ from rss_reader.api.favicons_api import (
     get_favicons,
 )
 
-from rss_reader.constants import CACHE_FAVICON_PREFIX, CACHE_MUTEX_PREFIX
+from rss_reader.constants import (
+    CACHE_FAVICON_PREFIX,
+    CACHE_MUTEX_PREFIX,
+    WS_TASKS_REFRESHED_GROUP_NAME,
+)
 from rss_reader.helpers.urls import get_base_url
 from rss_reader.models import Feed, RequestHistory
 from rss_reader.mutex import redis_lock
@@ -37,7 +41,7 @@ def refresh_feeds_task(self):
     message = "Feeds refreshed"
     channel_layer = get_channel_layer()
     async_to_sync(channel_layer.group_send)(
-        "tasks_refreshed", {"type": "tasks.refreshed", "message": message}
+        WS_TASKS_REFRESHED_GROUP_NAME, {"type": "tasks.refreshed", "message": message}
     )
 
     return error_message or "Refreshed successfully"
