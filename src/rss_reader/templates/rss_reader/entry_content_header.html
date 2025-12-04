@@ -6,7 +6,7 @@
             <div class="sidebar_buttons">
 
                 {% if user.is_superuser %}
-                    <a href="/admin">
+                    <a href="{% url "admin:index" %}">
                         <img src="{% static 'images/admin-panel.png' %}" alt="Admin panel" style="width: 1.5rem">
                     </a>
                 {% endif %}

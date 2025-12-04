@@ -20,7 +20,6 @@ from celery.schedules import crontab
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-
 # SECURITY WARNING: keep the secret key used in production secret!
 def get_secret(key, default):
     value = os.getenv(key, default)
