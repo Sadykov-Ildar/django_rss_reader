@@ -1,6 +1,5 @@
 import datetime
 
-from django.db import transaction
 from django.http import HttpResponseForbidden, HttpResponse, Http404
 from django.shortcuts import render
 from django.views import View
@@ -41,13 +40,12 @@ class FeedView(View):
         return HttpResponse(content)
 
     def delete(self, request, user_feed_id, *args, **kwargs):
-        with transaction.atomic():
-            try:
-                user_feed = get_user_feed_by_id(user_feed_id, request.user)
-            except UserFeed.DoesNotExist:
-                raise Http404
+        try:
+            user_feed = get_user_feed_by_id(user_feed_id, request.user)
+        except UserFeed.DoesNotExist:
+            raise Http404
 
-            delete_user_feed(user_feed)
+        delete_user_feed(user_feed)
 
         return HttpResponse()
 
@@ -66,8 +64,7 @@ def prepare_feed_error(request, error_message):
 
 
 def delete_all_user_feeds_view(request):
-    with transaction.atomic():
-        delete_user_feeds_for_user(request.user)
+    delete_user_feeds_for_user(request.user)
 
     return HttpResponse()
 

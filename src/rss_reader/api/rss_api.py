@@ -81,8 +81,7 @@ def import_from_rss_urls(user, rss_urls: list[str]) -> str:
             error_messages.append(f"{url}: {error_message}")
         else:
             try:
-                with transaction.atomic():
-                    create_feed_and_entries(user, url, parsed_data)
+                create_feed_and_entries(user, url, parsed_data)
             except URLValidationError as e:
                 error_messages.append(f"{url}: {e.message}")
 
@@ -227,6 +226,7 @@ async def save_request(request_result: RequestResult):
     )
 
 
+@transaction.atomic
 def refresh_feed(
     feed: Feed, parsed_data: dict, feed_has_entries, request_result: RequestResult
 ):
@@ -296,6 +296,8 @@ def refresh_feed(
     update_after = update_after.replace(minute=0, second=0, microsecond=0)
     feed.update_after = update_after
     try:
+        # транзакция нужна, чтобы создать savepoint,
+        # иначе внешняя транзакция может отвалиться если выпадет IntegrityError
         with transaction.atomic():
             feed.save()
     except IntegrityError:
@@ -337,8 +339,7 @@ def process_rss_url(request, rss_url):
         if error_message:
             return error_message
         try:
-            with transaction.atomic():
-                create_feed_and_entries(user, request_result.url, parsed_data)
+            create_feed_and_entries(user, request_result.url, parsed_data)
         except URLValidationError as e:
             return e.message
 
@@ -409,8 +410,7 @@ def refresh_feeds() -> str:
         if error_message:
             error_messages.append(f"{url}: {error_message}")
         feed = feeds_by_urls[url]
-        with transaction.atomic():
-            refresh_feed(feed, parsed_data, feed_has_entries, request_result)
+        refresh_feed(feed, parsed_data, feed_has_entries, request_result)
 
     error_message = "<br>".join(error_messages)
 

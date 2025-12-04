@@ -1,4 +1,4 @@
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from django.db.models import QuerySet
 from django.utils import timezone
 from opml import OpmlDocument
@@ -8,6 +8,7 @@ from rss_reader.exceptions import URLValidationError
 from rss_reader.models import Feed, UserFeed
 
 
+@transaction.atomic
 def create_feed_and_entries(user, rss_url: str, parsed_data: dict):
     feed_data: dict = parsed_data["feed"]
     image_url = feed_data.get("image_url")
@@ -91,6 +92,7 @@ def delete_feed(feed: Feed):
     feed.delete()
 
 
+@transaction.atomic
 def delete_user_feed(user_feed: UserFeed):
     get_user_entries(
         user=user_feed.user_id,
@@ -101,6 +103,7 @@ def delete_user_feed(user_feed: UserFeed):
     user_feed.delete()
 
 
+@transaction.atomic
 def delete_user_feeds_for_user(user):
     get_user_feeds(user).delete()
 
