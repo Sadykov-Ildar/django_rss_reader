@@ -14,7 +14,6 @@ import os
 import sys
 from pathlib import Path
 
-from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -146,7 +145,7 @@ CACHES = {
 SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 
 # Celery settings
-CELERY_BROKER_URL = "amqp://rabbitmq"
+CELERY_BROKER_URL = "redis://redis:6379"
 CELERY_RESULT_BACKEND = "django-db"
 
 CELERY_TIMEZONE = "Europe/Moscow"
@@ -156,24 +155,6 @@ CELERY_ACCEPT_CONTENT = ["application/json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_RESULT_EXTENDED = True
-
-
-CELERY_BEAT_SCHEDULE = {
-    "rss_reader.refresh_feeds_task": {
-        "task": "rss_reader.refresh_feeds_task",
-        "schedule": crontab(
-            minute=0,
-            hour="*/1",
-        ),
-    },
-    "rss_reader.delete_old_request_history_records": {
-        "task": "rss_reader.delete_old_request_history_records",
-        "schedule": crontab(
-            minute=0,
-            hour="*/6",
-        ),
-    },
-}
 
 
 CHANNEL_LAYERS = {

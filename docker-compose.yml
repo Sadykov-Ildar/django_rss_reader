@@ -17,7 +17,6 @@ services:
     networks:
       - app_network
       - db_network
-      - rabbitmq_network
       - redis_network
 
   celery_worker:
@@ -29,13 +28,10 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      rabbitmq:
-        condition: service_started
       redis:
         condition: service_started
     networks:
       - db_network
-      - rabbitmq_network
       - redis_network
 
   celery_beat:
@@ -47,12 +43,12 @@ services:
       args:
         UV_BUILD_ARG: ${UV_BUILD_ARG}
     container_name: celery_beat
-    command: python -m celery -A run beat --loglevel=DEBUG
+    command: python -m celery -A run beat
     depends_on:
-      rabbitmq:
+      redis:
         condition: service_started
     networks:
-      - rabbitmq_network
+      - redis_network
 
   nginx:
     image: nginx:latest
@@ -88,17 +84,6 @@ services:
     secrets:
       - db_password
 
-  rabbitmq:
-    image: rabbitmq:4
-    container_name: rabbitmq
-    ports:
-      - '127.0.0.1:5672:5672'
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
-      - ./conf/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
-    networks:
-      - rabbitmq_network
-
   redis:
     container_name: redis
     image: redis:latest
@@ -108,12 +93,10 @@ services:
       - redis_data:/data
 
 volumes:
-  rabbitmq_data:
   redis_data:
 
 networks:
   db_network:
-  rabbitmq_network:
   redis_network:
   app_network:
 

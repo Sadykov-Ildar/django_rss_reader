@@ -1,7 +1,7 @@
 from celery import Celery
 from celery.schedules import crontab
 
-app = Celery("django_rss_reader", broker="amqp://rabbitmq")
+app = Celery("django_rss_reader", broker="redis://redis:6379")
 
 app.conf.beat_schedule = {
     "rss_reader.refresh_feeds_task": {
