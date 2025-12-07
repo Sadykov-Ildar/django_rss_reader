@@ -39,11 +39,15 @@ services:
       - redis_network
 
   celery_beat:
-    extends:
-      file: common.yml
-      service: app_build_config
+    build:
+      context: ./celery_beat
+      dockerfile: ./Dockerfile
+      cache_from:
+        - type=local,src=${UV_CACHE_DIR}
+      args:
+        UV_BUILD_ARG: ${UV_BUILD_ARG}
     container_name: celery_beat
-    command: python -m celery -A django_rss_reader beat
+    command: python -m celery -A run beat --loglevel=DEBUG
     depends_on:
       rabbitmq:
         condition: service_started
