@@ -26,8 +26,8 @@ from rss_reader.views.main_view import index_view
 urlpatterns = (
     [
         path("accounts/", include("accounts.urls")),
-        path("admin/", admin.site.urls),
         path("admin/doc/", include("django.contrib.admindocs.urls")),
+        path("admin/", admin.site.urls),
         path("rss_reader/", include("rss_reader.urls")),
         path("", index_view, name="index"),
     ]

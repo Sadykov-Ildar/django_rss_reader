@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.admindocs",
     "rss_reader.apps.RssReaderConfig",
     "accounts.apps.AccountsConfig",
     "django_htmx",
