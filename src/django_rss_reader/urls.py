@@ -15,13 +15,21 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
-from debug_toolbar.toolbar import debug_toolbar_urls
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 
 from rss_reader.views.main_view import index_view
+
+
+def get_debug_toolbar_urls():
+    if not settings.TESTING:
+        from debug_toolbar.toolbar import debug_toolbar_urls
+
+        return debug_toolbar_urls()
+    return []
+
 
 urlpatterns = (
     [
@@ -31,7 +39,7 @@ urlpatterns = (
         path("rss_reader/", include("rss_reader.urls")),
         path("", index_view, name="index"),
     ]
-    + debug_toolbar_urls()
+    + get_debug_toolbar_urls()
     + static(
         settings.STATIC_URL,
     )
