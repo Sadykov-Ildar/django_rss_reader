@@ -5,6 +5,11 @@ from rss_reader.helpers.date_helpers import get_delta_from_current_time_in_human
 
 
 class Feed(models.Model):
+    """
+    Main model for RSS feed.
+    All users who import the same RSS URL will have foreign key from UserFeed to the exact same Feed.
+    """
+
     site_url = models.URLField(max_length=255, verbose_name="Site URL")
     rss_url = models.URLField(unique=True, verbose_name="RSS url")
     # rss, atom, rdf
@@ -25,6 +30,8 @@ class Feed(models.Model):
     update_interval = models.PositiveIntegerField(default=24)
     update_after = models.DateTimeField(null=True, blank=True)
 
+    # etag and modified are needed to tell server that we already have entries up to a certain point in time,
+    # allowing server to send only new data, which saves our resources when parsing new entries
     etag = models.CharField()
     modified = models.CharField()
 
@@ -32,6 +39,7 @@ class Feed(models.Model):
     image = models.FileField(
         "img", max_length=500, upload_to="favicons/", null=True, blank=True
     )
+    # have we already tried searching for image URL or not
     searched_image_url = models.BooleanField(default=False)
 
     entry_count = models.PositiveIntegerField(default=0)
@@ -63,6 +71,10 @@ class Feed(models.Model):
 
 
 class Entry(models.Model):
+    """
+    Entry in RSS feed.
+    """
+
     feed = models.ForeignKey(Feed, on_delete=models.CASCADE)
 
     link = models.CharField()
@@ -81,11 +93,18 @@ class Entry(models.Model):
 
 
 class UserFeed(models.Model):
+    """
+    Exists to keep track of Feeds that user wants to read.
+    """
+
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
     feed = models.ForeignKey(Feed, on_delete=models.CASCADE)
 
+    # True if there are new entries that don't have corresponding UserEntry for this user, False otherwise.
+    # Exists to avoid creating UserEntry for inactive users
     stale = models.BooleanField(default=True)
 
+    # Amount of UserEntry that was read by user
     read_count = models.PositiveIntegerField(default=0)
 
     class Meta:
@@ -107,6 +126,12 @@ class UserFeed(models.Model):
 
 
 class UserEntry(models.Model):
+    """
+    Exists to keep track of entries that was read by user.
+
+    Created on demand, when user actually opens RSS reader.
+    """
+
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
     entry = models.ForeignKey(Entry, on_delete=models.CASCADE)
 
@@ -128,6 +153,10 @@ class UserEntry(models.Model):
 
 
 class RequestHistory(models.Model):
+    """
+    History of requests to refresh Feed.
+    """
+
     url = models.URLField(db_index=True)
 
     status = models.PositiveIntegerField()

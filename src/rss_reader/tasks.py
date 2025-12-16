@@ -32,6 +32,9 @@ from rss_reader.mutex import redis_lock
 
 @shared_task(bind=True, name="rss_reader.refresh_feeds_task")
 def refresh_feeds_task(self):
+    """
+    Background task for refreshing feeds, runs on schedule.
+    """
     with redis_lock(CACHE_MUTEX_PREFIX + "refresh_feeds", 1) as acquired:
         if acquired:
             error_message = refresh_feeds()
@@ -57,6 +60,9 @@ def import_from_rss_urls_task(self, user_id, rss_urls: list[str]) -> str:
 
 @shared_task(bind=True, name="Creating favicons for feeds")
 def create_favicons_task(self):
+    """
+    Background task for getting favicons for feeds, runs after importing feeds.
+    """
     feeds = Feed.objects.filter(searched_image_url=False)
 
     url_to_feeds = defaultdict(list)
@@ -94,5 +100,8 @@ def create_favicons_task(self):
 
 @shared_task(bind=True, name="rss_reader.delete_old_request_history_records")
 def delete_old_request_history_records(self):
+    """
+    Background task for clearing old request history, runs on schedule.
+    """
     two_weeks_ago = timezone.now() - timedelta(days=14)
     RequestHistory.objects.filter(created_at__lt=two_weeks_ago).delete()

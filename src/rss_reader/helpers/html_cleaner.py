@@ -7,6 +7,9 @@ _class_pattern = re.compile(r'(?s)class="(.*?)"')
 
 
 def clean_html(content: str) -> str:
+    """
+    Removes CSS classes from HTML.
+    """
     content = re.sub(_class_pattern, "", content)
 
     return content
@@ -14,7 +17,7 @@ def clean_html(content: str) -> str:
 
 def resolve_urls(content: str, url: str) -> str:
     """
-    Replaces relative urls with absolute urls in html content.
+    Replaces relative urls with absolute urls in HTML content.
     """
     soup = BeautifulSoup(content, "lxml")
 

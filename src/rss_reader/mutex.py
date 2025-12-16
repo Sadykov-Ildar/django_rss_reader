@@ -14,7 +14,7 @@ def redis_lock(lock_id, oid):
     try:
         yield status
     finally:
-        # memcache delete is very slow, but we have to use it to take
+        # delete is very slow, but we have to use it to take
         # advantage of using add() for atomic locking
         if time.monotonic() < timeout_at and status:
             # don't release the lock if we exceeded the timeout

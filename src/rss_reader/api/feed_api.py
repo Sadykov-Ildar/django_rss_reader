@@ -10,6 +10,11 @@ from rss_reader.models import Feed, UserFeed
 
 @transaction.atomic
 def create_feed_and_entries(user, rss_url: str, parsed_data: dict):
+    """
+    Create Feed and it's entries using parsed data.
+
+    :raises URLValidationError:
+    """
     feed_data: dict = parsed_data["feed"]
     image_url = feed_data.get("image_url")
 
@@ -69,6 +74,10 @@ def get_user_feeds(user) -> QuerySet[UserFeed]:
 
 
 def get_feeds_in_opml(user_feeds: QuerySet[UserFeed]) -> str:
+    """
+    Prepares string that contains OPML document with RSS urls that can be imported into
+    another RSS reader.
+    """
     document = OpmlDocument(
         title="Django RSS Reader Subscriptions",
         date_created=timezone.now(),

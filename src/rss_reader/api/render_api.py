@@ -12,6 +12,16 @@ from rss_reader.models import UserFeed, UserEntry
 
 
 class FeedsRenderer:
+    """
+    Class for building responses with partial templates to be rendered by HTMX.
+
+    Usage:
+        >>> renderer = FeedsRenderer(request, context)
+        ... renderer.include_info_message()
+        ... result = renderer.get_result()
+
+    """
+
     def __init__(self, request, context=None, separator="\n\n"):
         self.request = request
         self.context = context or {}

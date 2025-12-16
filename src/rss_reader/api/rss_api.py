@@ -42,18 +42,19 @@ from vendoring import fastfeedparser
 
 @dataclass
 class RssUrlArgs:
+    """
+    Dataclass for making requests for rss urls
+    """
+
     url: str
-    etag: str = None
-    modified: str = None
+    etag: str = ""
+    modified: str = ""
     delay: int = 0  # to avoid hammering the same server
 
 
 @dataclass
 class RequestResult:
     url: str
-    # TODO: отрефакторить код так чтобы мне не нужно было думать о том как оно устроено внутри и какие ошибки оно может выдавать
-    #  не выдавать ошибки, всегда отдавать либо валидные данные, либо пустые данные (может с ошибкой?),
-    #  чтобы мне нужно было помнить как можно меньше о коде. Снизь количество путей (control path) которыми может быть выполнен код
     headers: dict
     status: int = 0
     content: str = ""
@@ -61,6 +62,13 @@ class RequestResult:
 
 
 def import_from_rss_urls(user, rss_urls: list[str]) -> str:
+    """
+    Requests urls and creates user feeds and entries.
+
+    :param user: User
+    :param rss_urls: List of urls
+    :return: Error message
+    """
     error_messages = []
 
     rss_urls_args = []
@@ -91,6 +99,14 @@ def import_from_rss_urls(user, rss_urls: list[str]) -> str:
 
 
 def check_and_create_user_feed(rss_url: str, user) -> bool:
+    """
+    Validates URL, checks if feed for it already exists, creates UserFeed
+
+    :param rss_url: RSS URL to check
+    :param user: User
+    :return: boolean flag, True if UserFeed was created, False otherwise
+    :raises URLValidationError:
+    """
     _validate_rss_url(user, rss_url)
     try:
         feed = Feed.objects.get(rss_url=rss_url)
@@ -104,6 +120,9 @@ def check_and_create_user_feed(rss_url: str, user) -> bool:
 
 
 def _validate_rss_url(user, rss_url):
+    """
+    :raises URLValidationError:
+    """
     if not rss_url:
         raise URLValidationError("Empty rss url")
 
@@ -123,7 +142,7 @@ def _validate_rss_url(user, rss_url):
 async def fetch_and_parse_rss_urls(
     rss_urls_args: Iterable[RssUrlArgs],
 ) -> list[tuple[RequestResult, dict, bool]]:
-    requests_results = await send_request(rss_urls_args)
+    requests_results = await send_requests(rss_urls_args)
 
     result = parse_rss_responses(requests_results)
 
@@ -156,7 +175,7 @@ def parse_rss_responses(
     return result
 
 
-async def send_request(rss_urls_args: Iterable[RssUrlArgs]) -> list[RequestResult]:
+async def send_requests(rss_urls_args: Iterable[RssUrlArgs]) -> list[RequestResult]:
     async with ClientSession(timeout=ClientTimeout(10)) as session:
         return await asyncio.gather(
             *(
@@ -226,10 +245,21 @@ async def save_request(request_result: RequestResult):
     )
 
 
+# TODO: а может разбить ее на части?
 @transaction.atomic
 def refresh_feed(
-    feed: Feed, parsed_data: dict, feed_has_entries, request_result: RequestResult
+    feed: Feed, parsed_data: dict, feed_has_entries: bool, request_result: RequestResult
 ):
+    """
+    Updates everything related to Feed and its Entries,
+    also deals with redirects, update intervals.
+
+    :param feed:
+    :param parsed_data:
+    :param feed_has_entries:
+    :param request_result:
+    :return:
+    """
     feed.etag = parsed_data.get("etag", "") or ""
     feed.modified = parsed_data.get("modified", "") or ""
 
@@ -296,8 +326,8 @@ def refresh_feed(
     update_after = update_after.replace(minute=0, second=0, microsecond=0)
     feed.update_after = update_after
     try:
-        # транзакция нужна, чтобы создать savepoint,
-        # иначе внешняя транзакция может отвалиться если выпадет IntegrityError
+        # transaction is necessary to create savepoint,
+        # otherwise IntegrityError could roll back outer transaction
         with transaction.atomic():
             feed.save()
     except IntegrityError:
@@ -305,7 +335,12 @@ def refresh_feed(
         delete_feed(feed)
 
 
-def process_rss_url(request, rss_url):
+def process_rss_url(request, rss_url: str):
+    """
+    Creates Feed by one RSS URL, done synchronously by user request
+
+    :return: Error message
+    """
     rss_url = rss_url.strip()
     user = request.user
 
@@ -317,7 +352,7 @@ def process_rss_url(request, rss_url):
         # Done without errors
         return ""
 
-    requests_results = asyncio.run(send_request([RssUrlArgs(url=rss_url)]))
+    requests_results = asyncio.run(send_requests([RssUrlArgs(url=rss_url)]))
     request_result = requests_results[0]
     error_message = request_result.error_message
     if error_message:
@@ -357,7 +392,14 @@ def is_soup_html(soup: BeautifulSoup) -> bool:
     return bool(soup.find())
 
 
-def extract_feed_urls_from_html(rss_url, soup: BeautifulSoup):
+def extract_feed_urls_from_html(url: str, soup: BeautifulSoup) -> list[str]:
+    """
+    Trying to parse HTML page and get links to RSS feeds.
+
+    :param url: URL that we suspect to be HTML page, used to resolve relative urls from that page
+    :param soup: BeautifulSoup of a contents of a page
+    :return: list of absolute RSS urls
+    """
     rss_urls = set()
     for link in soup.find_all(
         "link", rel="alternate", type=("application/rss+xml", "application/atom+xml")
@@ -366,7 +408,7 @@ def extract_feed_urls_from_html(rss_url, soup: BeautifulSoup):
         if href:
             # Resolve relative URLs if necessary
             if not href.startswith("http"):
-                href = urljoin(rss_url, href)
+                href = urljoin(url, href)
             rss_urls.add(href)
 
     for link in soup.find_all("link", rel="feed"):
@@ -374,7 +416,7 @@ def extract_feed_urls_from_html(rss_url, soup: BeautifulSoup):
         if href:
             # Resolve relative URLs if necessary
             if not href.startswith("http"):
-                href = urljoin(rss_url, href)
+                href = urljoin(url, href)
             rss_urls.add(href)
 
     rss_urls = list(rss_urls)
@@ -382,6 +424,12 @@ def extract_feed_urls_from_html(rss_url, soup: BeautifulSoup):
 
 
 def refresh_feeds() -> str:
+    """
+    Refresh all feeds that are due to update.
+    Used in background task.
+
+    :return: Error message
+    """
     feeds_by_urls = {}
     rss_urls_args = []
     feeds = Feed.objects.filter(

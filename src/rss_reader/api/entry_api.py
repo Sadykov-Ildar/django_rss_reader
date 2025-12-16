@@ -3,11 +3,14 @@ from django.utils import timezone
 
 from rss_reader.helpers.date_helpers import get_datetime
 from rss_reader.helpers.html_cleaner import clean_html, resolve_urls
-from rss_reader.models import UserEntry, Entry, UserFeed
+from rss_reader.models import UserEntry, Entry, UserFeed, Feed
 from vendoring.html_sanitizer.sanitizer import sanitize_html
 
 
 def _create_user_entries(user_id: int):
+    """
+    Creates UserEntry for every Entry, if UserEntry didn't exist before.
+    """
     entries_with_user_entries = get_user_entries(
         user=user_id,
     ).values_list("entry_id", flat=True)
@@ -19,6 +22,12 @@ def _create_user_entries(user_id: int):
 
 
 def _get_and_create_user_entries(user_feed: UserFeed) -> QuerySet[UserEntry]:
+    """
+    Creates UserEntry if needed, and returns UserEntries for UserFeed
+
+    :param user_feed:
+    :return:
+    """
     if user_feed.stale:
         _create_user_entries(user_feed.user_id)
         user_feed.stale = False
@@ -33,7 +42,7 @@ def _get_and_create_user_entries(user_feed: UserFeed) -> QuerySet[UserEntry]:
     return user_entries
 
 
-def _create_entries(feed, parsed_data: dict):
+def _create_entries(feed: Feed, parsed_data: dict):
     entry_bulk_create = []
     for entry in reversed(parsed_data.get("entries", [])):
         link = entry.get("link", "")

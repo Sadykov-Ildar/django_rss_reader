@@ -7,6 +7,13 @@ from rss_reader.constants import WS_TASKS_REFRESHED_GROUP_NAME
 
 
 class BackgroundTaskFinishNotifier(WebsocketConsumer):
+    """
+    Sends notification about finishing updates to all users at the same time,
+    who then will reload page and DDoS our site :)
+
+    Could be implemented better, but I am the only user, so it doesn't matter.
+    """
+
     def connect(self):
         self.group_name = WS_TASKS_REFRESHED_GROUP_NAME
 

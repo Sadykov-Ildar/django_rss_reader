@@ -15,6 +15,12 @@ from rss_reader.helpers.urls import get_base_url
 
 
 async def get_favicons(urls: Iterable[str]) -> list[tuple[str, str]]:
+    """
+    For every URL in urls requests HTML content of a site with that URL,
+    parses it, and gets favicon URL.
+
+    :return: list of tuples, each containing site URL, and it's corresponding favicon URL
+    """
     async with ClientSession(timeout=ClientTimeout(10)) as session:
         return await asyncio.gather(*(get_favicon_url(session, url) for url in urls))
 
@@ -77,12 +83,12 @@ async def save_image(file_path, response: ClientResponse):
             await f.write(chunk)
 
 
-def get_favicon_name_from_url(site_url, url):
-    # sometimes site_url and url are the same, sometimes not
+def get_favicon_name_from_url(site_url: str, image_url: str):
+    # sometimes site_url and image_url are the same, sometimes not
     # base name from site_url
     base_name = urlparse(site_url).netloc.replace("/", "_").replace(".", "_")
     # extension from image_url
-    _, image_ext = splitext(urlparse(url).path)
+    _, image_ext = splitext(urlparse(image_url).path)
     path = base_name + image_ext
     filename = Path("favicons") / Path(path)
     return filename
