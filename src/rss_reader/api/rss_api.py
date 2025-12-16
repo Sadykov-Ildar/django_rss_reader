@@ -245,7 +245,6 @@ async def save_request(request_result: RequestResult):
     )
 
 
-# TODO: а может разбить ее на части?
 @transaction.atomic
 def refresh_feed(
     feed: Feed, parsed_data: dict, feed_has_entries: bool, request_result: RequestResult
@@ -253,29 +252,22 @@ def refresh_feed(
     """
     Updates everything related to Feed and its Entries,
     also deals with redirects, update intervals.
-
-    :param feed:
-    :param parsed_data:
-    :param feed_has_entries:
-    :param request_result:
-    :return:
     """
-    feed.etag = parsed_data.get("etag", "") or ""
-    feed.modified = parsed_data.get("modified", "") or ""
 
     current_time = timezone.now()
-    status = request_result.status
+
+    feed.etag = parsed_data.get("etag", "") or ""
+    feed.modified = parsed_data.get("modified", "") or ""
 
     feed.last_updated = current_time
     feed.last_exception = request_result.error_message
 
     feed.last_response_body = None
-    if status not in {200, 304}:
+    if request_result.status not in {200, 304}:
         # response body could have hint that we need to show to user
         feed.last_response_body = request_result.content
 
     old_entry_count = feed.entry_count
-
     if feed_has_entries:
         UserFeed.objects.filter(feed=feed).update(stale=True)
         _create_entries(feed, parsed_data)
@@ -283,6 +275,29 @@ def refresh_feed(
     # or entries that we filtered out
     new_entries = feed.entry_count > old_entry_count
 
+    _change_feed_if_moved_or_disabled(feed, request_result)
+
+    update_interval = _get_update_interval_in_hours(feed, new_entries, request_result)
+
+    feed.update_interval = update_interval
+    update_after = current_time + timedelta(hours=update_interval)
+    update_after = update_after.replace(minute=0, second=0, microsecond=0)
+    feed.update_after = update_after
+    try:
+        # transaction is necessary to create savepoint,
+        # otherwise IntegrityError could roll back outer transaction
+        with transaction.atomic():
+            feed.save()
+    except IntegrityError:
+        # changing rss_url as a result of 301/308 permanent redirect can lead to merging two feeds into one
+        delete_feed(feed)
+
+
+def _change_feed_if_moved_or_disabled(feed: Feed, request_result: RequestResult):
+    """
+    Handles cases when Feed was moved temporarily or permanently, or stopped existing.
+    """
+    status = request_result.status
     headers = request_result.headers
     if status in {301, 308}:
         # moved permanently
@@ -303,12 +318,18 @@ def refresh_feed(
         feed.updates_enabled = False
         feed.disabled_reason = 'Server responded with [status 410] "gone"'
 
+
+def _get_update_interval_in_hours(
+    feed: Feed, new_entries: bool, request_result: RequestResult
+) -> int:
     update_interval = feed.update_interval
-    update_delay = get_update_delay_in_hours(headers)
+    update_delay = get_update_delay_in_hours(request_result.headers)
     if update_delay:
         update_interval = update_delay
     else:
-        if should_slow_down(status, new_entries, request_result.error_message):
+        if should_slow_down(
+            request_result.status, new_entries, request_result.error_message
+        ):
             # slow down
             update_interval = increase_update_interval(update_interval)
         else:
@@ -320,19 +341,7 @@ def refresh_feed(
         feed.disabled_reason = "Last updated more than a year ago"
     if update_interval < 2:
         update_interval = 2
-
-    feed.update_interval = update_interval
-    update_after = current_time + timedelta(hours=update_interval)
-    update_after = update_after.replace(minute=0, second=0, microsecond=0)
-    feed.update_after = update_after
-    try:
-        # transaction is necessary to create savepoint,
-        # otherwise IntegrityError could roll back outer transaction
-        with transaction.atomic():
-            feed.save()
-    except IntegrityError:
-        # changing rss_url as a result of 301/308 permanent redirect can lead to merging two feeds into one
-        delete_feed(feed)
+    return update_interval
 
 
 def process_rss_url(request, rss_url: str):
