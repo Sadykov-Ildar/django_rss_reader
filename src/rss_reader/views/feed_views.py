@@ -20,7 +20,6 @@ from rss_reader.renderers.render_api import (
     render_info_message,
 )
 from rss_reader.forms import UploadFileForm
-from rss_reader.models import UserFeed
 from rss_reader.tasks import (
     refresh_feeds_task,
     import_from_rss_urls_task,
@@ -55,9 +54,8 @@ class FeedView(View):
         return HttpResponse(content)
 
     def delete(self, request, user_feed_id, *args, **kwargs):
-        try:
-            user_feed = get_user_feed_by_id(user_feed_id, request.user)
-        except UserFeed.DoesNotExist:
+        user_feed = get_user_feed_by_id(user_feed_id, request.user)
+        if user_feed is None:
             raise Http404
 
         delete_user_feed(user_feed)

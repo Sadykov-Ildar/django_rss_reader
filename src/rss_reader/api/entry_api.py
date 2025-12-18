@@ -45,6 +45,7 @@ def _get_and_create_user_entries(user_feed: UserFeed) -> QuerySet[UserEntry]:
     return user_entries
 
 
+# TODO: это бы как-то поправить
 def _create_entries(feed: Feed, parsed_data: dict):
     entry_bulk_create = []
     for entry in reversed(parsed_data.get("entries", [])):
@@ -137,17 +138,20 @@ def get_user_entries(user) -> QuerySet[UserEntry]:
     )
 
 
-def get_user_entry(user_entry_id: int, user) -> UserEntry:
-    user_entry = (
-        get_user_entries(
-            user=user,
+def get_user_entry(user_entry_id: int, user) -> UserEntry | None:
+    try:
+        user_entry = (
+            get_user_entries(
+                user=user,
+            )
+            .filter(
+                pk=user_entry_id,
+            )
+            .select_related("entry")
+            .get()
         )
-        .filter(
-            pk=user_entry_id,
-        )
-        .select_related("entry")
-        .get()
-    )
+    except UserEntry.DoesNotExist:
+        user_entry = None
     return user_entry
 
 

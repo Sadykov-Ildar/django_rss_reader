@@ -3,7 +3,7 @@ from django.db.models import QuerySet
 
 from rss_reader.api.entry_api import _create_entries, get_user_entries
 from rss_reader.exceptions import URLValidationError
-from rss_reader.models import Feed, UserFeed
+from rss_reader.models import Feed, UserFeed, UserEntry
 
 
 @transaction.atomic
@@ -42,12 +42,22 @@ def create_user_feed(feed: Feed, user):
         raise URLValidationError("Feed with this url already exists.")
 
 
-def get_user_feed_by_id(pk: int, user) -> UserFeed:
-    return UserFeed.objects.select_related("feed").get(pk=pk, user=user)
+def get_user_feed_by_id(pk: int, user) -> UserFeed | None:
+    try:
+        return UserFeed.objects.select_related("feed").get(pk=pk, user=user)
+    except UserFeed.DoesNotExist:
+        return None
 
 
-def get_user_feed_by_feed_id(feed_id: int, user) -> UserFeed:
-    return UserFeed.objects.select_related("feed").get(feed=feed_id, user=user)
+def get_user_feed_by_user_entry(user_entry: UserEntry, user) -> UserFeed | None:
+    try:
+        user_feed = UserFeed.objects.select_related("feed").get(
+            feed=user_entry.entry.feed_id, user=user
+        )
+    except UserFeed.DoesNotExist:
+        user_feed = None
+
+    return user_feed
 
 
 def get_ordered_user_feeds(user) -> QuerySet[UserFeed]:
