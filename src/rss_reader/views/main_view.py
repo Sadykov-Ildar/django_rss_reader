@@ -1,14 +1,24 @@
+from django.http import HttpResponse
 from django.shortcuts import render
 
+from rss_reader.api.entry_api import get_filtered_user_entries
 from rss_reader.api.feed_api import get_ordered_user_feeds
-from rss_reader.api.render_api import render_main_page
+from rss_reader.renderers.render_api import render_main_page
 from rss_reader.forms import UploadFileForm
 
 
 def index_view(request):
     user = request.user
     user_feeds = get_ordered_user_feeds(user)
-    return render_main_page(request, user_feeds, user_feeds[0])
+    feed = None
+    user_entries = []
+    if user_feeds:
+        feed = user_feeds[0]
+        user_entries = get_filtered_user_entries(feed)
+    content = render_main_page(
+        request, user_feeds, user_feed=feed, user_entries=user_entries
+    )
+    return HttpResponse(content)
 
 
 def settings_view(request):

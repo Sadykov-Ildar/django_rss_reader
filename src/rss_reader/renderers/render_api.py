@@ -2,13 +2,13 @@ from datetime import datetime
 from typing import Iterable
 
 from django.conf import settings
-from django.db.models import Q
-from django.shortcuts import render
 from django.template import loader
 
-from rss_reader.api.entry_api import _get_and_create_user_entries
-from rss_reader.api.feed_api import get_ordered_user_feeds
-from rss_reader.models import UserFeed, UserEntry
+from rss_reader.constants import ENTRIES_BATCH_SIZE
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from rss_reader.models import UserFeed, UserEntry
 
 
 class FeedsRenderer:
@@ -30,6 +30,9 @@ class FeedsRenderer:
 
     def get_result(self):
         return self.separator.join(self._content)
+
+    def render_index(self):
+        self._render_template("rss_reader/index.html")
 
     def include_oob_feed(self):
         self._render_template("rss_reader/feeds.html#oob_feed_partial")
@@ -79,8 +82,9 @@ class FeedsRenderer:
 def render_main_page(
     request,
     user_feeds: Iterable[UserFeed],
-    user_feed: UserFeed,
     *,
+    user_feed: UserFeed | None = None,
+    user_entries: list[UserEntry],
     user_entry: UserEntry | None = None,
     start: datetime | None = None,
     search: str | None = None,
@@ -97,11 +101,16 @@ def render_main_page(
             }
         )
 
-    if user_feeds:
-        user_entries_context = get_user_entries_in_context(user_feed, start, search)
+    if user_feed:
+        user_entries_context = get_user_entries_in_context(
+            user_feed, user_entries, start, search
+        )
         context.update(user_entries_context)
 
-    return render(request, "rss_reader/index.html", context=context)
+    renderer = FeedsRenderer(request, context)
+    renderer.render_index()
+
+    return renderer.get_result()
 
 
 def render_info_message(request, info_message):
@@ -114,16 +123,22 @@ def render_info_message(request, info_message):
     return renderer.get_result()
 
 
-def render_feeds_and_entries(request, error_message="", add_form=False):
-    user_feeds = get_ordered_user_feeds(request.user)
-
+def render_feeds_and_entries(
+    request,
+    user_feeds: Iterable[UserFeed],
+    *,
+    user_feed: UserFeed | None = None,
+    user_entries: list[UserEntry],
+    error_message="",
+    add_form=False,
+):
     context = {
         "user_feeds": user_feeds,
         "error_message": error_message,
     }
 
-    if user_feeds:
-        context.update(get_user_entries_in_context(user_feeds[0]))
+    if user_feed:
+        context.update(get_user_entries_in_context(user_feed, user_entries))
 
     renderer = FeedsRenderer(request, context)
     renderer.include_oob_feeds()
@@ -174,10 +189,11 @@ def render_entry_content(request, user_entry: UserEntry, user_feed: UserFeed):
 def render_entries(
     request,
     user_feed: UserFeed,
+    user_entries: list[UserEntry],
     start: datetime | None = None,
     search: str | None = None,
 ):
-    context = get_user_entries_in_context(user_feed, start, search)
+    context = get_user_entries_in_context(user_feed, user_entries, start, search)
 
     renderer = FeedsRenderer(request, context)
     renderer.include_oob_feed()
@@ -189,25 +205,15 @@ def render_entries(
     return renderer.get_result()
 
 
-def get_user_entries_in_context(user_feed, start: datetime = None, search: str = None):
-    user_entries = _get_and_create_user_entries(user_feed)
-    if search:
-        user_entries = user_entries.filter(
-            Q(entry__title__icontains=search)
-            | Q(entry__content__icontains=search)
-            | Q(entry__summary__icontains=search)
-        )
-
-    batch_size = 25
+def get_user_entries_in_context(
+    user_feed: UserFeed,
+    user_entries: list[UserEntry],
+    start: datetime = None,
+    search: str = None,
+):
     more = False
 
-    if start:
-        user_entries = user_entries.filter(
-            entry__published__lt=start,
-        )
-
-    user_entries = user_entries.order_by("read", "-entry__published")[:batch_size]
-    if len(user_entries) == batch_size:
+    if len(user_entries) == ENTRIES_BATCH_SIZE:
         more = True
         start = list(user_entries)[-1].entry.published
 

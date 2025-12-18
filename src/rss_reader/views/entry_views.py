@@ -7,13 +7,14 @@ from rss_reader.api.entry_api import (
     mark_user_feed_as_read,
     toggle_entry_read,
     get_user_entry,
+    get_filtered_user_entries,
 )
 from rss_reader.api.feed_api import (
     get_ordered_user_feeds,
     get_user_feed_by_id,
     get_user_feed_by_feed_id,
 )
-from rss_reader.api.render_api import (
+from rss_reader.renderers.render_api import (
     render_entry_content,
     render_entries,
     render_feed_and_entry,
@@ -30,7 +31,8 @@ def mark_entries_as_read_view(request, user_feed_id):
 
     mark_user_feed_as_read(user_feed)
 
-    content = render_entries(request, user_feed)
+    user_entries = get_filtered_user_entries(user_feed)
+    content = render_entries(request, user_feed, user_entries)
 
     return HttpResponse(content)
 
@@ -50,10 +52,17 @@ def entry_content_view(request, user_entry_id: int):
 
     if request.htmx:
         content = render_entry_content(request, user_entry, user_feed)
-        return HttpResponse(content)
     else:
         user_feeds = get_ordered_user_feeds(request.user)
-        return render_main_page(request, user_feeds, user_feed, user_entry=user_entry)
+        user_entries = get_filtered_user_entries(user_feed)
+        content = render_main_page(
+            request,
+            user_feeds,
+            user_feed=user_feed,
+            user_entries=user_entries,
+            user_entry=user_entry,
+        )
+    return HttpResponse(content)
 
 
 def toggle_entry_read_view(request, user_entry_id: int):
@@ -81,10 +90,18 @@ def entries_view(request, user_feed_id: int, start: datetime = None):
         raise Http404
     search = request.GET.get("search")
     if request.htmx:
-        content = render_entries(request, user_feed, start, search)
-        return HttpResponse(content)
+        user_entries = get_filtered_user_entries(user_feed, search, start)
+        content = render_entries(request, user_feed, user_entries, start, search)
     else:
         user_feeds = get_ordered_user_feeds(request.user)
-        return render_main_page(
-            request, user_feeds, user_feed, start=start, search=search
+        user_entries = get_filtered_user_entries(user_feed)
+        content = render_main_page(
+            request,
+            user_feeds,
+            user_feed=user_feed,
+            user_entries=user_entries,
+            start=start,
+            search=search,
         )
+
+    return HttpResponse(content)

@@ -1,6 +1,9 @@
-from django.db.models import QuerySet, Subquery, OuterRef
+from datetime import datetime
+
+from django.db.models import QuerySet, Subquery, OuterRef, Q
 from django.utils import timezone
 
+from rss_reader.constants import ENTRIES_BATCH_SIZE
 from rss_reader.helpers.date_helpers import get_datetime
 from rss_reader.helpers.html_cleaner import clean_html, resolve_urls
 from rss_reader.models import UserEntry, Entry, UserFeed, Feed
@@ -146,3 +149,25 @@ def get_user_entry(user_entry_id: int, user) -> UserEntry:
         .get()
     )
     return user_entry
+
+
+def get_filtered_user_entries(
+    user_feed: UserFeed, search: str | None = None, start: datetime | None = None
+) -> list[UserEntry]:
+    user_entries = _get_and_create_user_entries(user_feed)
+    if search:
+        user_entries = user_entries.filter(
+            Q(entry__title__icontains=search)
+            | Q(entry__content__icontains=search)
+            | Q(entry__summary__icontains=search)
+        )
+
+    if start:
+        user_entries = user_entries.filter(
+            entry__published__lt=start,
+        )
+
+    user_entries = user_entries.order_by("read", "-entry__published")[
+        :ENTRIES_BATCH_SIZE
+    ]
+    return list(user_entries)
