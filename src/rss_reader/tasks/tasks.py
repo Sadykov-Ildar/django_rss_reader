@@ -14,7 +14,7 @@ from rss_reader.api.rss_api import (
     import_from_rss_urls,
     refresh_feeds,
 )
-from rss_reader.api.favicons_api import (
+from rss_reader.tasks.favicons_api import (
     get_favicon_name_from_url,
     get_image_file_path,
     get_favicons,
@@ -27,7 +27,7 @@ from rss_reader.constants import (
 )
 from rss_reader.helpers.urls import get_base_url
 from rss_reader.models import Feed, RequestHistory
-from rss_reader.mutex import redis_lock
+from rss_reader.tasks.mutex import redis_lock
 
 
 @shared_task(bind=True, name="rss_reader.refresh_feeds_task")
