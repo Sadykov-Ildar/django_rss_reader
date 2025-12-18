@@ -2,17 +2,15 @@ from datetime import datetime
 
 from django.http import Http404, HttpResponse
 
-from rss_reader.api.entry_api import (
-    mark_entry_as_read,
-    mark_user_feed_as_read,
-    toggle_entry_read,
-    get_user_entry,
-    get_filtered_user_entries,
-)
-from rss_reader.api.feed_api import (
+from rss_reader.repos.feed_repo import (
     get_ordered_user_feeds,
     get_user_feed_by_id,
     get_user_feed_by_user_entry,
+    mark_user_feed_as_read,
+    mark_entry_as_read,
+    toggle_entry_read,
+    get_user_entry,
+    get_filtered_user_entries,
 )
 from rss_reader.renderers.render_api import (
     render_entry_content,

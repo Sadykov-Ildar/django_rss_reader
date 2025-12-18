@@ -27,12 +27,12 @@ from rss_reader.api._refresh_intervals import (
     decrease_update_interval,
 )
 from rss_reader.constants import HOURS_IN_YEAR
-from rss_reader.api.entry_api import _create_entries
-from rss_reader.api.feed_api import (
+from rss_reader.repos.feed_repo import (
     create_feed_and_entries,
     create_user_feed,
     get_user_feeds,
     delete_feed,
+    _create_entries,
 )
 from rss_reader.exceptions import URLValidationError
 from rss_reader.helpers.urls import get_base_url

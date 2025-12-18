@@ -6,12 +6,13 @@ from django.views import View
 from django.views.decorators.http import require_POST
 
 from rss_reader import opml_parser
-from rss_reader.api.entry_api import mark_all_feeds_as_read, get_filtered_user_entries
-from rss_reader.api.feed_api import (
+from rss_reader.repos.feed_repo import (
     get_ordered_user_feeds,
     get_user_feed_by_id,
     delete_user_feed,
     delete_user_feeds_for_user,
+    mark_all_feeds_as_read,
+    get_filtered_user_entries,
 )
 from rss_reader.renderers.feeds_to_opml import get_feeds_in_opml
 from rss_reader.api.rss_api import process_rss_url
