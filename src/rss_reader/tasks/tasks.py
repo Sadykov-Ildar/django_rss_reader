@@ -14,7 +14,7 @@ from rss_reader.api.rss_api import (
     import_from_rss_urls,
     refresh_feeds,
 )
-from rss_reader.repos.feed_repo import get_feeds_with_unsearched_images
+from rss_reader.repos.feed_repo import FeedRepo
 from rss_reader.repos.request_history import delete_request_history_older_than
 from rss_reader.tasks.favicons_api import (
     get_favicon_name_from_url,
@@ -63,7 +63,8 @@ def create_favicons_task(self):
     """
     Background task for getting favicons for feeds, runs after importing feeds.
     """
-    feeds = get_feeds_with_unsearched_images()
+    feed_repo = FeedRepo()
+    feeds = feed_repo.get_feeds_with_unsearched_images()
 
     url_to_feeds = defaultdict(list)
     for feed in feeds:

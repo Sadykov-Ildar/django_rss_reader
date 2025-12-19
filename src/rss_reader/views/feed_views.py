@@ -6,14 +6,7 @@ from django.views import View
 from django.views.decorators.http import require_POST
 
 from rss_reader import opml_parser
-from rss_reader.repos.feed_repo import (
-    get_ordered_user_feeds,
-    get_user_feed_by_id,
-    delete_user_feed,
-    delete_user_feeds_for_user,
-    mark_all_feeds_as_read,
-    get_filtered_user_entries,
-)
+from rss_reader.repos.feed_repo import FeedRepo
 from rss_reader.renderers.feeds_to_opml import get_feeds_in_opml
 from rss_reader.api.rss_api import process_rss_url
 from rss_reader.renderers.render_api import (
@@ -30,6 +23,7 @@ from rss_reader.tasks import (
 
 class FeedView(View):
     def post(self, request, *args, **kwargs):
+        feed_repo = FeedRepo()
         rss_url = request.POST.get("url")
 
         error_message = process_rss_url(request, rss_url)
@@ -38,12 +32,12 @@ class FeedView(View):
 
         create_favicons_task.delay()
 
-        user_feeds = get_ordered_user_feeds(request.user)
+        user_feeds = feed_repo.get_ordered_user_feeds(request.user)
         user_feed = None
         user_entries = []
         if user_feeds:
             user_feed = user_feeds[0]
-            user_entries = get_filtered_user_entries(user_feed)
+            user_entries = feed_repo.get_filtered_user_entries(user_feed)
         content = render_feeds_and_entries(
             request,
             user_feeds,
@@ -55,11 +49,12 @@ class FeedView(View):
         return HttpResponse(content)
 
     def delete(self, request, user_feed_id, *args, **kwargs):
-        user_feed = get_user_feed_by_id(user_feed_id, request.user)
+        feed_repo = FeedRepo()
+        user_feed = feed_repo.get_user_feed_by_id(user_feed_id, request.user)
         if user_feed is None:
             raise Http404
 
-        delete_user_feed(user_feed)
+        feed_repo.delete_user_feed(user_feed)
 
         return HttpResponse()
 
@@ -78,7 +73,8 @@ def prepare_feed_error(request, error_message):
 
 
 def delete_all_user_feeds_view(request):
-    delete_user_feeds_for_user(request.user)
+    feed_repo = FeedRepo()
+    feed_repo.delete_user_feeds_for_user(request.user)
 
     return HttpResponse()
 
@@ -114,7 +110,8 @@ def import_feeds(request):
 
 
 def export_user_feeds_view(request):
-    feeds = get_ordered_user_feeds(request.user).order_by("id")
+    feed_repo = FeedRepo()
+    feeds = feed_repo.get_ordered_user_feeds(request.user).order_by("id")
     file_content = get_feeds_in_opml(feeds)
     filename = "rss_feeds-{}.opml".format(datetime.date.today().isoformat())
 
@@ -135,15 +132,16 @@ def refresh_user_feeds(request):
 
 
 def mark_feeds_as_read_view(request):
-    mark_all_feeds_as_read(request.user)
+    feed_repo = FeedRepo()
+    feed_repo.mark_all_feeds_as_read(request.user)
 
-    user_feeds = get_ordered_user_feeds(request.user)
+    user_feeds = feed_repo.get_ordered_user_feeds(request.user)
 
     user_feed = None
     user_entries = []
     if user_feeds:
         user_feed = user_feeds[0]
-        user_entries = get_filtered_user_entries(user_feed)
+        user_entries = feed_repo.get_filtered_user_entries(user_feed)
     content = render_feeds_and_entries(
         request, user_feeds, user_feed=user_feed, user_entries=user_entries
     )

@@ -7,12 +7,7 @@ from bs4 import BeautifulSoup
 from rss_reader.api.dtos import RssUrlArgs
 from rss_reader.repos.network_repo import NetworkRepo
 from rss_reader.api.rss_parser import RssParser
-from rss_reader.repos.feed_repo import (
-    create_feed_and_entries,
-    get_feeds_for_refresh,
-    check_and_create_user_feed,
-    refresh_feed,
-)
+from rss_reader.repos.feed_repo import FeedRepo
 from rss_reader.exceptions import URLValidationError
 from rss_reader.helpers.urls import get_base_url
 
@@ -28,11 +23,12 @@ def import_from_rss_urls(user, rss_urls: list[str]) -> str:
     error_messages = []
     rss_parser = RssParser()
     network_repo = NetworkRepo(parser=rss_parser)
+    feed_repo = FeedRepo()
 
     rss_urls_args = []
     for rss_url in rss_urls:
         try:
-            created = check_and_create_user_feed(rss_url, user)
+            created = feed_repo.check_and_create_user_feed(rss_url, user)
             if not created:
                 rss_urls_args.append(RssUrlArgs(url=rss_url))
         except URLValidationError as e:
@@ -47,7 +43,7 @@ def import_from_rss_urls(user, rss_urls: list[str]) -> str:
             error_messages.append(f"{url}: {error_message}")
         else:
             try:
-                create_feed_and_entries(user, parsed_data)
+                feed_repo.create_feed_and_entries(user, parsed_data)
             except URLValidationError as e:
                 error_messages.append(f"{url}: {e.message}")
 
@@ -64,11 +60,13 @@ def process_rss_url(request, rss_url: str):
     """
     rss_parser = RssParser()
     network_repo = NetworkRepo(parser=rss_parser)
+    feed_repo = FeedRepo()
+
     rss_url = rss_url.strip()
     user = request.user
 
     try:
-        created = check_and_create_user_feed(rss_url, user)
+        created = feed_repo.check_and_create_user_feed(rss_url, user)
     except URLValidationError as e:
         return e.message
     if created:
@@ -97,7 +95,7 @@ def process_rss_url(request, rss_url: str):
         if error_message:
             return error_message
         try:
-            create_feed_and_entries(user, parsed_data)
+            feed_repo.create_feed_and_entries(user, parsed_data)
         except URLValidationError as e:
             return e.message
 
@@ -155,9 +153,12 @@ def refresh_feeds() -> str:
     """
     rss_parser = RssParser()
     network_repo = NetworkRepo(parser=rss_parser)
+    feed_repo = FeedRepo()
+
     feeds_by_urls = {}
     rss_urls_args = []
-    feeds = get_feeds_for_refresh()
+    feed_repo = FeedRepo()
+    feeds = feed_repo.get_feeds_for_refresh()
     site_urls_counter = Counter()
     for feed in feeds:
         site_url = get_base_url(feed.rss_url)
@@ -181,7 +182,7 @@ def refresh_feeds() -> str:
         if error_message:
             error_messages.append(f"{url}: {error_message}")
         feed = feeds_by_urls[url]
-        refresh_feed(feed, parsed_data, request_result)
+        feed_repo.refresh_feed(feed, parsed_data, request_result)
 
     error_message = "<br>".join(error_messages)
 
