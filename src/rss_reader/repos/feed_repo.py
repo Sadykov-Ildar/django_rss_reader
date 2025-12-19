@@ -22,7 +22,8 @@ from rss_reader.models import Feed, UserFeed, UserEntry, Entry
 from vendoring.html_sanitizer.sanitizer import sanitize_html
 
 if TYPE_CHECKING:
-    from rss_reader.api.dtos import RssParsedData, RequestResult
+    from rss_reader.api.dtos import RequestResult
+    from rss_reader.api.rss_parser import RssParsedData
 
 
 @transaction.atomic

@@ -8,9 +8,9 @@ from bs4 import BeautifulSoup
 from rss_reader.api.dtos import RssUrlArgs
 from rss_reader.api.network_io import (
     fetch_and_parse_rss_urls,
-    parse_rss_responses,
     send_requests,
 )
+from rss_reader.api.rss_parser import parse_rss_responses
 from rss_reader.repos.feed_repo import (
     create_feed_and_entries,
     get_feeds_for_refresh,
