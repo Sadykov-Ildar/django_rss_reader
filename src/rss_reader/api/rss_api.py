@@ -5,7 +5,7 @@ from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 
 from rss_reader.api.dtos import RssUrlArgs
-from rss_reader.api.network_io import NetworkRepo
+from rss_reader.repos.network_repo import NetworkRepo
 from rss_reader.api.rss_parser import RssParser
 from rss_reader.repos.feed_repo import (
     create_feed_and_entries,
