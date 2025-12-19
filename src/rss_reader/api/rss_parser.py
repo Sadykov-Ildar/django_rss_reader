@@ -66,11 +66,10 @@ class RssParsedData:
 
 def parse_rss_responses(
     requests_results: list[RequestResult],
-) -> list[tuple[RequestResult, RssParsedData, bool]]:
+) -> list[tuple[RequestResult, RssParsedData]]:
     result = []
 
     for request_result in requests_results:
-        feed_has_entries = False
         rss_data = RssParsedData()
         parsed_data = {}
         if not request_result.error_message:
@@ -79,11 +78,9 @@ def parse_rss_responses(
                     parsed_data = fastfeedparser.parse(request_result.content)
                 except ValueError as e:
                     request_result.error_message = str(e)
-                else:
-                    feed_has_entries = True
 
             rss_data.fill_with_data(parsed_data, request_result)
 
-        result.append((request_result, rss_data, feed_has_entries))
+        result.append((request_result, rss_data))
 
     return result

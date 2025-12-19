@@ -42,7 +42,7 @@ def import_from_rss_urls(user, rss_urls: list[str]) -> str:
 
     parsed_results = asyncio.run(fetch_and_parse_rss_urls(rss_urls_args))
 
-    for request_result, parsed_data, _ in parsed_results:
+    for request_result, parsed_data in parsed_results:
         error_message = request_result.error_message
         url = request_result.url
         if error_message:
@@ -92,7 +92,7 @@ def process_rss_url(request, rss_url: str):
 
     if not is_html:
         parsed_results = parse_rss_responses(requests_results)
-        request_result, parsed_data, _ = parsed_results[0]
+        request_result, parsed_data = parsed_results[0]
         error_message = request_result.error_message
         if error_message:
             return error_message
@@ -173,13 +173,13 @@ def refresh_feeds() -> str:
 
     error_messages = []
     parsed_results = asyncio.run(fetch_and_parse_rss_urls(rss_urls_args))
-    for request_result, parsed_data, feed_has_entries in parsed_results:
+    for request_result, parsed_data in parsed_results:
         error_message = request_result.error_message
         url = request_result.url
         if error_message:
             error_messages.append(f"{url}: {error_message}")
         feed = feeds_by_urls[url]
-        refresh_feed(feed, parsed_data, feed_has_entries, request_result)
+        refresh_feed(feed, parsed_data, request_result)
 
     error_message = "<br>".join(error_messages)
 

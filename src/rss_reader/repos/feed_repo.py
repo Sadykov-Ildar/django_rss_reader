@@ -354,7 +354,6 @@ def get_feeds_with_unsearched_images() -> QuerySet[Feed, Feed]:
 def refresh_feed(
     feed: Feed,
     rss_data: RssParsedData,
-    feed_has_entries: bool,
     request_result: RequestResult,
 ):
     """
@@ -375,7 +374,7 @@ def refresh_feed(
         feed.last_response_body = request_result.content
 
     old_entry_count = feed.entry_count
-    if feed_has_entries:
+    if rss_data.entries:
         mark_user_feeds_as_stale(feed)
         create_entries(feed, rss_data)
     # we need to check this now, because response could just have stale entries

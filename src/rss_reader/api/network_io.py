@@ -19,7 +19,7 @@ from rss_reader.repos.request_history import save_request
 
 async def fetch_and_parse_rss_urls(
     rss_urls_args: Iterable[RssUrlArgs],
-) -> list[tuple[RequestResult, RssParsedData, bool]]:
+) -> list[tuple[RequestResult, RssParsedData]]:
     requests_results = await send_requests(rss_urls_args)
 
     result = parse_rss_responses(requests_results)
