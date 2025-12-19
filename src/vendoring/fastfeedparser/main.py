@@ -2,25 +2,12 @@ from __future__ import annotations
 
 import datetime
 from email.utils import parsedate_to_datetime
-import gzip
 import json
 import re
-import zlib
 from functools import lru_cache
 
-try:
-    import brotli
 
-    HAS_BROTLI = True
-except ImportError:
-    HAS_BROTLI = False
 from typing import Any, Callable, Optional, TYPE_CHECKING, Literal
-from urllib.request import (
-    HTTPErrorProcessor,
-    HTTPRedirectHandler,
-    Request,
-    build_opener,
-)
 
 import dateparser
 from dateutil import parser as dateutil_parser
@@ -354,45 +341,18 @@ def _parse_json_feed(json_data: dict) -> FastFeedParserDict:
 
 
 def parse(source: str | bytes) -> FastFeedParserDict:
-    """Parse a feed from a URL or XML content.
+    """Parse a feed from an XML content.
 
     Args:
-        source: URL string or XML content string/bytes
+        source: XML content string/bytes
 
     Returns:
         FastFeedParserDict containing parsed feed data
 
     Raises:
         ValueError: If content is empty or invalid
-        HTTPError: If URL fetch fails
     """
-    # Handle URL input
-    if isinstance(source, str) and source.startswith(("http://", "https://")):
-        request = Request(
-            source,
-            method="GET",
-            headers={
-                "Accept-Encoding": "gzip, deflate",
-                "User-Agent": "fastfeedparser (+https://github.com/kagisearch/fastfeedparser)",
-            },
-        )
-        opener = build_opener(HTTPRedirectHandler(), HTTPErrorProcessor())
-        with opener.open(request, timeout=30) as response:
-            response.begin()
-            content: bytes = response.read()
-            content_encoding = response.headers.get("Content-Encoding")
-            if content_encoding == "gzip":
-                content = gzip.decompress(content)
-            elif content_encoding == "deflate":
-                content = zlib.decompress(content, -zlib.MAX_WBITS)
-            elif content_encoding == "br" and HAS_BROTLI:
-                content = brotli.decompress(content)
-            content_charset = response.headers.get_content_charset()
-            xml_content = (
-                content.decode(content_charset) if content_charset else content
-            )
-    else:
-        xml_content = source
+    xml_content = source
 
     # Fast-path: Skip JSON detection for content that clearly starts with XML
     # This avoids unnecessary JSON decode attempts for 99% of feeds
