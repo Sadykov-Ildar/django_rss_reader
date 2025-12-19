@@ -1,16 +1,12 @@
 from __future__ import annotations
-import asyncio
 from collections import Counter
 from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
 
 from rss_reader.api.dtos import RssUrlArgs
-from rss_reader.api.network_io import (
-    fetch_and_parse_rss_urls,
-    send_requests,
-)
-from rss_reader.api.rss_parser import parse_rss_responses
+from rss_reader.api.network_io import NetworkRepo
+from rss_reader.api.rss_parser import RssParser
 from rss_reader.repos.feed_repo import (
     create_feed_and_entries,
     get_feeds_for_refresh,
@@ -30,6 +26,8 @@ def import_from_rss_urls(user, rss_urls: list[str]) -> str:
     :return: Error message
     """
     error_messages = []
+    rss_parser = RssParser()
+    network_repo = NetworkRepo(parser=rss_parser)
 
     rss_urls_args = []
     for rss_url in rss_urls:
@@ -40,7 +38,7 @@ def import_from_rss_urls(user, rss_urls: list[str]) -> str:
         except URLValidationError as e:
             error_messages.append(f"{rss_url}: {e.message}")
 
-    parsed_results = asyncio.run(fetch_and_parse_rss_urls(rss_urls_args))
+    parsed_results = network_repo.get_parsed_results(rss_urls_args)
 
     for request_result, parsed_data in parsed_results:
         error_message = request_result.error_message
@@ -64,6 +62,8 @@ def process_rss_url(request, rss_url: str):
 
     :return: Error message
     """
+    rss_parser = RssParser()
+    network_repo = NetworkRepo(parser=rss_parser)
     rss_url = rss_url.strip()
     user = request.user
 
@@ -75,7 +75,7 @@ def process_rss_url(request, rss_url: str):
         # Done without errors
         return ""
 
-    requests_results = asyncio.run(send_requests([RssUrlArgs(url=rss_url)]))
+    requests_results = network_repo.send_requests([RssUrlArgs(url=rss_url)])
     request_result = requests_results[0]
     error_message = request_result.error_message
     if error_message:
@@ -91,7 +91,7 @@ def process_rss_url(request, rss_url: str):
             is_html = True
 
     if not is_html:
-        parsed_results = parse_rss_responses(requests_results)
+        parsed_results = rss_parser.parse(requests_results)
         request_result, parsed_data = parsed_results[0]
         error_message = request_result.error_message
         if error_message:
@@ -153,6 +153,8 @@ def refresh_feeds() -> str:
 
     :return: Error message
     """
+    rss_parser = RssParser()
+    network_repo = NetworkRepo(parser=rss_parser)
     feeds_by_urls = {}
     rss_urls_args = []
     feeds = get_feeds_for_refresh()
@@ -172,7 +174,7 @@ def refresh_feeds() -> str:
         site_urls_counter[site_url] += 1
 
     error_messages = []
-    parsed_results = asyncio.run(fetch_and_parse_rss_urls(rss_urls_args))
+    parsed_results = network_repo.get_parsed_results(rss_urls_args)
     for request_result, parsed_data in parsed_results:
         error_message = request_result.error_message
         url = request_result.url

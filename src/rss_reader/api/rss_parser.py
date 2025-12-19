@@ -64,23 +64,25 @@ class RssParsedData:
             )
 
 
-def parse_rss_responses(
-    requests_results: list[RequestResult],
-) -> list[tuple[RequestResult, RssParsedData]]:
-    result = []
+class RssParser:
+    @staticmethod
+    def parse(
+        requests_results: list[RequestResult],
+    ) -> list[tuple[RequestResult, RssParsedData]]:
+        result = []
 
-    for request_result in requests_results:
-        rss_data = RssParsedData()
-        parsed_data = {}
-        if not request_result.error_message:
-            if request_result.status != 304:
-                try:
-                    parsed_data = fastfeedparser.parse(request_result.content)
-                except ValueError as e:
-                    request_result.error_message = str(e)
+        for request_result in requests_results:
+            rss_data = RssParsedData()
+            parsed_data = {}
+            if not request_result.error_message:
+                if request_result.status != 304:
+                    try:
+                        parsed_data = fastfeedparser.parse(request_result.content)
+                    except ValueError as e:
+                        request_result.error_message = str(e)
 
-            rss_data.fill_with_data(parsed_data, request_result)
+                rss_data.fill_with_data(parsed_data, request_result)
 
-        result.append((request_result, rss_data))
+            result.append((request_result, rss_data))
 
-    return result
+        return result
