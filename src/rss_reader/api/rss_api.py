@@ -1,64 +1,41 @@
 from __future__ import annotations
 import asyncio
 from collections import Counter
-from dataclasses import dataclass
 from datetime import timedelta
-from typing import Iterable
-from urllib.error import HTTPError, URLError
-from urllib.parse import urlparse, urljoin
+from typing import TYPE_CHECKING
+from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
-from django.db.models import Q
 from django.utils import timezone
 
-from aiohttp import (
-    ClientSession,
-    ClientTimeout,
-    ClientResponseError,
-    ClientConnectorError,
-)
 from django.db import transaction, IntegrityError
 
-from django_rss_reader.version import get_version
 from rss_reader.api._refresh_intervals import (
     increase_update_interval,
     get_update_delay_in_hours,
     should_slow_down,
     decrease_update_interval,
 )
+from rss_reader.api.dtos import RssUrlArgs, RequestResult, RssParsedData
+from rss_reader.api.network_io import (
+    fetch_and_parse_rss_urls,
+    parse_rss_responses,
+    send_requests,
+)
 from rss_reader.constants import HOURS_IN_YEAR
 from rss_reader.repos.feed_repo import (
     create_feed_and_entries,
-    create_user_feed,
-    get_user_feeds,
     delete_feed,
-    _create_entries,
+    create_entries,
+    mark_user_feeds_as_stale,
+    get_feeds_for_refresh,
+    check_and_create_user_feed,
 )
 from rss_reader.exceptions import URLValidationError
 from rss_reader.helpers.urls import get_base_url
-from rss_reader.models import Feed, UserFeed, RequestHistory
-from vendoring import fastfeedparser
 
-
-@dataclass
-class RssUrlArgs:
-    """
-    Dataclass for making requests for rss urls
-    """
-
-    url: str
-    etag: str = ""
-    modified: str = ""
-    delay: int = 0  # to avoid hammering the same server
-
-
-@dataclass
-class RequestResult:
-    url: str
-    headers: dict
-    status: int = 0
-    content: str = ""
-    error_message: str = ""
+if TYPE_CHECKING:
+    from rss_reader.models import Feed
 
 
 def import_from_rss_urls(user, rss_urls: list[str]) -> str:
@@ -89,7 +66,7 @@ def import_from_rss_urls(user, rss_urls: list[str]) -> str:
             error_messages.append(f"{url}: {error_message}")
         else:
             try:
-                create_feed_and_entries(user, url, parsed_data)
+                create_feed_and_entries(user, parsed_data)
             except URLValidationError as e:
                 error_messages.append(f"{url}: {e.message}")
 
@@ -98,166 +75,21 @@ def import_from_rss_urls(user, rss_urls: list[str]) -> str:
     return error_message
 
 
-def check_and_create_user_feed(rss_url: str, user) -> bool:
-    """
-    Validates URL, checks if feed for it already exists, creates UserFeed
-
-    :param rss_url: RSS URL to check
-    :param user: User
-    :return: boolean flag, True if UserFeed was created, False otherwise
-    :raises URLValidationError:
-    """
-    _validate_rss_url(user, rss_url)
-    try:
-        feed = Feed.objects.get(rss_url=rss_url)
-    except Feed.DoesNotExist:
-        created = False
-    else:
-        create_user_feed(feed, user)
-        created = True
-
-    return created
-
-
-def _validate_rss_url(user, rss_url):
-    """
-    :raises URLValidationError:
-    """
-    if not rss_url:
-        raise URLValidationError("Empty rss url")
-
-    parsed_url = urlparse(rss_url)
-
-    if not parsed_url.netloc:
-        raise URLValidationError("Invalid URL")
-
-    scheme = parsed_url.scheme
-    if scheme not in ("http", "https"):
-        raise URLValidationError("Url must start with http or https.")
-
-    if get_user_feeds(user).filter(feed__rss_url=rss_url).exists():
-        raise URLValidationError("Feed with this url already exists.")
-
-
-async def fetch_and_parse_rss_urls(
-    rss_urls_args: Iterable[RssUrlArgs],
-) -> list[tuple[RequestResult, dict, bool]]:
-    requests_results = await send_requests(rss_urls_args)
-
-    result = parse_rss_responses(requests_results)
-
-    return result
-
-
-def parse_rss_responses(
-    requests_results: list[RequestResult],
-) -> list[tuple[RequestResult, dict, bool]]:
-    result = []
-
-    for request_result in requests_results:
-        feed_has_entries = False
-        parsed_data = {}
-        if not request_result.error_message:
-            if request_result.status != 304:
-                try:
-                    parsed_data = fastfeedparser.parse(request_result.content)
-                except ValueError as e:
-                    request_result.error_message = str(e)
-                else:
-                    feed_has_entries = True
-
-            resp_headers = request_result.headers
-            parsed_data["etag"] = resp_headers.get("Etag") or ""
-            parsed_data["modified"] = resp_headers.get("Last-modified") or ""
-
-        result.append((request_result, parsed_data, feed_has_entries))
-
-    return result
-
-
-async def send_requests(rss_urls_args: Iterable[RssUrlArgs]) -> list[RequestResult]:
-    async with ClientSession(timeout=ClientTimeout(10)) as session:
-        return await asyncio.gather(
-            *(
-                async_request_for_rss(rss_urls_arg, session)
-                for rss_urls_arg in rss_urls_args
-            )
-        )
-
-
-async def async_request_for_rss(
-    rss_urls_arg: RssUrlArgs, session: ClientSession
-) -> RequestResult:
-    error_message = ""
-    result = RequestResult(
-        url=rss_urls_arg.url,
-        headers={},
-    )
-
-    version = get_version()
-
-    req_headers = {
-        "Accept-Encoding": "gzip, deflate",
-        "User-Agent": f"Django RSS Reader/{version}",
-    }
-    if rss_urls_arg.etag:
-        req_headers["If-None-Match"] = rss_urls_arg.etag
-    if rss_urls_arg.modified:
-        req_headers["If-Modified-Since"] = rss_urls_arg.modified
-
-    if rss_urls_arg.delay:
-        await asyncio.sleep(rss_urls_arg.delay * 2)
-    try:
-        async with session.get(rss_urls_arg.url, headers=req_headers) as response:
-            resp_headers = response.headers
-
-            result.status = response.status
-            result.headers = resp_headers
-            result.content = await response.text()
-
-            await save_request(result)
-            response.raise_for_status()
-
-    except (ValueError, HTTPError) as e:
-        error_message = "Some error occurred: " + str(e)
-    except TimeoutError:
-        error_message = "Time out"
-    except (ClientResponseError, URLError) as e:
-        error_message = "Error: " + str(e)
-    except ClientConnectorError as e:
-        error_message = "Couldn't connect: " + str(e)
-
-    result.error_message = error_message
-
-    return result
-
-
-async def save_request(request_result: RequestResult):
-    header_string = ""
-    for key, value in request_result.headers.items():
-        header_string += f"{key}: {value}\n"
-
-    await RequestHistory.objects.acreate(
-        url=request_result.url,
-        status=request_result.status,
-        headers=header_string,
-        content=request_result.content,
-    )
-
-
 @transaction.atomic
 def refresh_feed(
-    feed: Feed, parsed_data: dict, feed_has_entries: bool, request_result: RequestResult
+    feed: Feed,
+    rss_data: RssParsedData,
+    feed_has_entries: bool,
+    request_result: RequestResult,
 ):
     """
     Updates everything related to Feed and its Entries,
     also deals with redirects, update intervals.
     """
-
     current_time = timezone.now()
 
-    feed.etag = parsed_data.get("etag", "") or ""
-    feed.modified = parsed_data.get("modified", "") or ""
+    feed.etag = rss_data.feed_data["etag"]
+    feed.modified = rss_data.feed_data["modified"]
 
     feed.last_updated = current_time
     feed.last_exception = request_result.error_message
@@ -269,8 +101,8 @@ def refresh_feed(
 
     old_entry_count = feed.entry_count
     if feed_has_entries:
-        UserFeed.objects.filter(feed=feed).update(stale=True)
-        _create_entries(feed, parsed_data)
+        mark_user_feeds_as_stale(feed)
+        create_entries(feed, rss_data)
     # we need to check this now, because response could just have stale entries
     # or entries that we filtered out
     new_entries = feed.entry_count > old_entry_count
@@ -383,7 +215,7 @@ def process_rss_url(request, rss_url: str):
         if error_message:
             return error_message
         try:
-            create_feed_and_entries(user, request_result.url, parsed_data)
+            create_feed_and_entries(user, parsed_data)
         except URLValidationError as e:
             return e.message
 
@@ -441,9 +273,7 @@ def refresh_feeds() -> str:
     """
     feeds_by_urls = {}
     rss_urls_args = []
-    feeds = Feed.objects.filter(
-        updates_enabled=True,
-    ).filter(Q(update_after__isnull=True) | Q(update_after__lt=timezone.now()))
+    feeds = get_feeds_for_refresh()
     site_urls_counter = Counter()
     for feed in feeds:
         site_url = get_base_url(feed.rss_url)

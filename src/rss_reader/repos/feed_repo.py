@@ -1,43 +1,48 @@
+from __future__ import annotations
+
 from datetime import datetime
+from typing import TYPE_CHECKING
+from urllib.parse import urlparse
 
 from django.db import IntegrityError, transaction
 from django.db.models import QuerySet, Subquery, OuterRef, Q
 from django.utils import timezone
 
 from rss_reader.constants import ENTRIES_BATCH_SIZE
-from rss_reader.helpers.date_helpers import get_datetime
 from rss_reader.helpers.html_cleaner import clean_html, resolve_urls
 
 from rss_reader.exceptions import URLValidationError
 from rss_reader.models import Feed, UserFeed, UserEntry, Entry
 from vendoring.html_sanitizer.sanitizer import sanitize_html
 
+if TYPE_CHECKING:
+    from rss_reader.api.dtos import RssParsedData
+
 
 @transaction.atomic
-def create_feed_and_entries(user, rss_url: str, parsed_data: dict):
+def create_feed_and_entries(user, rss_data: RssParsedData):
     """
     Create Feed and it's entries using parsed data.
 
     :raises URLValidationError:
     """
-    feed_data: dict = parsed_data["feed"]
-    image_url = feed_data.get("image_url")
+    feed_data = rss_data.feed_data
 
     try:
         feed = Feed.objects.create(
-            site_url=feed_data["link"],
-            rss_url=rss_url,
-            title=feed_data.get("title", ""),
-            subtitle=feed_data.get("subtitle", ""),
-            author=feed_data.get("author", ""),
-            etag=parsed_data.get("etag") or "",
-            modified=parsed_data.get("modified") or "",
-            feed_type=parsed_data.get("feed_type", "rss"),
-            image_url=image_url,
+            site_url=feed_data["site_url"],
+            rss_url=feed_data["rss_url"],
+            title=feed_data["title"],
+            subtitle=feed_data["subtitle"],
+            author=feed_data["author"],
+            etag=feed_data["etag"],
+            modified=feed_data["modified"],
+            feed_type=feed_data["feed_type"],
+            image_url=feed_data["image_url"],
         )
     except IntegrityError as e:
         raise URLValidationError("Feed with this url already exists: " + str(e))
-    _create_entries(feed, parsed_data)
+    create_entries(feed, rss_data)
 
     create_user_feed(feed, user)
 
@@ -145,51 +150,59 @@ def _get_and_create_user_entries(user_feed: UserFeed) -> QuerySet[UserEntry]:
     return user_entries
 
 
-# TODO: это бы как-то поправить
-def _create_entries(feed: Feed, parsed_data: dict):
-    entry_bulk_create = []
-    for entry in reversed(parsed_data.get("entries", [])):
-        link = entry.get("link", "")
+def filter_parsed_data(rss_data: RssParsedData, site_url: str):
+    result = []
+    entries_data = rss_data.entries
+    for entry in entries_data:
+        link = entry["link"]
         if "youtube.com/shorts/" in link:  # YouTube shorts are bad
             continue
-        content = entry.get("content")
-        summary = entry.get("description", "")
+        content = entry["content"]
+        summary = entry["summary"]
 
         if content:
-            content = content[0]["value"]
             if content.startswith(summary[:100]):
                 # summary is often the same as content - skip it
                 summary = ""
 
             content = clean_html(content)
-            content = resolve_urls(content, feed.site_url)
+            content = resolve_urls(content, site_url)
             content = sanitize_html(content, "utf-8", "text/html")
 
         if summary:
             summary = clean_html(summary)
-            summary = resolve_urls(summary, feed.site_url)
+            summary = resolve_urls(summary, site_url)
             summary = sanitize_html(summary, "utf-8", "text/html")
 
-        published = get_datetime(entry.get("published"))
-        if published is None:
-            published = timezone.now()
+        entry["content"] = content
+        entry["summary"] = summary
+
+        result.append(entry)
+
+    return result
+
+
+def create_entries(feed: Feed, rss_data: RssParsedData):
+    # update site_url in case it changed
+    site_url = rss_data.feed_data["site_url"]
+    if site_url and feed.site_url != site_url:
+        feed.site_url = site_url
+
+    entries_data = filter_parsed_data(rss_data, site_url)
+    entry_bulk_create = []
+    for record in reversed(entries_data):
         entry_bulk_create.append(
             Entry(
                 feed=feed,
-                link=entry.get("link", ""),
-                title=entry.get("title", ""),
-                published=published,
-                author=entry.get("author", ""),
-                content=content or "",
-                summary=summary,
+                link=record["link"],
+                title=record["title"],
+                published=record["published"],
+                author=record["author"],
+                content=record["content"],
+                summary=record["summary"],
             )
         )
     Entry.objects.bulk_create(entry_bulk_create, ignore_conflicts=True)
-
-    # update site_url in case it changed
-    site_url = parsed_data.get("feed", {}).get("link")
-    if site_url and feed.site_url != site_url:
-        feed.site_url = site_url
 
     feed.update_entry_count()
     feed.save()
@@ -267,11 +280,64 @@ def get_filtered_user_entries(
         )
 
     if start:
-        user_entries = user_entries.filter(
-            entry__published__lt=start,
-        )
+        user_entries = user_entries.filter(entry__published__lt=start)
 
-    user_entries = user_entries.order_by("read", "-entry__published")[
-        :ENTRIES_BATCH_SIZE
-    ]
+    user_entries = user_entries.order_by("read", "-entry__published")
+    user_entries = user_entries[:ENTRIES_BATCH_SIZE]
+
     return list(user_entries)
+
+
+def mark_user_feeds_as_stale(feed: Feed):
+    UserFeed.objects.filter(feed=feed).update(stale=True)
+
+
+def get_feeds_for_refresh():
+    return Feed.objects.filter(
+        updates_enabled=True,
+    ).filter(Q(update_after__isnull=True) | Q(update_after__lt=timezone.now()))
+
+
+def check_and_create_user_feed(rss_url: str, user) -> bool:
+    """
+    Validates URL, checks if feed for it already exists, creates UserFeed
+
+    :param rss_url: RSS URL to check
+    :param user: User
+    :return: boolean flag, True if UserFeed was created, False otherwise
+    :raises URLValidationError:
+    """
+    _validate_rss_url(user, rss_url)
+    try:
+        feed = Feed.objects.get(rss_url=rss_url)
+    except Feed.DoesNotExist:
+        created = False
+    else:
+        create_user_feed(feed, user)
+        created = True
+
+    return created
+
+
+def _validate_rss_url(user, rss_url):
+    """
+    :raises URLValidationError:
+    """
+    if not rss_url:
+        raise URLValidationError("Empty rss url")
+
+    parsed_url = urlparse(rss_url)
+
+    if not parsed_url.netloc:
+        raise URLValidationError("Invalid URL")
+
+    scheme = parsed_url.scheme
+    if scheme not in ("http", "https"):
+        raise URLValidationError("Url must start with http or https.")
+
+    if get_user_feeds(user).filter(feed__rss_url=rss_url).exists():
+        raise URLValidationError("Feed with this url already exists.")
+
+
+def get_feeds_with_unsearched_images() -> QuerySet[Feed, Feed]:
+    return Feed.objects.filter(searched_image_url=False)

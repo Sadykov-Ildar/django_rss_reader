@@ -1,8 +1,11 @@
+from typing import TYPE_CHECKING
+
 from django.db.models import QuerySet
 from django.utils import timezone
 from opml import OpmlDocument
 
-from rss_reader.models import UserFeed
+if TYPE_CHECKING:
+    from rss_reader.models import UserFeed
 
 
 def get_feeds_in_opml(user_feeds: QuerySet[UserFeed]) -> str:

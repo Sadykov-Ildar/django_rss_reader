@@ -14,19 +14,19 @@ from rss_reader.api.rss_api import (
     import_from_rss_urls,
     refresh_feeds,
 )
+from rss_reader.repos.feed_repo import get_feeds_with_unsearched_images
+from rss_reader.repos.request_history import delete_request_history_older_than
 from rss_reader.tasks.favicons_api import (
     get_favicon_name_from_url,
     get_image_file_path,
     get_favicons,
 )
-
 from rss_reader.constants import (
     CACHE_FAVICON_PREFIX,
     CACHE_MUTEX_PREFIX,
     WS_TASKS_REFRESHED_GROUP_NAME,
 )
 from rss_reader.helpers.urls import get_base_url
-from rss_reader.models import Feed, RequestHistory
 from rss_reader.tasks.mutex import redis_lock
 
 
@@ -63,7 +63,7 @@ def create_favicons_task(self):
     """
     Background task for getting favicons for feeds, runs after importing feeds.
     """
-    feeds = Feed.objects.filter(searched_image_url=False)
+    feeds = get_feeds_with_unsearched_images()
 
     url_to_feeds = defaultdict(list)
     for feed in feeds:
@@ -104,4 +104,4 @@ def delete_old_request_history_records(self):
     Background task for clearing old request history, runs on schedule.
     """
     two_weeks_ago = timezone.now() - timedelta(days=14)
-    RequestHistory.objects.filter(created_at__lt=two_weeks_ago).delete()
+    delete_request_history_older_than(two_weeks_ago)
