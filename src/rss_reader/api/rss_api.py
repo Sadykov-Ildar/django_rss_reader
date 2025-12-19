@@ -1,41 +1,24 @@
 from __future__ import annotations
 import asyncio
 from collections import Counter
-from datetime import timedelta
-from typing import TYPE_CHECKING
 from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
-from django.utils import timezone
 
-from django.db import transaction, IntegrityError
-
-from rss_reader.api._refresh_intervals import (
-    increase_update_interval,
-    get_update_delay_in_hours,
-    should_slow_down,
-    decrease_update_interval,
-)
-from rss_reader.api.dtos import RssUrlArgs, RequestResult, RssParsedData
+from rss_reader.api.dtos import RssUrlArgs
 from rss_reader.api.network_io import (
     fetch_and_parse_rss_urls,
     parse_rss_responses,
     send_requests,
 )
-from rss_reader.constants import HOURS_IN_YEAR
 from rss_reader.repos.feed_repo import (
     create_feed_and_entries,
-    delete_feed,
-    create_entries,
-    mark_user_feeds_as_stale,
     get_feeds_for_refresh,
     check_and_create_user_feed,
+    refresh_feed,
 )
 from rss_reader.exceptions import URLValidationError
 from rss_reader.helpers.urls import get_base_url
-
-if TYPE_CHECKING:
-    from rss_reader.models import Feed
 
 
 def import_from_rss_urls(user, rss_urls: list[str]) -> str:
@@ -73,107 +56,6 @@ def import_from_rss_urls(user, rss_urls: list[str]) -> str:
     error_message = "<br>".join(error_messages)
 
     return error_message
-
-
-@transaction.atomic
-def refresh_feed(
-    feed: Feed,
-    rss_data: RssParsedData,
-    feed_has_entries: bool,
-    request_result: RequestResult,
-):
-    """
-    Updates everything related to Feed and its Entries,
-    also deals with redirects, update intervals.
-    """
-    current_time = timezone.now()
-
-    feed.etag = rss_data.feed_data["etag"]
-    feed.modified = rss_data.feed_data["modified"]
-
-    feed.last_updated = current_time
-    feed.last_exception = request_result.error_message
-
-    feed.last_response_body = None
-    if request_result.status not in {200, 304}:
-        # response body could have hint that we need to show to user
-        feed.last_response_body = request_result.content
-
-    old_entry_count = feed.entry_count
-    if feed_has_entries:
-        mark_user_feeds_as_stale(feed)
-        create_entries(feed, rss_data)
-    # we need to check this now, because response could just have stale entries
-    # or entries that we filtered out
-    new_entries = feed.entry_count > old_entry_count
-
-    _change_feed_if_moved_or_disabled(feed, request_result)
-
-    update_interval = _get_update_interval_in_hours(feed, new_entries, request_result)
-
-    feed.update_interval = update_interval
-    update_after = current_time + timedelta(hours=update_interval)
-    update_after = update_after.replace(minute=0, second=0, microsecond=0)
-    feed.update_after = update_after
-    try:
-        # transaction is necessary to create savepoint,
-        # otherwise IntegrityError could roll back outer transaction
-        with transaction.atomic():
-            feed.save()
-    except IntegrityError:
-        # changing rss_url as a result of 301/308 permanent redirect can lead to merging two feeds into one
-        delete_feed(feed)
-
-
-def _change_feed_if_moved_or_disabled(feed: Feed, request_result: RequestResult):
-    """
-    Handles cases when Feed was moved temporarily or permanently, or stopped existing.
-    """
-    status = request_result.status
-    headers = request_result.headers
-    if status in {301, 308}:
-        # moved permanently
-        new_location = headers.get("Location")
-        if new_location:
-            feed.last_exception = f"Moved from {feed.rss_url} to {new_location}"
-            feed.rss_url = new_location
-    elif status in {302, 307}:
-        new_location = headers.get("Location")
-        if new_location:
-            # moved temporarily
-            feed.last_exception = (
-                f"Temporarily moved from {feed.rss_url} to {new_location}"
-            )
-        pass
-    elif status == 410:
-        # gone
-        feed.updates_enabled = False
-        feed.disabled_reason = 'Server responded with [status 410] "gone"'
-
-
-def _get_update_interval_in_hours(
-    feed: Feed, new_entries: bool, request_result: RequestResult
-) -> int:
-    update_interval = feed.update_interval
-    update_delay = get_update_delay_in_hours(request_result.headers)
-    if update_delay:
-        update_interval = update_delay
-    else:
-        if should_slow_down(
-            request_result.status, new_entries, request_result.error_message
-        ):
-            # slow down
-            update_interval = increase_update_interval(update_interval)
-        else:
-            # new updates - speed up a little bit
-            update_interval = decrease_update_interval(update_interval)
-
-    if update_interval > HOURS_IN_YEAR:
-        feed.updates_enabled = False
-        feed.disabled_reason = "Last updated more than a year ago"
-    if update_interval < 2:
-        update_interval = 2
-    return update_interval
 
 
 def process_rss_url(request, rss_url: str):
