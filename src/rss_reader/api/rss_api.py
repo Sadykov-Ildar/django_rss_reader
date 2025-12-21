@@ -159,7 +159,6 @@ def refresh_feeds() -> str:
 
     feeds_by_urls = {}
     rss_urls_args = []
-    feed_repo = FeedRepo()
     feeds = feed_repo.get_feeds_for_refresh()
     site_urls_counter = Counter()
     for feed in feeds:
