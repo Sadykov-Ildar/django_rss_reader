@@ -40,12 +40,15 @@
                 </form>
             </div>
             <br>
+            <h3>Drag and drop to change order of feeds on main page</h3>
             <br>
-            <div id="feeds_list">
+            <form id="feeds_list" class="sortable" hx-post="{% url "rss_reader:sort_user_feeds" %}" hx-trigger="end" hx-target="this">
+                {% partialdef settings_user_feeds inline %}
                 {% for user_feed in user_feeds %}
                     <div style="display: flex;"
                          id="user-feed-{{ user_feed.pk }}"
                     >
+                        <input type='hidden' name='user_feed_order' value="{{ user_feed.pk }}"/>
                         <div style="flex: 80%;">
                             {{ user_feed.feed.title }}
                         </div>
@@ -63,7 +66,8 @@
                     </div>
                     <hr>
                 {% endfor %}
-            </div>
+                {% endpartialdef settings_user_feeds %}
+            </form>
         </div>
         <div style="margin-top:80px; flex:1">
         </div>

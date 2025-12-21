@@ -55,7 +55,7 @@ class FeedRepo:
                 "feed",
             )
             .order_by(
-                "-pk",
+                "sort_order",
             )
         )
         return user_feeds
@@ -391,6 +391,26 @@ class FeedRepo:
             # gone
             feed.updates_enabled = False
             feed.disabled_reason = 'Server responded with [status 410] "gone"'
+
+    def reorder_user_feeds(self, user, user_feed_order_list: list[int]):
+        """
+        Reorders user feeds.
+
+        :param user_feed_order_list: list of ids, in the order in which they have to be reordered
+        """
+        user_feeds = self.get_user_feeds(user)
+        sort_orders = {}
+        bulk_update_list = []
+        for index, pk in enumerate(user_feed_order_list, start=1):
+            sort_orders[pk] = index
+
+        for user_feed in user_feeds:
+            sort_order = sort_orders.get(user_feed.pk)
+            if sort_order:
+                user_feed.sort_order = sort_order
+                bulk_update_list.append(user_feed)
+
+        user_feeds.bulk_update(bulk_update_list, ["sort_order"])
 
 
 def _get_update_interval_in_hours(

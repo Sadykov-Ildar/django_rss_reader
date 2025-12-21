@@ -71,6 +71,9 @@ class FeedsRenderer:
     def include_info_message(self):
         self._render_template("rss_reader/info_message.html")
 
+    def include_settings_user_feeds(self):
+        self._render_template("rss_reader/settings.html#settings_user_feeds")
+
     def _render_template(self, template_name):
         if settings.DEBUG:
             self._content.append(f"<!-- {template_name} -->")
@@ -226,3 +229,12 @@ def get_user_entries_in_context(
         "search": search,
     }
     return context
+
+
+def render_settings_user_feeds(request, user_feeds: Iterable[UserFeed]):
+    context = {"user_feeds": user_feeds}
+
+    renderer = FeedsRenderer(request, context)
+    renderer.include_settings_user_feeds()
+
+    return renderer.get_result()

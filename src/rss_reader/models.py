@@ -107,6 +107,8 @@ class UserFeed(models.Model):
     # Amount of UserEntry that was read by user
     read_count = models.PositiveIntegerField(default=0)
 
+    sort_order = models.PositiveIntegerField(default=0)
+
     class Meta:
         verbose_name_plural = "User feeds"
         db_table = "rss_reader_user_feeds"

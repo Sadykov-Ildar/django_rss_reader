@@ -15,6 +15,7 @@ urlpatterns = [
     path("add_new_feed", feed_views.add_feed_modal, name="add_feed_modal"),
     path("import_feeds", feed_views.import_feeds, name="import_feeds"),
     path("refresh_feeds", feed_views.refresh_user_feeds, name="refresh_feeds"),
+    path("sort_user_feeds", feed_views.sort_user_feeds, name="sort_user_feeds"),
     path(
         "mark_feeds_as_read",
         feed_views.mark_feeds_as_read_view,

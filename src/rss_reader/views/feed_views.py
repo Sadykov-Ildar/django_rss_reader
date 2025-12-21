@@ -12,6 +12,7 @@ from rss_reader.api.rss_api import process_rss_url
 from rss_reader.renderers.render_api import (
     render_feeds_and_entries,
     render_info_message,
+    render_settings_user_feeds,
 )
 from rss_reader.forms import UploadFileForm
 from rss_reader.tasks import (
@@ -111,7 +112,7 @@ def import_feeds(request) -> HttpResponse:
 
 def export_user_feeds_view(request):
     feed_repo = FeedRepo()
-    feeds = feed_repo.get_ordered_user_feeds(request.user).order_by("id")
+    feeds = feed_repo.get_ordered_user_feeds(request.user).order_by("sort_order")
     file_content = get_feeds_in_opml(feeds)
     filename = "rss_feeds-{}.opml".format(datetime.date.today().isoformat())
 
@@ -145,5 +146,20 @@ def mark_feeds_as_read_view(request):
     content = render_feeds_and_entries(
         request, user_feeds, user_feed=user_feed, user_entries=user_entries
     )
+
+    return HttpResponse(content)
+
+
+@require_POST
+def sort_user_feeds(request) -> HttpResponse:
+    user = request.user
+    user_feed_order = request.POST.getlist("user_feed_order")
+    user_feed_order = [int(x) for x in user_feed_order]
+
+    feed_repo = FeedRepo()
+    feed_repo.reorder_user_feeds(user, user_feed_order)
+    user_feeds = feed_repo.get_ordered_user_feeds(user)
+
+    content = render_settings_user_feeds(request, user_feeds)
 
     return HttpResponse(content)
