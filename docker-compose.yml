@@ -18,6 +18,11 @@ services:
       - app_network
       - db_network
       - redis_network
+    develop:
+      watch:
+        - path: ./src # The host path to watch
+          action: sync+restart # Action to perform: sync files, then restart the service
+          target: /app # The container path to sync files to
 
   celery_worker:
     extends:
