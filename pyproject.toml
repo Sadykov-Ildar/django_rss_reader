@@ -30,8 +30,17 @@ dependencies = [
 dev = [
     "django-stubs>=5.2.8",
     "celery-types==0.23.0",
+    "types-lxml>=2025.11.25",
     {include-group = "test"},
 ]
 test = [
     "coverage>=7.11.3",
+]
+
+[tool.ty.environment]
+root = ["src"]
+
+[tool.ty.src]
+exclude = [
+    "src/vendoring/**",
 ]

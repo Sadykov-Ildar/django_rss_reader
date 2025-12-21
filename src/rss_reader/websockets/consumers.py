@@ -21,7 +21,7 @@ class BackgroundTaskFinishNotifier(WebsocketConsumer):
 
         self.accept()
 
-    def disconnect(self, close_code):
+    def disconnect(self, code):
         async_to_sync(self.channel_layer.group_discard)(
             self.group_name, self.channel_name
         )

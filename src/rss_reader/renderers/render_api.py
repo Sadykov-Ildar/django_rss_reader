@@ -208,8 +208,8 @@ def render_entries(
 def get_user_entries_in_context(
     user_feed: UserFeed,
     user_entries: list[UserEntry],
-    start: datetime = None,
-    search: str = None,
+    start: datetime | None = None,
+    search: str | None = None,
 ):
     more = False
 

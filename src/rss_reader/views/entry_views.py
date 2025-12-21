@@ -69,7 +69,7 @@ def toggle_entry_read_view(request, user_entry_id: int):
     return HttpResponse(content)
 
 
-def entries_view(request, user_feed_id: int, start: datetime = None):
+def entries_view(request, user_feed_id: int, start: datetime | None = None):
     feed_repo = FeedRepo()
     user_feed = feed_repo.get_user_feed_by_id(user_feed_id, request.user)
     if user_feed is None:

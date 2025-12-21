@@ -32,7 +32,7 @@ class RssParsedData:
             self._make_entries_data(parsed_data)
 
     def _make_feed_data(self, parsed_data: dict):
-        feed_data: dict = parsed_data.get("feed")
+        feed_data: dict = parsed_data.get("feed", {})
         if feed_data:
             self.feed_data["site_url"] = feed_data["link"]
             self.feed_data["title"] = feed_data.get("title", "")

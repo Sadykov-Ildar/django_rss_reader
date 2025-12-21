@@ -115,8 +115,8 @@ class UserFeed(models.Model):
 
     def update_read_count(self):
         self.read_count = UserEntry.objects.filter(
-            user=self.user_id,
-            entry__feed=self.feed_id,
+            user=self.user_id,  # ty: ignore
+            entry__feed=self.feed_id,  # ty: ignore
             read=True,
         ).count()
 

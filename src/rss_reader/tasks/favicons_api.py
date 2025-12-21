@@ -41,8 +41,9 @@ async def get_favicon_url(session, site_url):
         # Collect all favicon URLs
         favicon_urls = []
         for tag in favicon_tags:
-            href = tag.get("href")
+            href = tag.get("href", "")
             if href:
+                assert isinstance(href, str)
                 favicon_urls.append(urljoin(site_url, href))
 
         for favicon_url in favicon_urls:

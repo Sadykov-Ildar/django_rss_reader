@@ -60,15 +60,18 @@ def get_update_delay_in_hours(headers: dict) -> int:
 
 
 def get_retry_after(headers: dict) -> int:
-    retry_after = headers.get("Retry-after", 0)
-    if retry_after:
+    retry_after = 0
+    header_value = headers.get("Retry-after", "")
+    if header_value:
         try:
             # Attempt to parse as seconds
-            retry_after = int(retry_after)
+            retry_after = int(header_value)
         except ValueError:
             try:
                 # Attempt to parse as HTTP-date (RFC 1123)
-                retry_time = datetime.strptime(retry_after, "%a, %d %b %Y %H:%M:%S GMT")
+                retry_time = datetime.strptime(
+                    header_value, "%a, %d %b %Y %H:%M:%S GMT"
+                )
                 time_difference = retry_time - timezone.now()
                 retry_after = max(0, int(time_difference.total_seconds()))
             except ValueError:

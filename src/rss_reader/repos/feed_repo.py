@@ -105,9 +105,9 @@ class FeedRepo:
     @transaction.atomic
     def delete_user_feed(self, user_feed: UserFeed):
         self.get_user_entries(
-            user=user_feed.user_id,
+            user=user_feed.user_id,  # ty: ignore
         ).filter(
-            entry__feed_id=user_feed.feed_id,
+            entry__feed_id=user_feed.feed_id,  # ty: ignore
         ).delete()
 
         user_feed.delete()
@@ -141,13 +141,19 @@ class FeedRepo:
         :return:
         """
         if user_feed.stale:
-            self._create_user_entries(user_feed.user_id)
+            self._create_user_entries(
+                user_feed.user_id  # ty: ignore
+            )
             user_feed.stale = False
             user_feed.save()
 
         user_entries = (
-            self.get_user_entries(user_feed.user_id)
-            .filter(entry__feed_id=user_feed.feed_id)
+            self.get_user_entries(
+                user_feed.user_id  # ty: ignore
+            )
+            .filter(
+                entry__feed_id=user_feed.feed_id  # ty: ignore
+            )
             .select_related("entry")
         )
 
@@ -191,8 +197,10 @@ class FeedRepo:
         )
 
     def mark_user_feed_as_read(self, user_feed: UserFeed):
-        self.get_user_entries(user_feed.user_id).filter(
-            entry__feed=user_feed.feed_id,
+        self.get_user_entries(
+            user_feed.user_id  # ty: ignore
+        ).filter(
+            entry__feed=user_feed.feed_id,  # ty: ignore
         ).update(
             read=True,
         )

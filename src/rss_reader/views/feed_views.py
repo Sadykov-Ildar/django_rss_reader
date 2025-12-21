@@ -85,7 +85,7 @@ def add_feed_modal(request):
 
 
 @require_POST
-def import_feeds(request):
+def import_feeds(request) -> HttpResponse:
     form = UploadFileForm(request.POST, request.FILES)
 
     if form.is_valid():

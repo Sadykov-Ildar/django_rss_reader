@@ -125,16 +125,18 @@ def extract_feed_urls_from_html(url: str, soup: BeautifulSoup) -> list[str]:
     for link in soup.find_all(
         "link", rel="alternate", type=("application/rss+xml", "application/atom+xml")
     ):
-        href = link.get("href")
+        href = link.get("href", "")
         if href:
+            assert isinstance(href, str)
             # Resolve relative URLs if necessary
             if not href.startswith("http"):
                 href = urljoin(url, href)
             rss_urls.add(href)
 
     for link in soup.find_all("link", rel="feed"):
-        href = link.get("href")
+        href = link.get("href", "")
         if href:
+            assert isinstance(href, str)
             # Resolve relative URLs if necessary
             if not href.startswith("http"):
                 href = urljoin(url, href)
