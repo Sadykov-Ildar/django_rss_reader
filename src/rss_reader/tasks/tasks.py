@@ -10,6 +10,7 @@ from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.utils import timezone
 
+from rss_reader.repos.network_repo import NetworkRepo
 from rss_reader.use_cases.rss.rss_api import (
     import_from_rss_urls,
     refresh_feeds,
@@ -28,6 +29,7 @@ from rss_reader.constants import (
 )
 from rss_reader.helpers.urls import get_base_url
 from rss_reader.tasks.mutex import redis_lock
+from rss_reader.use_cases.rss.rss_parser import RssParser
 
 
 @shared_task(bind=True, name="rss_reader.refresh_feeds_task")
@@ -35,9 +37,12 @@ def refresh_feeds_task(self):
     """
     Background task for refreshing feeds, runs on schedule.
     """
+    network_repo = NetworkRepo(parser=RssParser())
+    feed_repo = FeedRepo()
+
     with redis_lock(CACHE_MUTEX_PREFIX + "refresh_feeds", 1) as acquired:
         if acquired:
-            error_message = refresh_feeds()
+            error_message = refresh_feeds(feed_repo, network_repo)
         else:
             return "Task for refreshing feeds already started"
 
@@ -53,8 +58,14 @@ def refresh_feeds_task(self):
 @shared_task(bind=True, name="rss_reader.import_from_rss_urls_task")
 def import_from_rss_urls_task(self, user_id, rss_urls: list[str]) -> str:
     user = get_user_model().objects.get(id=user_id)
-    result = import_from_rss_urls(user, rss_urls)
+
+    network_repo = NetworkRepo(parser=RssParser())
+    feed_repo = FeedRepo()
+
+    result = import_from_rss_urls(user, rss_urls, feed_repo, network_repo)
+
     create_favicons_task.delay()
+
     return result
 
 

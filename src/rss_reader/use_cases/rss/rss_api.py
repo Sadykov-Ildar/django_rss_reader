@@ -1,18 +1,15 @@
 from __future__ import annotations
 from collections import Counter
-from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
 
 from rss_reader.use_cases.rss.dtos import RssUrlArgs
-from rss_reader.repos.network_repo import NetworkRepo
-from rss_reader.use_cases.rss.rss_parser import RssParser
-from rss_reader.repos.feed_repo import FeedRepo
+from rss_reader.use_cases.rss.helpers import is_soup_html, extract_feed_urls_from_html
 from rss_reader.exceptions import URLValidationError
 from rss_reader.helpers.urls import get_base_url
 
 
-def import_from_rss_urls(user, rss_urls: list[str]) -> str:
+def import_from_rss_urls(user, rss_urls: list[str], feed_repo, network_repo) -> str:
     """
     Requests urls and creates user feeds and entries.
 
@@ -21,9 +18,6 @@ def import_from_rss_urls(user, rss_urls: list[str]) -> str:
     :return: Error message
     """
     error_messages = []
-    rss_parser = RssParser()
-    network_repo = NetworkRepo(parser=rss_parser)
-    feed_repo = FeedRepo()
 
     rss_urls_args = []
     for rss_url in rss_urls:
@@ -52,16 +46,12 @@ def import_from_rss_urls(user, rss_urls: list[str]) -> str:
     return error_message
 
 
-def process_rss_url(request, rss_url: str):
+def process_rss_url(request, rss_url: str, feed_repo, network_repo, rss_parser):
     """
     Creates Feed by one RSS URL, done synchronously by user request
 
     :return: Error message
     """
-    rss_parser = RssParser()
-    network_repo = NetworkRepo(parser=rss_parser)
-    feed_repo = FeedRepo()
-
     rss_url = rss_url.strip()
     user = request.user
 
@@ -85,7 +75,9 @@ def process_rss_url(request, rss_url: str):
         # HTML - need to get feed urls from contents
         rss_urls = extract_feed_urls_from_html(rss_url, soup)
         if rss_urls:
-            error_message = import_from_rss_urls(user, rss_urls)
+            error_message = import_from_rss_urls(
+                user, rss_urls, feed_repo, network_repo
+            )
             is_html = True
 
     if not is_html:
@@ -102,61 +94,13 @@ def process_rss_url(request, rss_url: str):
     return error_message
 
 
-def is_soup_html(soup: BeautifulSoup) -> bool:
-    if len(soup.find_all()) > 2:  # More than just <html> and <body>
-        return True
-    # look for specific common HTML tags
-    common_tags = ["div", "p", "a", "img", "span", "table", "h1", "head", "body"]
-    for tag in common_tags:
-        if soup.find(tag):
-            return True
-    return bool(soup.find())
-
-
-def extract_feed_urls_from_html(url: str, soup: BeautifulSoup) -> list[str]:
-    """
-    Trying to parse HTML page and get links to RSS feeds.
-
-    :param url: URL that we suspect to be HTML page, used to resolve relative urls from that page
-    :param soup: BeautifulSoup of a contents of a page
-    :return: list of absolute RSS urls
-    """
-    rss_urls = set()
-    for link in soup.find_all(
-        "link", rel="alternate", type=("application/rss+xml", "application/atom+xml")
-    ):
-        href = link.get("href", "")
-        if href:
-            assert isinstance(href, str)
-            # Resolve relative URLs if necessary
-            if not href.startswith("http"):
-                href = urljoin(url, href)
-            rss_urls.add(href)
-
-    for link in soup.find_all("link", rel="feed"):
-        href = link.get("href", "")
-        if href:
-            assert isinstance(href, str)
-            # Resolve relative URLs if necessary
-            if not href.startswith("http"):
-                href = urljoin(url, href)
-            rss_urls.add(href)
-
-    rss_urls = list(rss_urls)
-    return rss_urls
-
-
-def refresh_feeds() -> str:
+def refresh_feeds(feed_repo, network_repo) -> str:
     """
     Refresh all feeds that are due to update.
     Used in background task.
 
     :return: Error message
     """
-    rss_parser = RssParser()
-    network_repo = NetworkRepo(parser=rss_parser)
-    feed_repo = FeedRepo()
-
     feeds_by_urls = {}
     rss_urls_args = []
     feeds = feed_repo.get_feeds_for_refresh()

@@ -8,6 +8,7 @@ from django.views.decorators.http import require_POST
 from rss_reader import opml_parser
 from rss_reader.repos.feed_repo import FeedRepo
 from rss_reader.renderers.feeds_to_opml import get_feeds_in_opml
+from rss_reader.repos.network_repo import NetworkRepo
 from rss_reader.use_cases.rss.rss_api import process_rss_url
 from rss_reader.renderers.render_api import (
     render_feeds_and_entries,
@@ -20,14 +21,20 @@ from rss_reader.tasks import (
     import_from_rss_urls_task,
     create_favicons_task,
 )
+from rss_reader.use_cases.rss.rss_parser import RssParser
 
 
 class FeedView(View):
     def post(self, request, *args, **kwargs):
-        feed_repo = FeedRepo()
         rss_url = request.POST.get("url")
 
-        error_message = process_rss_url(request, rss_url)
+        rss_parser = RssParser()
+        network_repo = NetworkRepo(parser=rss_parser)
+        feed_repo = FeedRepo()
+
+        error_message = process_rss_url(
+            request, rss_url, feed_repo, network_repo, rss_parser
+        )
         if error_message:
             return prepare_feed_error(request, error_message)
 
