@@ -8,7 +8,7 @@ from django.db import IntegrityError, transaction
 from django.db.models import QuerySet, Subquery, OuterRef, Q
 from django.utils import timezone
 
-from rss_reader.api._refresh_intervals import (
+from rss_reader.use_cases.rss._refresh_intervals import (
     get_update_delay_in_hours,
     should_slow_down,
     increase_update_interval,
@@ -22,8 +22,8 @@ from rss_reader.models import Feed, UserFeed, UserEntry, Entry
 from vendoring.html_sanitizer.sanitizer import sanitize_html
 
 if TYPE_CHECKING:
-    from rss_reader.api.dtos import RequestResult
-    from rss_reader.api.rss_parser import RssParsedData
+    from rss_reader.use_cases.rss.dtos import RequestResult
+    from rss_reader.use_cases.rss.rss_parser import RssParsedData
 
 
 class FeedRepo:

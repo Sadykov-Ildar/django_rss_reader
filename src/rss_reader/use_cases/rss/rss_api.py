@@ -4,9 +4,9 @@ from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
 
-from rss_reader.api.dtos import RssUrlArgs
+from rss_reader.use_cases.rss.dtos import RssUrlArgs
 from rss_reader.repos.network_repo import NetworkRepo
-from rss_reader.api.rss_parser import RssParser
+from rss_reader.use_cases.rss.rss_parser import RssParser
 from rss_reader.repos.feed_repo import FeedRepo
 from rss_reader.exceptions import URLValidationError
 from rss_reader.helpers.urls import get_base_url

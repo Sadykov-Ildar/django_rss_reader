@@ -10,7 +10,7 @@ from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.utils import timezone
 
-from rss_reader.api.rss_api import (
+from rss_reader.use_cases.rss.rss_api import (
     import_from_rss_urls,
     refresh_feeds,
 )

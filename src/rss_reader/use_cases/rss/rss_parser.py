@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from django.utils import timezone
 
-from rss_reader.api.dtos import RequestResult
+from rss_reader.use_cases.rss.dtos import RequestResult
 from rss_reader.helpers.date_helpers import get_datetime
 from vendoring import fastfeedparser
 
