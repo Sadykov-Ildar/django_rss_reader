@@ -21,18 +21,18 @@ def resolve_urls(content: str, url: str) -> str:
     """
     soup = BeautifulSoup(content, "lxml")
 
-    for a in soup.findAll("a"):
+    for a in soup.find_all("a"):
         # if this tag have href property
         if a.get("href"):
             # Make link in absolute format
             a["href"] = urljoin(url, a["href"])
     # Find all link tags
-    for link in soup.findAll("link"):
+    for link in soup.find_all("link"):
         # if this tag have href property
         if link.get("href"):
             # Make link in absolute format
             link["href"] = urljoin(url, link["href"])
-    for img in soup.findAll("img"):
+    for img in soup.find_all("img"):
         # if this tag have src property
         if img.get("src"):
             # Make link in absolute format
