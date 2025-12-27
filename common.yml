@@ -5,6 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: final
       cache_from:
         - type=local,src=${UV_CACHE_DIR}
       args:

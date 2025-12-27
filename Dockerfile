@@ -2,7 +2,7 @@ ARG PYTHON_VERSION=3.14
 
 FROM python:${PYTHON_VERSION}-slim AS build
 
-ARG UV_BUILD_ARG="--no-dev"
+ARG UV_BUILD_ARG="--no-default-groups"
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
@@ -33,7 +33,23 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 
 ##########################################################################
-FROM python:${PYTHON_VERSION}-slim
+FROM python:${PYTHON_VERSION}-slim AS test
+
+ENV PATH=/app/bin:$PATH \
+    PYTHONDONTWRITEBYTECODE=1 \
+    UV_COMPILE_BYTECODE=0
+COPY --from=build /app /app
+
+WORKDIR /app
+
+# contains configs for pytest
+COPY ./pyproject.toml pyproject.toml
+
+COPY ./tests tests/
+
+
+##########################################################################
+FROM python:${PYTHON_VERSION}-slim AS final
 
 
 # Optional: add the application virtualenv to search path.

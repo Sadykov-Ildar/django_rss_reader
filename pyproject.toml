@@ -35,6 +35,10 @@ dev = [
 ]
 test = [
     "coverage>=7.11.3",
+    "factory-boy>=3.3.3",
+    "pytest>=9.0.2",
+    "pytest-django>=4.11.1",
+    "pytest-xdist>=3.8.0",
 ]
 
 [tool.ty.environment]
@@ -44,3 +48,16 @@ root = ["src"]
 exclude = [
     "src/vendoring/**",
 ]
+
+[tool.pytest]
+minversion = "9.0"
+DJANGO_SETTINGS_MODULE = "django_rss_reader.settings"
+strict = true
+addopts = [
+    "-ra",
+    "--import-mode=importlib",
+]
+testpaths = [
+    "tests",
+]
+cache_dir = "/tmp/pytest-cache"
