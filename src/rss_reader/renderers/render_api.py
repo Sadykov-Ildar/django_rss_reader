@@ -90,7 +90,7 @@ def render_main_page(
     user_entries: list[UserEntry],
     user_entry: UserEntry | None = None,
     start: datetime | None = None,
-    search: str | None = None,
+    search: str = "",
 ):
     context: dict = {
         "user_feeds": user_feeds,
@@ -194,7 +194,7 @@ def render_entries(
     user_feed: UserFeed,
     user_entries: list[UserEntry],
     start: datetime | None = None,
-    search: str | None = None,
+    search: str = "",
 ):
     context = get_user_entries_in_context(user_feed, user_entries, start, search)
 
@@ -212,7 +212,7 @@ def get_user_entries_in_context(
     user_feed: UserFeed,
     user_entries: list[UserEntry],
     start: datetime | None = None,
-    search: str | None = None,
+    search: str = "",
 ):
     more = False
 

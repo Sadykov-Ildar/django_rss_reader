@@ -245,7 +245,7 @@ class FeedRepo:
     def get_filtered_user_entries(
         self,
         user_feed: UserFeed,
-        search: str | None = None,
+        search: str = "",
         start: datetime | None = None,
     ) -> list[UserEntry]:
         user_entries = self._get_and_create_user_entries(user_feed)

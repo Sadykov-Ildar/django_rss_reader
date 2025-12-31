@@ -10,13 +10,13 @@ def index_view(request):
     feed_repo = FeedRepo()
     user = request.user
     user_feeds = feed_repo.get_ordered_user_feeds(user)
-    feed = None
+    user_feed = None
     user_entries = []
     if user_feeds:
-        feed = user_feeds[0]
-        user_entries = feed_repo.get_filtered_user_entries(feed)
+        user_feed = user_feeds[0]
+        user_entries = feed_repo.get_filtered_user_entries(user_feed)
     content = render_main_page(
-        request, user_feeds, user_feed=feed, user_entries=user_entries
+        request, user_feeds, user_feed=user_feed, user_entries=user_entries
     )
     return HttpResponse(content)
 

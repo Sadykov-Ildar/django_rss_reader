@@ -25,9 +25,9 @@ async def get_favicons(urls: Iterable[str]) -> list[tuple[str, str]]:
         return await asyncio.gather(*(get_favicon_url(session, url) for url in urls))
 
 
-async def get_favicon_url(session, site_url):
+async def get_favicon_url(session: ClientSession, site_url: str) -> tuple[str, str]:
     """Fetch favicon URL from the website."""
-    image_url = None
+    image_url = ""
     try:
         async with session.get(site_url) as response:
             response.raise_for_status()
@@ -58,7 +58,7 @@ async def get_favicon_url(session, site_url):
                     break
 
         # Fallback: Check for default /favicon.ico
-        if image_url is None:
+        if not image_url:
             default_favicon = urljoin(get_base_url(site_url), "/favicon.ico")
             async with session.get(
                 default_favicon, allow_redirects=True, timeout=ClientTimeout(5)

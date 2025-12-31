@@ -537,7 +537,7 @@ def parse(source: str | bytes) -> FastFeedParserDict:
     feed_type: _FeedType
     atom_namespace: Optional[str] = None
 
-    image_url = None
+    image_url = ""
 
     if (
         root.tag == "rss"

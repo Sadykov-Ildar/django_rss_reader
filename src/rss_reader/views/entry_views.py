@@ -75,7 +75,7 @@ def entries_view(request, user_feed_id: int, start: datetime | None = None):
     if user_feed is None:
         raise Http404
 
-    search = request.GET.get("search")
+    search = request.GET.get("search", "")
     if request.htmx:
         user_entries = feed_repo.get_filtered_user_entries(user_feed, search, start)
         content = render_entries(request, user_feed, user_entries, start, search)
