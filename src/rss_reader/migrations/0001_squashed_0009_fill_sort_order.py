@@ -11,8 +11,8 @@ from django.db import migrations, models
 # rss_reader.migrations.0007_auto_20251114_2109
 # rss_reader.migrations.0009_fill_sort_order
 
-class Migration(migrations.Migration):
 
+class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
@@ -21,102 +21,198 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Feed',
+            name="Feed",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('site_url', models.URLField(max_length=255, verbose_name='Site URL')),
-                ('rss_url', models.URLField(unique=True, verbose_name='RSS url')),
-                ('feed_type', models.CharField(default='rss', max_length=10, verbose_name='Feed type')),
-                ('title', models.CharField()),
-                ('subtitle', models.CharField()),
-                ('author', models.CharField()),
-                ('etag', models.CharField()),
-                ('modified', models.CharField()),
-                ('image_url', models.URLField(blank=True, max_length=255, null=True)),
-                ('searched_image_url', models.BooleanField(default=False)),
-                ('entry_count', models.PositiveIntegerField(default=0)),
-                ('image', models.FileField(blank=True, max_length=500, null=True, upload_to='favicons/', verbose_name='img')),
-                ('last_exception', models.TextField(blank=True, null=True)),
-                ('last_response_body', models.TextField(blank=True, null=True)),
-                ('last_updated', models.DateTimeField(blank=True, null=True)),
-                ('disabled_reason', models.TextField(blank=True, null=True)),
-                ('update_after', models.DateTimeField(blank=True, null=True)),
-                ('update_interval', models.PositiveIntegerField(default=24)),
-                ('updates_enabled', models.BooleanField(default=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("site_url", models.URLField(max_length=255, verbose_name="Site URL")),
+                ("rss_url", models.URLField(unique=True, verbose_name="RSS url")),
+                (
+                    "feed_type",
+                    models.CharField(
+                        default="rss", max_length=10, verbose_name="Feed type"
+                    ),
+                ),
+                ("title", models.CharField()),
+                ("subtitle", models.CharField()),
+                ("author", models.CharField()),
+                ("etag", models.CharField()),
+                ("modified", models.CharField()),
+                ("image_url", models.URLField(blank=True, max_length=255, null=True)),
+                ("searched_image_url", models.BooleanField(default=False)),
+                ("entry_count", models.PositiveIntegerField(default=0)),
+                (
+                    "image",
+                    models.FileField(
+                        blank=True,
+                        max_length=500,
+                        null=True,
+                        upload_to="favicons/",
+                        verbose_name="img",
+                    ),
+                ),
+                ("last_exception", models.TextField(blank=True, null=True)),
+                ("last_response_body", models.TextField(blank=True, null=True)),
+                ("last_updated", models.DateTimeField(blank=True, null=True)),
+                ("disabled_reason", models.TextField(blank=True, null=True)),
+                ("update_after", models.DateTimeField(blank=True, null=True)),
+                ("update_interval", models.PositiveIntegerField(default=24)),
+                ("updates_enabled", models.BooleanField(default=True)),
             ],
             options={
-                'verbose_name_plural': 'Feeds',
-                'db_table': 'rss_reader_feeds',
-                'indexes': [models.Index(condition=models.Q(('searched_image_url', False)), fields=['searched_image_url'], name='partial_searched_image_url')],
+                "verbose_name_plural": "Feeds",
+                "db_table": "rss_reader_feeds",
+                "indexes": [
+                    models.Index(
+                        condition=models.Q(("searched_image_url", False)),
+                        fields=["searched_image_url"],
+                        name="partial_searched_image_url",
+                    )
+                ],
             },
         ),
         migrations.CreateModel(
-            name='Entry',
+            name="Entry",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('link', models.CharField()),
-                ('title', models.CharField()),
-                ('published', models.DateTimeField(db_index=True)),
-                ('author', models.CharField()),
-                ('content', models.TextField()),
-                ('summary', models.TextField()),
-                ('feed', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='rss_reader.feed')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("link", models.CharField()),
+                ("title", models.CharField()),
+                ("published", models.DateTimeField(db_index=True)),
+                ("author", models.CharField()),
+                ("content", models.TextField()),
+                ("summary", models.TextField()),
+                (
+                    "feed",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="rss_reader.feed",
+                    ),
+                ),
             ],
             options={
-                'verbose_name_plural': 'Entries',
-                'db_table': 'rss_reader_entries',
-                'ordering': ['-published'],
-                'unique_together': {('feed', 'link')},
+                "verbose_name_plural": "Entries",
+                "db_table": "rss_reader_entries",
+                "ordering": ["-published"],
+                "unique_together": {("feed", "link")},
             },
         ),
         migrations.CreateModel(
-            name='UserEntry',
+            name="UserEntry",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('read', models.BooleanField(default=False)),
-                ('entry', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='rss_reader.entry')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("read", models.BooleanField(default=False)),
+                (
+                    "entry",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="rss_reader.entry",
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'verbose_name_plural': 'User entries',
-                'db_table': 'rss_reader_user_entries',
-                'indexes': [models.Index(condition=models.Q(('read', True)), fields=['user', 'read'], name='user_entry_partial_read')],
-                'unique_together': {('user', 'entry')},
+                "verbose_name_plural": "User entries",
+                "db_table": "rss_reader_user_entries",
+                "indexes": [
+                    models.Index(
+                        condition=models.Q(("read", True)),
+                        fields=["user", "read"],
+                        name="user_entry_partial_read",
+                    )
+                ],
+                "unique_together": {("user", "entry")},
             },
         ),
         migrations.CreateModel(
-            name='UserFeed',
+            name="UserFeed",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('stale', models.BooleanField(default=True)),
-                ('read_count', models.PositiveIntegerField(default=0)),
-                ('feed', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='rss_reader.feed')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("stale", models.BooleanField(default=True)),
+                ("read_count", models.PositiveIntegerField(default=0)),
+                (
+                    "feed",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="rss_reader.feed",
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'verbose_name_plural': 'User feeds',
-                'db_table': 'rss_reader_user_feeds',
-                'unique_together': {('user', 'feed')},
+                "verbose_name_plural": "User feeds",
+                "db_table": "rss_reader_user_feeds",
+                "unique_together": {("user", "feed")},
             },
         ),
         migrations.CreateModel(
-            name='RequestHistory',
+            name="RequestHistory",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('url', models.URLField(db_index=True)),
-                ('headers', models.TextField()),
-                ('content', models.TextField()),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('status', models.PositiveIntegerField()),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("url", models.URLField(db_index=True)),
+                ("headers", models.TextField()),
+                ("content", models.TextField()),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("status", models.PositiveIntegerField()),
             ],
             options={
-                'verbose_name_plural': 'Request history',
-                'db_table': 'rss_reader_request_history',
+                "verbose_name_plural": "Request history",
+                "db_table": "rss_reader_request_history",
             },
         ),
         migrations.AddField(
-            model_name='userfeed',
-            name='sort_order',
+            model_name="userfeed",
+            name="sort_order",
             field=models.PositiveIntegerField(default=0),
         ),
     ]
