@@ -8,12 +8,7 @@ from django.db import IntegrityError, transaction
 from django.db.models import QuerySet, Subquery, OuterRef, Q
 from django.utils import timezone
 
-from rss_reader.use_cases.rss._refresh_intervals import (
-    get_update_delay_in_hours,
-    should_slow_down,
-    increase_update_interval,
-    decrease_update_interval,
-)
+from rss_reader.repos._refresh_intervals import get_update_interval_in_hours
 from rss_reader.constants import ENTRIES_BATCH_SIZE, HOURS_IN_YEAR
 from rss_reader.helpers.html_cleaner import clean_html, resolve_urls
 
@@ -347,15 +342,8 @@ class FeedRepo:
         new_entries = feed.entry_count > old_entry_count
 
         self._change_feed_if_moved_or_disabled(feed, request_result)
+        self._set_new_update_interval(feed, current_time, new_entries, request_result)
 
-        update_interval = _get_update_interval_in_hours(
-            feed, new_entries, request_result
-        )
-
-        feed.update_interval = update_interval
-        update_after = current_time + timedelta(hours=update_interval)
-        update_after = update_after.replace(minute=0, second=0, microsecond=0)
-        feed.update_after = update_after
         try:
             # transaction is necessary to create savepoint,
             # otherwise IntegrityError could roll back outer transaction
@@ -364,6 +352,25 @@ class FeedRepo:
         except IntegrityError:
             # changing rss_url as a result of 301/308 permanent redirect can lead to merging two feeds into one
             self.delete_feed(feed)
+
+    @staticmethod
+    def _set_new_update_interval(
+        feed: Feed,
+        current_time: datetime,
+        new_entries: bool,
+        request_result: RequestResult,
+    ):
+        update_interval = get_update_interval_in_hours(
+            feed.update_interval, new_entries, request_result
+        )
+        if update_interval > HOURS_IN_YEAR:
+            feed.updates_enabled = False
+            feed.disabled_reason = "Last updated more than a year ago"
+
+        feed.update_interval = update_interval
+        update_after = current_time + timedelta(hours=update_interval)
+        update_after = update_after.replace(minute=0, second=0, microsecond=0)
+        feed.update_after = update_after
 
     def _change_feed_if_moved_or_disabled(
         self, feed: Feed, request_result: RequestResult
@@ -411,31 +418,6 @@ class FeedRepo:
                 bulk_update_list.append(user_feed)
 
         user_feeds.bulk_update(bulk_update_list, ["sort_order"])
-
-
-def _get_update_interval_in_hours(
-    feed: Feed, new_entries: bool, request_result: RequestResult
-) -> int:
-    update_interval = feed.update_interval
-    update_delay = get_update_delay_in_hours(request_result.headers)
-    if update_delay:
-        update_interval = update_delay
-    else:
-        if should_slow_down(
-            request_result.status, new_entries, request_result.error_message
-        ):
-            # slow down
-            update_interval = increase_update_interval(update_interval)
-        else:
-            # new updates - speed up a little bit
-            update_interval = decrease_update_interval(update_interval)
-
-    if update_interval > HOURS_IN_YEAR:
-        feed.updates_enabled = False
-        feed.disabled_reason = "Last updated more than a year ago"
-    if update_interval < 2:
-        update_interval = 2
-    return update_interval
 
 
 def filter_parsed_data(rss_data: RssParsedData, site_url: str):

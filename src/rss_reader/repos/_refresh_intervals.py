@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from django.utils import timezone
 
@@ -13,10 +14,35 @@ from rss_reader.constants import (
     HOURS_IN_YEAR,
 )
 
+if TYPE_CHECKING:
+    from rss_reader.use_cases.rss.dtos import RequestResult
+
 max_age_regex = re.compile(r"max-age=(\d+)", re.IGNORECASE)
 
 
-def increase_update_interval(update_interval: int):
+def get_update_interval_in_hours(
+    update_interval: int, new_entries: bool, request_result: RequestResult
+) -> int:
+    update_delay = __get_update_delay_in_hours(request_result.headers)
+    if update_delay:
+        update_interval = update_delay
+    else:
+        if __should_slow_down(
+            request_result.status, new_entries, request_result.error_message
+        ):
+            # slow down
+            update_interval = __increase_update_interval(update_interval)
+        else:
+            # new updates - speed up a little bit
+            update_interval = __decrease_update_interval(update_interval)
+
+    if update_interval < 2:
+        update_interval = 2
+
+    return update_interval
+
+
+def __increase_update_interval(update_interval: int):
     if 0 <= update_interval <= HOURS_IN_DAY:
         update_interval += 2
     elif HOURS_IN_DAY < update_interval <= HOURS_IN_THREE_DAYS:
@@ -31,7 +57,7 @@ def increase_update_interval(update_interval: int):
     return update_interval
 
 
-def decrease_update_interval(update_interval: int):
+def __decrease_update_interval(update_interval: int):
     if 0 <= update_interval <= HOURS_IN_DAY:
         update_interval -= 1
     elif HOURS_IN_DAY < update_interval <= HOURS_IN_THREE_DAYS:
@@ -47,19 +73,19 @@ def decrease_update_interval(update_interval: int):
     return update_interval
 
 
-def get_update_delay_in_hours(headers: dict) -> int:
+def __get_update_delay_in_hours(headers: dict) -> int:
     """
     Returns the amount of seconds of delay before making another request to the server
     """
-    delay = get_retry_after(headers)
+    delay = __get_retry_after(headers)
 
     if not delay:
-        delay = get_max_age(headers)
+        delay = __get_max_age(headers)
 
     return int(delay / 3600)
 
 
-def get_retry_after(headers: dict) -> int:
+def __get_retry_after(headers: dict) -> int:
     retry_after = 0
     header_value = headers.get("Retry-after", "")
     if header_value:
@@ -80,7 +106,7 @@ def get_retry_after(headers: dict) -> int:
     return retry_after
 
 
-def get_max_age(headers: dict):
+def __get_max_age(headers: dict):
     """
     Returns max-age from headers in seconds
     """
@@ -96,7 +122,7 @@ def get_max_age(headers: dict):
     return 0
 
 
-def should_slow_down(status, new_entries, error_message):
+def __should_slow_down(status, new_entries, error_message):
     if not new_entries or error_message:
         return True
     # Slow down on certain specific statuses
