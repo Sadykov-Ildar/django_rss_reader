@@ -10,11 +10,10 @@ from django.utils import timezone
 
 from rss_reader.repos._refresh_intervals import get_update_interval_in_hours
 from rss_reader.constants import ENTRIES_BATCH_SIZE, HOURS_IN_YEAR
-from rss_reader.helpers.html_cleaner import clean_html, resolve_urls
+from rss_reader.helpers.html_cleaner import filter_parsed_data
 
 from rss_reader.exceptions import URLValidationError
 from rss_reader.models import Feed, UserFeed, UserEntry, Entry
-from vendoring.html_sanitizer.sanitizer import sanitize_html
 
 if TYPE_CHECKING:
     from rss_reader.use_cases.rss.dtos import RequestResult
@@ -418,35 +417,3 @@ class FeedRepo:
                 bulk_update_list.append(user_feed)
 
         user_feeds.bulk_update(bulk_update_list, ["sort_order"])
-
-
-def filter_parsed_data(rss_data: RssParsedData, site_url: str):
-    result = []
-    entries_data = rss_data.entries
-    for entry in entries_data:
-        link = entry["link"]
-        if "youtube.com/shorts/" in link:  # YouTube shorts are bad
-            continue
-        content = entry["content"]
-        summary = entry["summary"]
-
-        if content:
-            if content.startswith(summary[:100]):
-                # summary is often the same as content - skip it
-                summary = ""
-
-            content = clean_html(content)
-            content = resolve_urls(content, site_url)
-            content = sanitize_html(content, "utf-8", "text/html")
-
-        if summary:
-            summary = clean_html(summary)
-            summary = resolve_urls(summary, site_url)
-            summary = sanitize_html(summary, "utf-8", "text/html")
-
-        entry["content"] = content
-        entry["summary"] = summary
-
-        result.append(entry)
-
-    return result
