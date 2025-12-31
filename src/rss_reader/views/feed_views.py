@@ -6,7 +6,7 @@ from django.views import View
 from django.views.decorators.http import require_POST
 
 from rss_reader import opml_parser
-from rss_reader.repos.feed_repo import FeedRepo
+from rss_reader.repos.db_repo import FeedRepo
 from rss_reader.renderers.feeds_to_opml import get_feeds_in_opml
 from rss_reader.repos.network_repo import NetworkRepo
 from rss_reader.use_cases.rss.rss_api import process_rss_url

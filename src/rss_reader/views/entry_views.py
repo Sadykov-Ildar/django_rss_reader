@@ -2,7 +2,7 @@ from datetime import datetime
 
 from django.http import Http404, HttpResponse
 
-from rss_reader.repos.feed_repo import FeedRepo
+from rss_reader.repos.db_repo import FeedRepo
 from rss_reader.renderers.render_api import (
     render_entry_content,
     render_entries,

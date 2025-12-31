@@ -1,6 +1,6 @@
 import pytest
 
-from rss_reader.repos.feed_repo import FeedRepo
+from rss_reader.repos.db_repo import FeedRepo
 from rss_reader.use_cases.rss.rss_api import import_from_rss_urls
 from tests.mocks.network_repo_mock import NetworkRepoMock
 from tests.test_rss_reader.factories import UserFactory

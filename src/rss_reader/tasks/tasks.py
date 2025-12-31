@@ -15,7 +15,7 @@ from rss_reader.use_cases.rss.rss_api import (
     import_from_rss_urls,
     refresh_feeds,
 )
-from rss_reader.repos.feed_repo import FeedRepo
+from rss_reader.repos.db_repo import FeedRepo
 from rss_reader.repos.request_history import delete_request_history_older_than
 from rss_reader.tasks.favicons_api import (
     get_favicon_name_from_url,
