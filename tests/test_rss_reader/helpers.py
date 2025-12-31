@@ -2,7 +2,7 @@ from pathlib import Path
 
 from django.conf import settings
 
-from rss_reader.use_cases.rss.dtos import RequestResult
+from rss_reader.rss.dtos import RequestResult
 
 
 def get_fixtures_dir() -> Path:

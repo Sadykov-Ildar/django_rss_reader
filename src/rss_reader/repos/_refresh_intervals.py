@@ -13,7 +13,7 @@ from rss_reader.constants import (
 )
 
 if TYPE_CHECKING:
-    from rss_reader.use_cases.rss.dtos import RequestResult
+    from rss_reader.rss.dtos import RequestResult
 
 max_age_regex = re.compile(r"max-age=(\d+)", re.IGNORECASE)
 

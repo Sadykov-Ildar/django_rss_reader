@@ -14,8 +14,8 @@ from rss_reader.exceptions import URLValidationError
 from rss_reader.models import Feed, UserFeed, UserEntry, Entry
 
 if TYPE_CHECKING:
-    from rss_reader.use_cases.rss.dtos import RequestResult
-    from rss_reader.use_cases.rss.rss_parser import RssParsedData
+    from rss_reader.rss.dtos import RequestResult
+    from rss_reader.rss.rss_parser import RssParsedData
 
 
 class FeedRepo:

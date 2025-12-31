@@ -2,8 +2,8 @@ from collections import Counter
 
 from bs4 import BeautifulSoup
 
-from rss_reader.use_cases.rss.dtos import RssUrlArgs
-from rss_reader.use_cases.rss.helpers import is_soup_html, extract_feed_urls_from_html
+from rss_reader.rss.dtos import RssUrlArgs
+from rss_reader.rss.helpers import is_soup_html, extract_feed_urls_from_html
 from rss_reader.exceptions import URLValidationError
 from rss_reader.helpers.urls import get_base_url
 

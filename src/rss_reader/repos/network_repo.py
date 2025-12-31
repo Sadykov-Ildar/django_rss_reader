@@ -10,8 +10,8 @@ from aiohttp import (
 )
 
 from django_rss_reader.version import get_version
-from rss_reader.use_cases.rss.dtos import RssUrlArgs, RequestResult
-from rss_reader.use_cases.rss.rss_parser import RssParsedData
+from rss_reader.rss.dtos import RssUrlArgs, RequestResult
+from rss_reader.rss.rss_parser import RssParsedData
 from rss_reader.repos.request_history import save_request
 
 

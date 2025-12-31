@@ -1,5 +1,5 @@
-from rss_reader.use_cases.rss.dtos import RssUrlArgs, RequestResult
-from rss_reader.use_cases.rss.rss_parser import RssParsedData, RssParser
+from rss_reader.rss.dtos import RssUrlArgs, RequestResult
+from rss_reader.rss.rss_parser import RssParsedData, RssParser
 
 
 class NetworkRepoMock:

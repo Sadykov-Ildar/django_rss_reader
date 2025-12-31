@@ -1,7 +1,7 @@
 import pytest
 
 from tests.mocks.network_repo_mock import NetworkRepoMock
-from rss_reader.use_cases.rss.rss_api import refresh_feeds, import_from_rss_urls
+from rss_reader.rss.rss_api import refresh_feeds, import_from_rss_urls
 from tests.test_rss_reader.helpers import get_new_request_result
 
 

@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 from vendoring.html_sanitizer.sanitizer import sanitize_html
 
 if TYPE_CHECKING:
-    from rss_reader.use_cases.rss.rss_parser import RssParsedData
+    from rss_reader.rss.rss_parser import RssParsedData
 
 _class_pattern = re.compile(r'(?s)class="(.*?)"')
 

@@ -11,7 +11,7 @@ from django.core.cache import cache
 from django.utils import timezone
 
 from rss_reader.repos.network_repo import NetworkRepo
-from rss_reader.use_cases.rss.rss_api import (
+from rss_reader.rss.rss_api import (
     import_from_rss_urls,
     refresh_feeds,
 )
@@ -29,7 +29,7 @@ from rss_reader.constants import (
 )
 from rss_reader.helpers.urls import get_base_url
 from rss_reader.tasks.mutex import redis_lock
-from rss_reader.use_cases.rss.rss_parser import RssParser
+from rss_reader.rss.rss_parser import RssParser
 
 
 @shared_task(bind=True, name="rss_reader.refresh_feeds_task")

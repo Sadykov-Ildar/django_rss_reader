@@ -9,7 +9,7 @@ from rss_reader import opml_parser
 from rss_reader.repos.db_repo import FeedRepo
 from rss_reader.renderers.feeds_to_opml import get_feeds_in_opml
 from rss_reader.repos.network_repo import NetworkRepo
-from rss_reader.use_cases.rss.rss_api import process_rss_url
+from rss_reader.rss.rss_api import process_rss_url
 from rss_reader.renderers.render_api import (
     render_feeds_and_entries,
     render_info_message,
@@ -21,7 +21,7 @@ from rss_reader.tasks import (
     import_from_rss_urls_task,
     create_favicons_task,
 )
-from rss_reader.use_cases.rss.rss_parser import RssParser
+from rss_reader.rss.rss_parser import RssParser
 
 
 class FeedView(View):
