@@ -9,16 +9,17 @@ from rss_reader.renderers.render_api import (
     render_feed_and_entry,
     render_main_page,
 )
-from rss_reader.use_cases.entry import MarkEntriesAsReadUseCase
 
 
 def mark_entries_as_read_view(request, user_feed_id):
-    use_case = MarkEntriesAsReadUseCase(FeedRepo())
-    user_feed, user_entries = use_case.mark_entries_as_read(request.user, user_feed_id)
-
+    feed_repo = FeedRepo()
+    user_feed = feed_repo.get_user_feed_by_id(user_feed_id, request.user)
     if user_feed is None:
         raise Http404
 
+    feed_repo.mark_user_feed_as_read(user_feed)
+
+    user_entries = feed_repo.get_filtered_user_entries(user_feed)
     content = render_entries(request, user_feed, user_entries)
 
     return HttpResponse(content)
