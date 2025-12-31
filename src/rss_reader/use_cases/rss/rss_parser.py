@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from django.utils import timezone
 
 from rss_reader.use_cases.rss.dtos import RequestResult

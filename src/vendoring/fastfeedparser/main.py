@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import datetime
 from email.utils import parsedate_to_datetime
 import json

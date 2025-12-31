@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import asyncio
 from typing import Iterable
 from urllib.error import HTTPError, URLError
