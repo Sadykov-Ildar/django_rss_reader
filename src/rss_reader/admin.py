@@ -19,10 +19,7 @@ class RequestHistoryAdmin(admin.ModelAdmin):
         "content",
         "created_at",
     )
-    readonly_fields = (
-        "created_at",
-    )
-
+    readonly_fields = ("created_at",)
 
 
 admin.site.register(RequestHistory, RequestHistoryAdmin)

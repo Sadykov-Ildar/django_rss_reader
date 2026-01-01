@@ -17,7 +17,7 @@ class OutlineElement(object):
 
     @property
     def _outlines(self):
-        """Return the available sub-outline objects as a seqeunce."""
+        """Return the available sub-outline objects as a sequence."""
 
         return [OutlineElement(n) for n in self._root.xpath("./outline")]
 
@@ -48,7 +48,7 @@ class Opml(object):
 
     @property
     def _outlines(self):
-        """Return the available sub-outline objects as a seqeunce."""
+        """Return the available sub-outline objects as a sequence."""
 
         return [OutlineElement(n) for n in self._tree.xpath("/opml/body/outline")]
 

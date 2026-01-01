@@ -21,6 +21,9 @@ max_age_regex = re.compile(r"max-age=(\d+)", re.IGNORECASE)
 def get_update_interval_in_hours(
     update_interval: int, new_entries: bool, request_result: RequestResult
 ) -> int:
+    """
+    Get new interval for updating RSS feeds, based on old interval
+    """
     update_delay = __get_update_delay_in_hours(request_result.headers)
     if update_delay:
         update_interval = update_delay
