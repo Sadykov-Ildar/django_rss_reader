@@ -10,7 +10,7 @@ from rss_reader.repos.db_repo import FeedRepo
 from rss_reader.renderers.feeds_to_opml import get_feeds_in_opml
 from rss_reader.repos.network_repo import NetworkRepo
 from rss_reader.rss.rss_api import process_rss_url
-from rss_reader.renderers.render_api import (
+from rss_reader.renderers.render_html import (
     render_feeds_and_entries,
     render_info_message,
     render_settings_user_feeds,

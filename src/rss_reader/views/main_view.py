@@ -2,7 +2,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 
 from rss_reader.repos.db_repo import FeedRepo
-from rss_reader.renderers.render_api import render_main_page
+from rss_reader.renderers.render_html import render_main_page
 from rss_reader.forms import UploadFileForm
 
 
