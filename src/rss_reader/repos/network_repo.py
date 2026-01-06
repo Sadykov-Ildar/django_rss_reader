@@ -22,10 +22,19 @@ class NetworkRepo:
     def get_parsed_results(
         self, rss_urls_args: Iterable[RssUrlArgs]
     ) -> list[tuple[RequestResult, RssParsedData]]:
-        return asyncio.run(self._fetch_and_parse_rss_urls(rss_urls_args))
+        results = asyncio.run(self._fetch_and_parse_rss_urls(rss_urls_args))
+        self.save_history([x[0] for x in results])
+        return results
 
     def send_requests(self, rss_urls_args: Iterable[RssUrlArgs]) -> list[RequestResult]:
-        return asyncio.run(self._send_requests(rss_urls_args))
+        results = asyncio.run(self._send_requests(rss_urls_args))
+        self.save_history(results)
+        return results
+
+    @staticmethod
+    def save_history(results: list[RequestResult]):
+        for request_result in results:
+            save_request(request_result)
 
     async def _fetch_and_parse_rss_urls(
         self,
@@ -79,7 +88,6 @@ class NetworkRepo:
                 result.headers = resp_headers
                 result.content = await response.text()
 
-                await save_request(result)
                 response.raise_for_status()
 
         except (ValueError, HTTPError) as e:

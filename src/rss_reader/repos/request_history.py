@@ -7,12 +7,12 @@ if TYPE_CHECKING:
     from rss_reader.rss.dtos import RequestResult
 
 
-async def save_request(request_result: RequestResult):
+def save_request(request_result: RequestResult):
     header_string = ""
     for key, value in request_result.headers.items():
         header_string += f"{key}: {value}\n"
 
-    await RequestHistory.objects.acreate(
+    RequestHistory.objects.create(
         url=request_result.url,
         status=request_result.status,
         headers=header_string,
