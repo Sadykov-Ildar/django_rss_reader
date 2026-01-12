@@ -4,4 +4,4 @@ python manage.py migrate --no-input
 
 python manage.py collectstatic --no-input
 
-granian --interface asgi --host 0.0.0.0 --port 8000 --workers 1 django_rss_reader.asgi:application
+daphne -b 0.0.0.0 -p 8000 django_rss_reader.asgi:application
