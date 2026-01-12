@@ -22,6 +22,9 @@ Configure postgres and redis. It's convenient to use docker and docker-compose:
 docker compose up -d
 ```
 
+Make db_password.txt that contains password for PostgreSQL
+
+
 Create superuser:
 ```bash
 docker compose exec app python manage.py createsuperuser
