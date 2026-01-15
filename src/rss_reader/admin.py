@@ -2,7 +2,7 @@
 
 from django.contrib import admin
 
-from rss_reader.models import RequestHistory
+from rss_reader.models import Feed, RequestHistory
 
 
 class RequestHistoryAdmin(admin.ModelAdmin):
@@ -22,4 +22,25 @@ class RequestHistoryAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at",)
 
 
+class FeedAdmin(admin.ModelAdmin):
+    list_display = (
+        "title",
+        "site_url",
+        "last_updated",
+        "updates_enabled",
+        "update_after",
+    )
+    search_fields = ("title",)
+    fields = (
+        "title",
+        "site_url",
+        "rss_url",
+        "last_updated",
+        "updates_enabled",
+        "update_after",
+        "searched_image_url",
+    )
+
+
+admin.site.register(Feed, FeedAdmin)
 admin.site.register(RequestHistory, RequestHistoryAdmin)
