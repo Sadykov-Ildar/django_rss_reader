@@ -1,6 +1,6 @@
 [project]
 name = "django-rss-reader"
-version = "0.0.5"
+version = "0.0.6"
 description = "Django RSS Reader"
 requires-python = ">=3.14"
 dependencies = [
