@@ -44,7 +44,7 @@ docker compose down
 
 ## What I've learned: 
 * HTMX (super cool)
-* docker, docker compose (hate it)
+* docker, docker compose
 * dependency injection (learned it for writing tests)
 * testing (need more practice, especially testing with pytest-django)
 * websockets (only the very basic stuff)
