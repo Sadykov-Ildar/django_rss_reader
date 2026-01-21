@@ -15,7 +15,7 @@ from rss_reader.rss.rss_api import (
     import_from_rss_urls,
     refresh_feeds,
 )
-from rss_reader.repos.db_repo import FeedRepo
+from rss_reader.repos import db_repo
 from rss_reader.repos.request_history import delete_request_history_older_than
 from rss_reader.tasks.favicons_api import (
     get_favicon_name_from_url,
@@ -38,11 +38,10 @@ def refresh_feeds_task(self):
     Background task for refreshing feeds, runs on schedule.
     """
     network_repo = NetworkRepo(parser=RssParser())
-    feed_repo = FeedRepo()
 
     with redis_lock(CACHE_MUTEX_PREFIX + "refresh_feeds", 1) as acquired:
         if acquired:
-            error_message = refresh_feeds(feed_repo, network_repo)
+            error_message = refresh_feeds(network_repo)
         else:
             return "Task for refreshing feeds already started"
 
@@ -60,9 +59,8 @@ def import_from_rss_urls_task(self, user_id, rss_urls: list[str]) -> str:
     user = get_user_model().objects.get(id=user_id)
 
     network_repo = NetworkRepo(parser=RssParser())
-    feed_repo = FeedRepo()
 
-    result = import_from_rss_urls(user, rss_urls, feed_repo, network_repo)
+    result = import_from_rss_urls(user, rss_urls, network_repo)
 
     create_favicons_task.delay()
 
@@ -74,8 +72,8 @@ def create_favicons_task(self):
     """
     Background task for getting favicons for feeds, runs after importing feeds.
     """
-    feed_repo = FeedRepo()
-    feeds = feed_repo.get_feeds_with_unsearched_images()
+
+    feeds = db_repo.get_feeds_with_unsearched_images()
 
     url_to_feeds = defaultdict(list)
     for feed in feeds:

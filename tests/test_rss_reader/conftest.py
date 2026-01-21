@@ -1,6 +1,5 @@
 import pytest
 
-from rss_reader.repos.db_repo import FeedRepo
 from rss_reader.rss.rss_api import import_from_rss_urls
 from tests.mocks.network_repo_mock import NetworkRepoMock
 from tests.test_rss_reader.factories import UserFactory
@@ -13,12 +12,7 @@ def user(db):
 
 
 @pytest.fixture()
-def feed_repo():
-    return FeedRepo()
-
-
-@pytest.fixture()
-def import_rss(user, feed_repo):
+def import_rss(user):
     network_repo = NetworkRepoMock(
         request_results=[
             get_new_request_result(
@@ -32,7 +26,6 @@ def import_rss(user, feed_repo):
         [
             "http://example.com/feed.xml",
         ],
-        feed_repo,
         network_repo,
     )
     return error_message
