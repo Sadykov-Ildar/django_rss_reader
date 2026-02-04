@@ -49,11 +49,9 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "django.contrib.admindocs",
     "rss_reader.apps.RssReaderConfig",
     "accounts.apps.AccountsConfig",
     "django_htmx",
-    "django_celery_results",
 ]
 
 MIDDLEWARE = [
@@ -75,7 +73,7 @@ LOGIN_URL = "accounts:log_in"
 # debug toolbar
 TESTING = "test" in sys.argv or "PYTEST_VERSION" in os.environ
 
-if not TESTING:
+if not TESTING and DEBUG:
     INSTALLED_APPS = [
         *INSTALLED_APPS,
         "debug_toolbar",
@@ -147,7 +145,7 @@ SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 
 # Celery settings
 CELERY_BROKER_URL = "redis://redis:6379"
-CELERY_RESULT_BACKEND = "django-db"
+CELERY_RESULT_BACKEND = "redis://redis:6379/0"
 
 CELERY_TIMEZONE = "Europe/Moscow"
 CELERY_TASK_TRACK_STARTED = True

@@ -24,7 +24,7 @@ from rss_reader.views.main_view import index_view
 
 
 def get_debug_toolbar_urls():
-    if not settings.TESTING:
+    if not settings.TESTING and settings.DEBUG:
         from debug_toolbar.toolbar import debug_toolbar_urls
 
         return debug_toolbar_urls()
@@ -34,7 +34,6 @@ def get_debug_toolbar_urls():
 urlpatterns = (
     [
         path("accounts/", include("accounts.urls")),
-        path("admin/doc/", include("django.contrib.admindocs.urls")),
         path("admin/", admin.site.urls),
         path("rss_reader/", include("rss_reader.urls")),
         path("", index_view, name="index"),
