@@ -49,7 +49,7 @@ services:
       file: common.yml
       service: with_db_config
     container_name: celery_worker
-    command: python -m celery -A django_rss_reader worker --loglevel=INFO --concurrency=1 -Q celery
+    command: python -m celery -A django_rss_reader.celery:celery_app worker --loglevel=INFO --concurrency=1 -Q celery
     depends_on:
       postgres:
         condition: service_healthy

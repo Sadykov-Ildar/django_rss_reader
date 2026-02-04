@@ -16,16 +16,14 @@ from rss_reader.renderers.render_html import (
     render_settings_user_feeds,
 )
 from rss_reader.forms import UploadFileForm
-from rss_reader.tasks import (
-    refresh_feeds_task,
-    import_from_rss_urls_task,
-    create_favicons_task,
-)
+
 from rss_reader.rss.rss_parser import RssParser
 
 
 class FeedView(View):
     def post(self, request, *args, **kwargs):
+        from rss_reader.tasks import create_favicons_task
+
         rss_url = request.POST.get("url")
 
         rss_parser = RssParser()
@@ -89,6 +87,8 @@ def add_feed_modal(request):
 
 @require_POST
 def import_feeds(request) -> HttpResponse:
+    from rss_reader.tasks import import_from_rss_urls_task
+
     form = UploadFileForm(request.POST, request.FILES)
 
     if form.is_valid():
@@ -124,6 +124,8 @@ def export_user_feeds_view(request):
 
 
 def refresh_user_feeds(request):
+    from rss_reader.tasks import refresh_feeds_task
+
     refresh_feeds_task.delay()
 
     content = render_info_message(
