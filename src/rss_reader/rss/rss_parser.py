@@ -2,7 +2,6 @@ from django.utils import timezone
 
 from rss_reader.rss.dtos import RequestResult
 from rss_reader.helpers.date_helpers import get_datetime
-from vendoring import fastfeedparser
 
 
 class RssParsedData:
@@ -67,6 +66,8 @@ class RssParser:
     def parse(
         requests_results: list[RequestResult],
     ) -> list[tuple[RequestResult, RssParsedData]]:
+        from vendoring import fastfeedparser
+
         result = []
 
         for request_result in requests_results:

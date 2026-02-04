@@ -102,7 +102,7 @@ def _clean_feed_content(content: str | bytes) -> tuple[str, str]:
         try:
             content = content.decode(declared_encoding, errors="strict")
             encoding_used = declared_encoding
-        except (UnicodeDecodeError, LookupError):
+        except UnicodeDecodeError, LookupError:
             # If declared encoding fails, try UTF-8
             try:
                 content = content.decode("utf-8", errors="strict")
@@ -383,7 +383,7 @@ def parse(source: str | bytes) -> FastFeedParserDict:
                         ):
                             # Might be a JSON Feed without explicit version
                             return _parse_json_feed(json_data)
-                except (json.JSONDecodeError, ValueError):
+                except json.JSONDecodeError, ValueError:
                     # Not JSON or invalid JSON, continue to XML parsing
                     pass
         except Exception:
@@ -1159,7 +1159,7 @@ def _parse_feed_entry(
             if value:
                 try:
                     media_item[dim] = int(value)
-                except (ValueError, TypeError):
+                except ValueError, TypeError:
                     del media_item[dim]
 
         # Handle sibling elements
@@ -1225,7 +1225,7 @@ def _parse_feed_entry(
                 if value:
                     try:
                         thumb_item[dim] = int(value)
-                    except (ValueError, TypeError):
+                    except ValueError, TypeError:
                         del thumb_item[dim]
 
             # Remove None values
@@ -1249,7 +1249,7 @@ def _parse_feed_entry(
         if length:
             try:
                 enc_item["length"] = int(length)
-            except (ValueError, TypeError):
+            except ValueError, TypeError:
                 del enc_item["length"]
 
         # Remove None values
@@ -1460,7 +1460,7 @@ def _parsedate_to_utc(value: str) -> Optional[datetime.datetime]:
     """Fast RFC-822 / RFC-2822 parsing via email.utils."""
     try:
         parsed = parsedate_to_datetime(value)
-    except (TypeError, ValueError, IndexError):
+    except TypeError, ValueError, IndexError:
         return None
     if parsed is None:
         return None
@@ -1519,7 +1519,7 @@ _DATEPARSER_SETTINGS = {
 def _slow_dateutil_parse(value: str) -> Optional[datetime.datetime]:
     try:
         return dateutil_parser.parse(value, tzinfos=custom_tzinfos, ignoretz=False)
-    except (ValueError, TypeError, OverflowError):
+    except ValueError, TypeError, OverflowError:
         return None
 
 
@@ -1527,7 +1527,7 @@ def _slow_dateutil_parse(value: str) -> Optional[datetime.datetime]:
 def _slow_dateparser(value: str) -> Optional[datetime.datetime]:
     try:
         return dateparser.parse(value, languages=["en"], settings=_DATEPARSER_SETTINGS)
-    except (ValueError, TypeError):
+    except ValueError, TypeError:
         return None
 
 

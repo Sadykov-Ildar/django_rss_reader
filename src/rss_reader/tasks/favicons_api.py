@@ -6,7 +6,7 @@ from os.path import splitext
 
 import aiofiles
 from aiohttp import ClientResponse, ClientSession, ClientTimeout, ClientResponseError
-from bs4 import BeautifulSoup
+
 from django.conf import settings
 from django.core.cache import cache
 
@@ -27,6 +27,8 @@ async def get_favicons(urls: Iterable[str]) -> list[tuple[str, str]]:
 
 async def get_favicon_url(session: ClientSession, site_url: str) -> tuple[str, str]:
     """Fetch favicon URL from the website."""
+    from bs4 import BeautifulSoup
+
     image_url = ""
     try:
         async with session.get(site_url) as response:
@@ -69,7 +71,7 @@ async def get_favicon_url(session: ClientSession, site_url: str) -> tuple[str, s
                     image_path = get_image_file_path(image_name)
                     await save_image(image_path, response)
 
-    except (ClientResponseError, TimeoutError):
+    except ClientResponseError, TimeoutError:
         pass
 
     if image_url:

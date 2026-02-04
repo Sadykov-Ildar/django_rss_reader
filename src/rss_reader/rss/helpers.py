@@ -1,6 +1,8 @@
+from typing import TYPE_CHECKING
 from urllib.parse import urljoin
 
-from bs4 import BeautifulSoup
+if TYPE_CHECKING:
+    from bs4 import BeautifulSoup
 
 
 def is_soup_html(soup: BeautifulSoup) -> bool:

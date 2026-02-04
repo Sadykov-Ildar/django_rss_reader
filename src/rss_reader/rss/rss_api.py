@@ -1,7 +1,5 @@
 from collections import Counter
 
-from bs4 import BeautifulSoup
-
 from rss_reader.repos import db_repo
 from rss_reader.rss.dtos import RssUrlArgs
 from rss_reader.rss.helpers import is_soup_html, extract_feed_urls_from_html
@@ -52,6 +50,8 @@ def process_rss_url(request, rss_url: str, network_repo, rss_parser):
 
     :return: Error message
     """
+    from bs4 import BeautifulSoup
+
     rss_url = rss_url.strip()
     user = request.user
 

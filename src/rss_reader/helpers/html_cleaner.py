@@ -2,8 +2,6 @@ import re
 from typing import TYPE_CHECKING
 from urllib.parse import urljoin
 
-from bs4 import BeautifulSoup
-
 from vendoring.html_sanitizer.sanitizer import sanitize_html
 
 if TYPE_CHECKING:
@@ -57,6 +55,8 @@ def resolve_urls(content: str, url: str) -> str:
     """
     Replaces relative urls with absolute urls in HTML content.
     """
+    from bs4 import BeautifulSoup
+
     soup = BeautifulSoup(content, "lxml")
 
     for a in soup.find_all("a"):
