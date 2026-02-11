@@ -24,26 +24,19 @@ from rss_reader.tasks.favicons_api import (
 )
 from rss_reader.constants import (
     CACHE_FAVICON_PREFIX,
-    CACHE_MUTEX_PREFIX,
     WS_TASKS_REFRESHED_GROUP_NAME,
 )
 from rss_reader.helpers.urls import get_base_url
-from rss_reader.tasks.mutex import redis_lock
 from rss_reader.rss.rss_parser import RssParser
 
 
-@shared_task(bind=True, name="rss_reader.refresh_feeds_task")
+@shared_task(bind=True, name="rss_reader.refresh_feeds_task", rate_limit="1/m")
 def refresh_feeds_task(self):
     """
     Background task for refreshing feeds, runs on schedule.
     """
     network_repo = NetworkRepo(parser=RssParser())
-
-    with redis_lock(CACHE_MUTEX_PREFIX + "refresh_feeds", 1) as acquired:
-        if acquired:
-            error_message = refresh_feeds(network_repo)
-        else:
-            return "Task for refreshing feeds already started"
+    error_message = refresh_feeds(network_repo)
 
     message = "Feeds refreshed"
     channel_layer = get_channel_layer()
