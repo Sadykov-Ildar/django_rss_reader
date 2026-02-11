@@ -205,11 +205,12 @@ def mark_user_feed_as_read(user_feed: UserFeed):
 
 
 def mark_entry_as_read(user_entry: UserEntry, user_feed):
-    user_entry.read = True
-    user_entry.save()
+    if not user_entry.read:
+        user_entry.read = True
+        user_entry.save()
 
-    user_feed.update_read_count()
-    user_feed.save()
+        user_feed.update_read_count()
+        user_feed.save()
 
 
 def toggle_entry_read(user_entry: UserEntry, user_feed):
