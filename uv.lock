@@ -547,6 +547,15 @@ wheels = [
 ]
 
 [[package]]
+name = "django-nplusone"
+version = "0.0.5"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/4c/8a/9c57192bc5028bc345fab209dd5957431bb4ad3c6b2698382ce659abc699/django_nplusone-0.0.5.tar.gz", hash = "sha256:1a35e7755e7ba020aadd53e20489261ea35c2299fc3f50a4942732e623f672d9", size = 4252, upload-time = "2020-01-01T16:15:51.889Z" }
+
+[[package]]
 name = "django-rss-reader"
 version = "0.0.7"
 source = { virtual = "." }
@@ -576,6 +585,7 @@ dev = [
     { name = "celery-types" },
     { name = "coverage" },
     { name = "django-debug-toolbar" },
+    { name = "django-nplusone" },
     { name = "django-stubs" },
     { name = "factory-boy" },
     { name = "memray" },
@@ -619,6 +629,7 @@ dev = [
     { name = "celery-types", specifier = "==0.23.0" },
     { name = "coverage", specifier = ">=7.11.3" },
     { name = "django-debug-toolbar", specifier = ">=6.2.0" },
+    { name = "django-nplusone", specifier = ">=0.0.5" },
     { name = "django-stubs", specifier = ">=5.2.8" },
     { name = "factory-boy", specifier = ">=3.3.3" },
     { name = "memray", specifier = ">=1.19.1" },

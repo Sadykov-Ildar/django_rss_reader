@@ -14,6 +14,7 @@ import os
 import sys
 from pathlib import Path
 
+import nplusone
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -96,6 +97,27 @@ if not TESTING and DEBUG:
         "SHOW_TOOLBAR_CALLBACK": "debug_toolbar.middleware.show_toolbar_with_docker",
         "ROOT_TAG_EXTRA_ATTRS": "hx-preserve",
     }
+
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "base": {
+            "format": "{name} at {asctime} ({levelname}) :: {message}",
+            "style": "{",
+        }
+    },
+    "handlers": {
+        "console": {"class": "logging.StreamHandler", "formatter": "base"},
+    },
+    "loggers": {"nplusone": {"handlers": ["console"], "level": "DEBUG"}},
+}
+
+
+if DEBUG:
+    nplusone.show_nplusones()
+
 
 ROOT_URLCONF = "django_rss_reader.urls"
 
