@@ -3,11 +3,11 @@ from typing import Iterable
 from urllib.error import HTTPError, URLError
 
 from aiohttp import (
-    ClientSession,
     ClientTimeout,
     ClientResponseError,
     ClientConnectorError,
 )
+from aiohttp_retry import RetryClient
 
 from django_rss_reader.version import get_version
 from rss_reader.rss.dtos import RssUrlArgs, RequestResult
@@ -49,17 +49,18 @@ class NetworkRepo:
     async def _send_requests(
         self, rss_urls_args: Iterable[RssUrlArgs]
     ) -> list[RequestResult]:
-        async with ClientSession(timeout=ClientTimeout(10)) as session:
+        retry_client = RetryClient(timeout=ClientTimeout(10))
+        async with retry_client as client:
             return await asyncio.gather(
                 *(
-                    self._async_request_for_rss(rss_urls_arg, session)
+                    self._async_request_for_rss(rss_urls_arg, client)
                     for rss_urls_arg in rss_urls_args
                 )
             )
 
     @staticmethod
     async def _async_request_for_rss(
-        rss_urls_arg: RssUrlArgs, session: ClientSession
+        rss_urls_arg: RssUrlArgs, client: RetryClient
     ) -> RequestResult:
         error_message = ""
         result = RequestResult(
@@ -81,7 +82,7 @@ class NetworkRepo:
         if rss_urls_arg.delay:
             await asyncio.sleep(rss_urls_arg.delay * 2)
         try:
-            async with session.get(rss_urls_arg.url, headers=req_headers) as response:
+            async with client.get(rss_urls_arg.url, headers=req_headers) as response:
                 resp_headers = response.headers
 
                 result.status = response.status
