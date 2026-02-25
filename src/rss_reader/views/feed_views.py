@@ -80,7 +80,7 @@ def delete_all_user_feeds_view(request):
     return HttpResponse()
 
 
-def add_feed_modal(request):
+def add_feed_modal_window(request):
     context = {}
     return render(request, "rss_reader/add_new_feed_modal.html", context=context)
 
@@ -123,6 +123,7 @@ def export_user_feeds_view(request):
     return response
 
 
+@require_POST
 def refresh_user_feeds(request):
     from rss_reader.tasks import refresh_feeds_task
 

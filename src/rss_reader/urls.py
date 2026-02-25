@@ -10,12 +10,16 @@ app_name = "rss_reader"
 register_converter(url_converters.DateTimeConverter, "datetime")
 
 urlpatterns = [
-    path("feed/<int:user_feed_id>", feed_views.FeedView.as_view(), name="feed"),
-    path("feed", feed_views.FeedView.as_view(), name="feed"),
-    path("add_new_feed", feed_views.add_feed_modal, name="add_feed_modal"),
-    path("import_feeds", feed_views.import_feeds, name="import_feeds"),
-    path("refresh_feeds", feed_views.refresh_user_feeds, name="refresh_feeds"),
-    path("sort_user_feeds", feed_views.sort_user_feeds, name="sort_user_feeds"),
+    path("feeds/<int:user_feed_id>", feed_views.FeedView.as_view(), name="feed"),
+    path(
+        "feeds/feed_modal_window",
+        feed_views.add_feed_modal_window,
+        name="add_feed_modal_window",
+    ),
+    path("feeds/import", feed_views.import_feeds, name="import_feeds"),
+    path("feeds/refresh", feed_views.refresh_user_feeds, name="refresh_feeds"),
+    path("feeds/sort", feed_views.sort_user_feeds, name="sort_user_feeds"),
+    path("feeds/", feed_views.FeedView.as_view(), name="feed"),
     path(
         "mark_feeds_as_read",
         feed_views.mark_feeds_as_read_view,

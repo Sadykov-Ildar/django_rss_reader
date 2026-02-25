@@ -5,19 +5,19 @@
         <a href="{% url "rss_reader:settings" %}">
             <img src="{% static 'images/settings.png' %}" alt="Feed settings" style="width: 1.5rem">
         </a>
-        <div hx-get="{% url "rss_reader:refresh_feeds" %}"
+        <div hx-post="{% url "rss_reader:refresh_feeds" %}"
              hx-swap="none"
              class="image_button">
             <img src="{% static 'images/refresh.png' %}" alt="refresh all feeds" style="width: 1rem">
         </div>
-        <div hx-get="{% url "rss_reader:mark_feeds_as_read" %}"
+        <div hx-post="{% url "rss_reader:mark_feeds_as_read" %}"
              hx-swap="none"
              hx-disabled-elt="this"
              class="image_button">
             <img src="{% static 'images/mark_green.png' %}" alt="mark all feeds as read" style="width: 1rem">
         </div>
 
-        <div hx-get="{% url "rss_reader:add_feed_modal" %}"
+        <div hx-post="{% url "rss_reader:add_feed_modal_window" %}"
              hx-target="body" hx-swap="beforeend"
              class="image_button">
             <img src="{% static 'images/add.png' %}" alt="add new feed" style="width: 1rem">
