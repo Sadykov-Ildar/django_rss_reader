@@ -7,7 +7,7 @@ from aiohttp import (
     ClientResponseError,
     ClientConnectorError,
 )
-from aiohttp_retry import RetryClient
+from aiohttp_retry import RetryClient, ExponentialRetry
 
 from django_rss_reader.version import get_version
 from rss_reader.rss.dtos import RssUrlArgs, RequestResult
@@ -49,7 +49,10 @@ class NetworkRepo:
     async def _send_requests(
         self, rss_urls_args: Iterable[RssUrlArgs]
     ) -> list[RequestResult]:
-        retry_client = RetryClient(timeout=ClientTimeout(10))
+        retry_options = ExponentialRetry(start_timeout=10)
+        retry_client = RetryClient(
+            timeout=ClientTimeout(10), retry_options=retry_options
+        )
         async with retry_client as client:
             return await asyncio.gather(
                 *(
